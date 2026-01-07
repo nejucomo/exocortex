@@ -1,4 +1,12 @@
 use eframe::egui;
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+
+const MD: &str = r"
+# Hello world
+
+* A list
+* [ ] Checkbox
+";
 
 #[derive(Default)]
 pub(crate) struct App {}
@@ -23,8 +31,10 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let mut cache = CommonMarkCache::default();
+
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Hello World!");
+            CommonMarkViewer::new().show(ui, &mut cache, MD);
         });
     }
 }
