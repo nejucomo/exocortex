@@ -35,10 +35,12 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             if self.editmode {
-                ui.add_sized(
+                let resp = ui.add_sized(
                     ui.available_size(),
-                    egui::TextEdit::multiline(&mut self.text),
+                    egui::TextEdit::multiline(&mut self.text).lock_focus(true),
                 );
+                ui.memory_mut(|mem| mem.request_focus(resp.id));
+
                 if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                     self.editmode = false;
                 }
