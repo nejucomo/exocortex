@@ -1,15 +1,12 @@
 use eframe::egui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
-const MD: &str = r"
-# Hello world
-
-* A list
-* [ ] Checkbox
-";
-
 #[derive(Default)]
-pub(crate) struct App {}
+pub(crate) struct App {
+    cmcache: CommonMarkCache,
+    text: String,
+    editmode: bool,
+}
 
 impl App {
     pub(crate) fn run() -> eframe::Result<()> {
@@ -36,10 +33,21 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let mut cache = CommonMarkCache::default();
-
         egui::CentralPanel::default().show(ctx, |ui| {
-            CommonMarkViewer::new().show(ui, &mut cache, MD);
+            if self.editmode {
+                ui.add_sized(
+                    ui.available_size(),
+                    egui::TextEdit::multiline(&mut self.text),
+                );
+                if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    self.editmode = false;
+                }
+            } else {
+                CommonMarkViewer::new().show_mut(ui, &mut self.cmcache, &mut self.text);
+                if ui.input(|i| i.key_pressed(egui::Key::I)) {
+                    self.editmode = true;
+                }
+            }
         });
     }
 }
