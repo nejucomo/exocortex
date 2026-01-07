@@ -15,7 +15,12 @@ impl App {
     pub(crate) fn run() -> eframe::Result<()> {
         eframe::run_native(
             env!("CARGO_PKG_NAME"),
-            eframe::NativeOptions::default(),
+            eframe::NativeOptions {
+                viewport: egui::ViewportBuilder::default().with_fullscreen(true),
+                persist_window: false,
+                ..Default::default()
+            },
+            // TODO: Get rid of all this boxing if possible:
             Box::new(|cc| Ok(Box::new(App::new(cc)))),
         )
     }
