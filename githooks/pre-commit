@@ -1,0 +1,27 @@
+#!/bin/bash
+set -efuo pipefail
+
+function v {
+  echo "=== $*"
+  eval "$@"
+}
+  
+function gauntlet {
+  v cargo build "$@"
+  v cargo doc "$@"
+  v cargo clippy "$@"
+  v cargo test "$@"
+}
+
+function banner
+{
+  cat<<__EOF
+
+    |>=: $* :=<|"
+
+__EOF
+}
+
+gauntlet
+
+v git add Cargo.lock
