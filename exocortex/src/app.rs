@@ -37,9 +37,25 @@ impl eframe::App for App {
             if self.editmode {
                 let resp = ui.add_sized(
                     ui.available_size(),
-                    egui::TextEdit::multiline(&mut self.text).lock_focus(true),
+                    egui::TextEdit::multiline(&mut self.text)
+                        .lock_focus(true)
+                        .id_source("text-edit-auto-focus"),
                 );
-                ui.memory_mut(|mem| mem.request_focus(resp.id));
+
+                if !resp.has_focus() {
+                    resp.request_focus();
+                    ui.ctx().memory_mut(|mem| {
+                        mem.set_focus_lock_filter(
+                            resp.id,
+                            egui::EventFilter {
+                                tab: true,
+                                horizontal_arrows: true,
+                                vertical_arrows: true,
+                                escape: true,
+                            },
+                        );
+                    });
+                }
 
                 if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                     self.editmode = false;
