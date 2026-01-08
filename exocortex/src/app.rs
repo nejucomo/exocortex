@@ -17,23 +17,15 @@ impl App {
                 persist_window: false,
                 ..Default::default()
             },
-            // TODO: Get rid of all this boxing if possible:
-            Box::new(|cc| Ok(Box::new(App::new(cc)))),
+            Box::new(|_cc| Ok(Box::new(Self::default()))),
         )
-    }
-
-    fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
-        // Restore app state using cc.storage (requires the "persistence" feature).
-        // Use the cc.gl (a glow::Context) to create graphics shaders and buffers that you can use
-        // for e.g. egui::PaintCallback.
-        Self::default()
     }
 }
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.label(env!("CARGO_PKG_NAME"));
             if self.editmode {
                 let resp = ui.add_sized(
                     ui.available_size(),
@@ -61,7 +53,12 @@ impl eframe::App for App {
                     self.editmode = false;
                 }
             } else {
-                CommonMarkViewer::new().show_mut(ui, &mut self.cmcache, &mut self.text);
+                egui::Frame::NONE
+                    .stroke(egui::Stroke::new(1.0, egui::Color32::RED))
+                    .show(ui, |ui| {
+                        CommonMarkViewer::new().show_mut(ui, &mut self.cmcache, &mut self.text);
+                    });
+
                 if ui.input(|i| i.key_pressed(egui::Key::I)) {
                     self.editmode = true;
                 }
