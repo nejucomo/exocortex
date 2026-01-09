@@ -33,7 +33,7 @@ impl eframe::App for App {
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.label(env!("CARGO_PKG_NAME"));
-        let resp = self.textframe.ui(ui);
+        let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
 
         if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
             ui.ctx().send_viewport_cmd(ViewportCommand::Close);
