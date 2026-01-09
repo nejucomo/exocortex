@@ -1,4 +1,6 @@
-use eframe::egui::{CentralPanel, Context, Key, Response, Ui, ViewportBuilder, Widget};
+use eframe::egui::{
+    CentralPanel, Context, Key, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
+};
 use eframe::{Frame, NativeOptions, run_native};
 
 use crate::textframe::TextFrame;
@@ -32,6 +34,10 @@ impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.label(env!("CARGO_PKG_NAME"));
         let resp = self.textframe.ui(ui);
+
+        if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
+            ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+        }
 
         ui.input(|i| {
             if self.textframe.editmode {
