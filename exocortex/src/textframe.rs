@@ -1,7 +1,7 @@
 mod editor;
 mod viewer;
 
-use eframe::egui::{Response, Sense, Ui, Widget};
+use eframe::egui::{Response, Sense, Ui, UiBuilder, Widget};
 use egui_commonmark::CommonMarkCache;
 
 use editor::Editor;
@@ -19,14 +19,12 @@ impl Widget for &mut TextFrame {
         let avail = ui.available_size();
         let (rect, resp) = ui.allocate_exact_size(avail, Sense::hover());
 
-        #[allow(deprecated)]
-        ui.allocate_ui_at_rect(rect, |ui| {
-            if self.editmode {
-                ui.add(Editor::new(&mut self.text))
-            } else {
-                ui.add(Viewer::new(&mut self.cmcache, &mut self.text))
-            };
-        });
+        let mut child_ui = ui.new_child(UiBuilder::new().max_rect(rect));
+        if self.editmode {
+            child_ui.add(Editor::new(&mut self.text));
+        } else {
+            child_ui.add(Viewer::new(&mut self.cmcache, &mut self.text));
+        }
 
         resp
     }
