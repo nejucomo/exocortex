@@ -1,5 +1,6 @@
 use eframe::egui::{
-    CentralPanel, Context, Key, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
+    Align, CentralPanel, Context, Key, Layout, Response, Ui, ViewportBuilder, ViewportCommand,
+    Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
 
@@ -32,7 +33,21 @@ impl eframe::App for App {
 
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
-        ui.label(env!("CARGO_PKG_NAME"));
+        ui.horizontal(|ui| {
+            let available_width = ui.available_width();
+
+            // Left spacing to approximately center the title
+            ui.add_space(available_width / 2.5);
+
+            // Center label
+            ui.label(env!("CARGO_PKG_NAME"));
+
+            // Right-aligned "?" label
+            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                ui.label("?");
+            });
+        });
+
         let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
 
         if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
