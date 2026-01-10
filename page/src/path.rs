@@ -34,21 +34,17 @@ impl PagePathRef {
         for seg in self.0.split(PagePath::SEPARATOR) {
             pb.push(seg.replace('/', "\\/"));
         }
+        pb.set_extension("md");
         pb
     }
 
     pub fn split_first(&self) -> (&str, Option<&PagePathRef>) {
-        let (seg, suffix) = self
-            .0
-            .split_once(PagePath::SEPARATOR)
-            .expect("There should always be at least one segment due to validation.");
-
-        let subseq = if suffix.is_empty() {
-            None
+        if let Some((seg, suffix)) = self.0.split_once(PagePath::SEPARATOR) {
+            let suffix =
+                Self::from_str(suffix).expect("This should always be valid due to validation.");
+            (seg, Some(suffix))
         } else {
-            Some(Self::from_str(suffix).expect("This should always be valid due to validation."))
-        };
-
-        (seg, subseq)
+            (&self.0, None)
+        }
     }
 }

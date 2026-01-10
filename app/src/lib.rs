@@ -1,7 +1,9 @@
 #![deny(unsafe_code)]
+#![allow(unused_imports)]
 
 mod app;
 mod dbgexpr;
+mod pagewidget;
 mod run;
 mod textframe;
 

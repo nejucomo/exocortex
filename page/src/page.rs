@@ -17,6 +17,7 @@ impl Page {
         P: AsRef<PagePathRef>,
     {
         let ppref = path.as_ref();
+        log::debug!("Page::open_path({ppref:?})");
         Self::open_path_reason(ppref).map_err(|reason| PageError::new(ppref.to_string(), reason))
     }
 
@@ -31,6 +32,7 @@ impl Page {
 
     fn open_help_path(path: &PagePathRef) -> Result<Self, PageErrorReason> {
         let path = path.to_path();
+        log::debug!("Opening help: {:?}", path.display());
         let f = HELP_DOCS.get_file(path).ok_or(Nonexistent)?;
         let text = f.contents_utf8().ok_or(MalformedUtf8)?;
         Ok(Page::Static(text))

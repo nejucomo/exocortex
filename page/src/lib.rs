@@ -1,5 +1,8 @@
 #![deny(unsafe_code)]
 
+mod page;
+mod path;
+
 pub mod error;
-pub mod page;
-pub mod path;
+pub use self::page::Page;
+pub use self::path::{PagePath, PagePathRef};

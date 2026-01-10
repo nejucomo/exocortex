@@ -2,12 +2,15 @@ use eframe::egui::{
     CentralPanel, Context, Key, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
+use egui_commonmark::CommonMarkCache;
+use exocortex_page::{Page, PagePath};
 
-use crate::textframe::TextFrame;
+use crate::pagewidget::PageWidget as _;
 
-#[derive(Default)]
 pub(crate) struct App {
-    textframe: TextFrame,
+    cmcache: CommonMarkCache,
+    path: PagePath,
+    page: Page,
 }
 
 impl App {
@@ -24,6 +27,19 @@ impl App {
     }
 }
 
+impl Default for App {
+    fn default() -> Self {
+        let cmcache = CommonMarkCache::default();
+        let path = PagePath::from_static("help");
+        let page = Page::open_path(&path).unwrap();
+        Self {
+            cmcache,
+            path,
+            page,
+        }
+    }
+}
+
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| ui.add(self));
@@ -33,25 +49,27 @@ impl eframe::App for App {
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.vertical_centered(|ui| {
-            ui.label(env!("CARGO_PKG_NAME"));
+            ui.label(format!("{}: {}", env!("CARGO_PKG_NAME"), &self.path));
         });
 
-        let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
+        self.page.show_page(ui, &mut self.cmcache)
 
-        if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
-            ui.ctx().send_viewport_cmd(ViewportCommand::Close);
-        }
+        // let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
 
-        ui.input(|i| {
-            if self.textframe.editmode {
-                if i.key_pressed(Key::Escape) {
-                    self.textframe.editmode = false;
-                }
-            } else if i.key_pressed(Key::I) {
-                self.textframe.editmode = true;
-            }
-        });
+        // if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
+        //     ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+        // }
 
-        resp
+        // ui.input(|i| {
+        //     if self.textframe.editmode {
+        //         if i.key_pressed(Key::Escape) {
+        //             self.textframe.editmode = false;
+        //         }
+        //     } else if i.key_pressed(Key::I) {
+        //         self.textframe.editmode = true;
+        //     }
+        // });
+
+        // resp
     }
 }

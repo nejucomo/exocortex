@@ -1255,6 +1255,7 @@ dependencies = [
  "derive-new",
  "derive_more",
  "include_dir",
+ "log",
  "thiserror 2.0.17",
 ]
 
