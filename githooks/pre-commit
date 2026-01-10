@@ -5,12 +5,12 @@ function v {
   echo "=== $*"
   eval "$@"
 }
-  
+
 function gauntlet {
-  v cargo build "$@"
-  v cargo doc "$@"
-  v cargo clippy "$@"
-  v cargo test "$@"
+  v nix develop --command cargo build "$@"
+  v nix develop --command cargo doc "$@"
+  v nix develop --command cargo clippy "$@"
+  v nix develop --command cargo test "$@"
 }
 
 function banner
