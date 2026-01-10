@@ -1,3 +1,3 @@
-# Exocortex Intro
+# Exocortex Help
 
 More to come...
