@@ -1,16 +1,38 @@
 #!/bin/bash
 set -efuo pipefail
 
-function v {
+function main
+{
+  unstaged_is_dirty && fail 'Refusing to proceed with unstaged changes.'
+
+  gauntlet
+
+  v git add Cargo.lock
+}
+
+function fail
+{
+  echo "$*"
+  exit 1
+}
+
+function v
+{
   echo "=== $*"
   eval "$@"
 }
 
-function gauntlet {
+function gauntlet
+{
   v nix develop --command cargo build "$@"
   v nix develop --command cargo doc "$@"
   v nix develop --command cargo clippy "$@"
   v nix develop --command cargo test "$@"
+}
+
+function unstaged_is_dirty
+{
+  git status --porcelain | rg '^.[^ ]'
 }
 
 function banner
@@ -22,6 +44,4 @@ function banner
 __EOF
 }
 
-gauntlet
-
-v git add Cargo.lock
+main "$@"
