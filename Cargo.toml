@@ -6,10 +6,15 @@ members = ["app", "page"]
 edition = "2024"
 
 [workspace.dependencies]
+exocortex-page = { version = "0.1.0", path = "page" }
+include_dir = "0.7.4"
+aliri_braid = "0.4.0"
 clap = { version = "4.5.54", features = ["derive"] }
+derive_more = "2.1.1"
 eframe = "0.33"
 egui_commonmark = "0.22"
 env_logger = "0.11.8"
 log = "0.4.29"
 logging-options = "0.1.0"
 derive-new = "0.7.0"
+thiserror = "2.0.17"
