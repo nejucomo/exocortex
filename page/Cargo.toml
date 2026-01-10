@@ -1,11 +1,11 @@
 [package]
+edition.workspace = true
 name = "exocortex-page"
 version = "0.1.0"
-edition.workspace = true
 
 [dependencies]
 aliri_braid.workspace = true
-derive_more = { workspace = true, features = ["from"] }
 derive-new.workspace = true
-thiserror.workspace = true
+derive_more = { workspace = true, features = ["from"] }
 include_dir.workspace = true
+thiserror.workspace = true
