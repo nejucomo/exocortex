@@ -1,5 +1,5 @@
 use derive_new::new;
-use eframe::egui::{EventFilter, Response, TextEdit, Ui, Widget};
+use eframe::egui::{EventFilter, Response, TextEdit, TextStyle, Ui, Widget};
 
 #[derive(new)]
 pub(crate) struct Editor<'a> {
@@ -10,6 +10,7 @@ impl<'a> Widget for Editor<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
         let resp = ui.add(
             TextEdit::multiline(self.textmut)
+                .font(TextStyle::Body)
                 .lock_focus(true)
                 .id_source("text-edit-auto-focus"),
         );
