@@ -1,0 +1,27 @@
+#!/bin/bash
+set -efuo pipefail
+
+function v {
+  echo "=== $*"
+  eval "$@"
+}
+
+function gauntlet {
+  v nix develop --command cargo build "$@"
+  v nix develop --command cargo doc "$@"
+  v nix develop --command cargo clippy "$@"
+  v nix develop --command cargo test "$@"
+}
+
+function banner
+{
+  cat<<__EOF
+
+    |>=: $* :=<|"
+
+__EOF
+}
+
+gauntlet
+
+v git add Cargo.lock
