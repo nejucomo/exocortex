@@ -5,6 +5,8 @@ function main
 {
   unstaged_is_dirty && fail 'Refusing to proceed with unstaged changes.'
 
+  auto-fmt-tomls
+
   gauntlet
 
   v git add Cargo.lock
@@ -16,10 +18,16 @@ function fail
   exit 1
 }
 
-function v
+function unstaged_is_dirty
 {
-  echo "=== $*"
-  eval "$@"
+  git status --porcelain | rg '^.[^ ]'
+}
+
+function auto-fmt-tomls
+{
+  v taplo format
+  git diff
+  v git add $(fd -g '*.toml')
 }
 
 function gauntlet
@@ -30,18 +38,10 @@ function gauntlet
   v nix develop --command cargo test "$@"
 }
 
-function unstaged_is_dirty
+function v
 {
-  git status --porcelain | rg '^.[^ ]'
-}
-
-function banner
-{
-  cat<<__EOF
-
-    |>=: $* :=<|"
-
-__EOF
+  echo "=== $*"
+  eval "$@"
 }
 
 main "$@"
