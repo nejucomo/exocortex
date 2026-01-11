@@ -1,11 +1,11 @@
 mod editor;
-mod viewer;
 
 use eframe::egui::{Response, Sense, Ui, UiBuilder, Widget};
 use egui_commonmark::CommonMarkCache;
 
 use editor::Editor;
-use viewer::Viewer;
+
+use crate::viewer::Viewer;
 
 #[derive(Default)]
 pub(crate) struct TextFrame {
@@ -23,7 +23,7 @@ impl Widget for &mut TextFrame {
         if self.editmode {
             child_ui.add(Editor::new(&mut self.text));
         } else {
-            child_ui.add(Viewer::new(&mut self.cmcache, &mut self.text));
+            child_ui.add(Viewer::new(&mut self.cmcache, &self.text));
         }
 
         resp

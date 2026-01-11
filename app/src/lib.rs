@@ -6,6 +6,7 @@ mod dbgexpr;
 mod pagewidget;
 mod run;
 mod textframe;
+mod viewer;
 
 pub mod cliopts;
 pub use self::run::run;
