@@ -1,27 +1,47 @@
 #!/bin/bash
 set -efuo pipefail
 
-function v {
-  echo "=== $*"
-  eval "$@"
+function main
+{
+  unstaged_is_dirty && fail 'Refusing to proceed with unstaged changes.'
+
+  auto-fmt-tomls
+
+  gauntlet
+
+  v git add Cargo.lock
 }
 
-function gauntlet {
+function fail
+{
+  echo "$*"
+  exit 1
+}
+
+function unstaged_is_dirty
+{
+  git status --porcelain | rg '^.[^ ]'
+}
+
+function auto-fmt-tomls
+{
+  v taplo format
+  git diff
+  v git add $(fd -g '*.toml')
+}
+
+function gauntlet
+{
   v nix develop --command cargo build "$@"
   v nix develop --command cargo doc "$@"
   v nix develop --command cargo clippy "$@"
   v nix develop --command cargo test "$@"
 }
 
-function banner
+function v
 {
-  cat<<__EOF
-
-    |>=: $* :=<|"
-
-__EOF
+  echo "=== $*"
+  eval "$@"
 }
 
-gauntlet
-
-v git add Cargo.lock
+main "$@"

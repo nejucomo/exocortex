@@ -53,6 +53,7 @@
             rustToolchain
             rust-analyzer
             pkg-config
+            taplo
           ];
 
           shellHook = ''

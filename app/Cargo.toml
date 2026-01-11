@@ -1,0 +1,14 @@
+[package]
+edition.workspace = true
+name = "exocortex"
+version = "0.1.0"
+
+[dependencies]
+clap.workspace = true
+derive-new.workspace = true
+eframe.workspace = true
+egui_commonmark.workspace = true
+env_logger.workspace = true
+exocortex-page.workspace = true
+log.workspace = true
+logging-options.workspace = true
