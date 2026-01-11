@@ -1,8 +1,8 @@
 use eframe::egui::{
-    CentralPanel, Context, Key, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
+    CentralPanel, Context, Key, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
-use egui_commonmark::CommonMarkCache;
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_page::{Page, PagePath};
 
 use crate::pagewidget::PageWidget as _;
@@ -49,7 +49,7 @@ impl eframe::App for App {
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.vertical_centered(|ui| {
-            ui.label(format!("{}: {}", env!("CARGO_PKG_NAME"), &self.path));
+            ui.label(RichText::new(self.path.as_str()).italics());
         });
 
         self.page.show_page(ui, &mut self.cmcache)
