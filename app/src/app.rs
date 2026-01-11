@@ -6,15 +6,16 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_page::error::PageError;
-use exocortex_page::{Page, PagePath};
+use exocortex_page::{Page, PageDb, PagePath};
 
 use crate::commandkey::CommandKey;
 use crate::pagewidget::PageWidget as _;
 
+#[derive(Debug, Default)]
 pub(crate) struct App {
     cmcache: CommonMarkCache,
+    pagedb: PageDb,
     path: PagePath,
-    page: Page,
 }
 
 impl App {
@@ -22,25 +23,12 @@ impl App {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {
-                viewport: ViewportBuilder::default().with_fullscreen(true),
+                viewport: ViewportBuilder::default().with_maximized(true),
                 persist_window: false,
                 ..Default::default()
             },
             Box::new(|_cc| Ok(Box::new(Self::default()))),
         )
-    }
-}
-
-impl Default for App {
-    fn default() -> Self {
-        let cmcache = CommonMarkCache::default();
-        let path = PagePath::from_static("help > welcome");
-        let page = Page::open_path(&path).unwrap();
-        Self {
-            cmcache,
-            path,
-            page,
-        }
     }
 }
 
@@ -56,7 +44,7 @@ impl Widget for &mut App {
             ui.label(RichText::new(self.path.as_str()).italics());
         });
 
-        let resp = self.page.show_page(ui, &mut self.cmcache);
+        let resp = self.show_page(ui);
 
         if let Some(cmdkey) = CommandKey::get(ui) {
             use CommandKey::*;
@@ -79,12 +67,7 @@ impl Widget for &mut App {
 }
 
 impl App {
-    fn open_page(&mut self, path: PagePath) -> Result<(), PageError> {
-        let page = Page::open_path(&path)?;
-
-        self.path = path;
-        self.page = page;
-
+    fn show_page(&mut self, ui: &mut Ui) -> Response {
         Ok(())
     }
 }

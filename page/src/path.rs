@@ -11,6 +11,12 @@ const SEPARATOR_CHAR: char = '>';
 #[braid(normalizer)]
 pub struct PagePath;
 
+impl Default for PagePath {
+    fn default() -> Self {
+        Self::from_static("help > welcome")
+    }
+}
+
 impl Validator for PagePath {
     type Error = InvalidPath;
 
@@ -80,10 +86,9 @@ impl PagePathRef {
         pb
     }
 
-    pub fn split_first(&self) -> (&str, Option<Cow<'_, PagePathRef>>) {
+    pub fn split_first(&self) -> (&str, Option<&PagePathRef>) {
         if let Some((seg, suffix)) = self.0.split_once(SEPARATOR) {
-            let suffix =
-                Self::from_str(suffix).expect("This should always be valid due to validation.");
+            let suffix = Self::from_normalized_str(suffix).expect("This should always be valid.");
             (seg, Some(suffix))
         } else {
             (&self.0, None)

@@ -15,8 +15,8 @@ pub struct PageError {
 pub enum PageErrorReason {
     #[error(transparent)]
     InvalidPath(InvalidPath),
-    #[error("no page found")]
-    Nonexistent,
+    #[error(transparent)]
+    Nonexistent(NonexistentPage),
     #[error("the page contained malformed utf8")]
     MalformedUtf8,
 }
@@ -30,3 +30,7 @@ pub enum InvalidPath {
 }
 
 aliri_braid::from_infallible!(InvalidPath);
+
+#[derive(Debug, Error)]
+#[error("no page found")]
+pub struct NonexistentPage;
