@@ -1,3 +1,3 @@
-# Welcome to Exocortex
+# Welcome to `exocortex`
 
-Exocortex is a tool to enhance your executive agency.
+`exocortex` is a tool to enhance your executive agency.
