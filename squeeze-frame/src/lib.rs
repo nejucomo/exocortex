@@ -1,14 +1,14 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+#![deny(unsafe_code)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use egui::epaint::MarginF32;
+use egui::{Frame, Ui};
+use extension_traits::extension;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+#[extension(pub trait FrameExt)]
+impl Frame {
+    fn squeezed_outer_margin(self, ui: &mut Ui) -> Self {
+        let avail = ui.available_size();
+        let wextra = avail.x - avail.min_elem();
+        self.outer_margin(MarginF32::symmetric(wextra, 0.0))
     }
 }
