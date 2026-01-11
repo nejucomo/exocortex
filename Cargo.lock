@@ -1272,7 +1272,6 @@ dependencies = [
  "derive-new",
  "derive_more",
  "include_dir",
- "log",
  "strum",
  "thiserror 2.0.17",
 ]

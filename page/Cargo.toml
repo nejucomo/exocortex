@@ -8,6 +8,5 @@ aliri_braid.workspace = true
 derive-new.workspace = true
 derive_more = { workspace = true, features = ["from"] }
 include_dir.workspace = true
-log.workspace = true
 strum = { workspace = true, features = ["derive"] }
 thiserror.workspace = true

@@ -50,9 +50,10 @@
           inputsFrom = [ exocortexPkg ];
 
           buildInputs = with pkgs; [
-            rustToolchain
-            rust-analyzer
+            cargo-shear
             pkg-config
+            rust-analyzer
+            rustToolchain
             taplo
           ];
 
