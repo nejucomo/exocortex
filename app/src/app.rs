@@ -10,7 +10,7 @@ use exocortex_page::{Page, PageDb, PagePath};
 use exocortex_squeeze_frame::UiExt as _;
 
 use crate::commandkey::CommandKey;
-use crate::textframe::TextFrame;
+use crate::modaleditor::ModalEditor;
 use crate::viewer::Viewer;
 
 #[derive(Debug, Default)]
@@ -73,7 +73,7 @@ impl App {
         match self.pagedb.open(self.path.clone()) {
             Ok(ReadOnly(text)) => Viewer::new(&mut self.cmcache, text).ui(ui),
             Ok(ReadWrite(text)) => {
-                TextFrame::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)
+                ModalEditor::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)
             }
             Err(NonexistentPage) => todo!(),
         }

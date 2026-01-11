@@ -10,13 +10,13 @@ use crate::viewer::Viewer;
 
 #[derive(new)]
 #[new(visibility = "pub(crate)")]
-pub(crate) struct TextFrame<'a> {
+pub(crate) struct ModalEditor<'a> {
     cmcache: &'a mut CommonMarkCache,
     text: &'a mut String,
     editmode: &'a mut bool,
 }
 
-impl<'a> Widget for TextFrame<'a> {
+impl<'a> Widget for ModalEditor<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.input(|i| {
             use eframe::egui::Key::{Escape, I};

@@ -4,8 +4,8 @@
 mod app;
 mod commandkey;
 mod dbgexpr;
+mod modaleditor;
 mod run;
-mod textframe;
 mod viewer;
 
 pub mod cliopts;
