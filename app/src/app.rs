@@ -5,17 +5,19 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_page::error::PageError;
+use exocortex_page::error::{NonexistentPage, PageError};
 use exocortex_page::{Page, PageDb, PagePath};
 
 use crate::commandkey::CommandKey;
-use crate::pagewidget::PageWidget as _;
+use crate::textframe::TextFrame;
+use crate::viewer::Viewer;
 
 #[derive(Debug, Default)]
 pub(crate) struct App {
     cmcache: CommonMarkCache,
     pagedb: PageDb,
     path: PagePath,
+    editmode: bool,
 }
 
 impl App {
@@ -53,11 +55,7 @@ impl Widget for &mut App {
                 Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
                 OpenNewJournal => {
                     let now = LocalDateTime::now();
-
-                    self.open_page(
-                        PagePath::from_static("journal").join(now.date().iso().to_string()),
-                    )
-                    .unwrap();
+                    self.path = PagePath::from_static("journal").join(now.date().iso().to_string());
                 }
             }
         }
@@ -68,6 +66,14 @@ impl Widget for &mut App {
 
 impl App {
     fn show_page(&mut self, ui: &mut Ui) -> Response {
-        Ok(())
+        use Page::*;
+
+        match self.pagedb.open(self.path.clone()) {
+            Ok(ReadOnly(text)) => Viewer::new(&mut self.cmcache, text).ui(ui),
+            Ok(ReadWrite(text)) => {
+                TextFrame::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)
+            }
+            Err(NonexistentPage) => todo!(),
+        }
     }
 }

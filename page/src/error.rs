@@ -27,6 +27,8 @@ pub enum InvalidPath {
     EmptySegment,
     #[error("disallowed leading/trailing whitespace in a segment")]
     ForbiddenWhitespace,
+    #[error("missing required whitespace around the separator")]
+    MissingWhitespace,
 }
 
 aliri_braid::from_infallible!(InvalidPath);

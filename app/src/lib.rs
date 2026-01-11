@@ -4,7 +4,6 @@
 mod app;
 mod commandkey;
 mod dbgexpr;
-mod pagewidget;
 mod run;
 mod textframe;
 mod viewer;
