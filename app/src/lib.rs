@@ -2,10 +2,10 @@
 #![allow(unused_imports)]
 
 mod app;
+mod commandkey;
 mod dbgexpr;
-mod pagewidget;
+mod modaleditor;
 mod run;
-mod textframe;
 mod viewer;
 
 pub mod cliopts;

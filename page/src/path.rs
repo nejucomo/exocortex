@@ -11,22 +11,25 @@ const SEPARATOR_CHAR: char = '>';
 #[braid(normalizer)]
 pub struct PagePath;
 
+impl Default for PagePath {
+    fn default() -> Self {
+        Self::from_static("help > welcome")
+    }
+}
+
 impl Validator for PagePath {
     type Error = InvalidPath;
 
     fn validate(raw: &str) -> Result<(), Self::Error> {
         use InvalidPath::*;
 
-        for part in raw.split(SEPARATOR_CHAR) {
+        for part in raw.split(SEPARATOR) {
             if part.is_empty() {
                 return Err(EmptySegment);
-            } else if part
-                .strip_prefix(' ')
-                .and_then(|s| s.strip_suffix(' '))
-                .filter(|&s| s.trim() == s)
-                .is_none()
-            {
+            } else if part.trim() != part {
                 return Err(ForbiddenWhitespace);
+            } else if part.find(SEPARATOR_CHAR).is_some() {
+                return Err(MissingWhitespace);
             }
         }
         Ok(())
@@ -43,6 +46,33 @@ impl Normalizer for PagePath {
     }
 }
 
+impl PagePath {
+    pub fn try_push<S>(&mut self, seg: S) -> Result<(), InvalidPath>
+    where
+        S: AsRef<str>,
+    {
+        let normcow = Self::normalize(seg.as_ref())?;
+        self.0.push_str(SEPARATOR);
+        self.0.push_str(&normcow);
+        Ok(())
+    }
+
+    pub fn push<S>(&mut self, seg: S)
+    where
+        S: AsRef<str>,
+    {
+        self.try_push(seg).unwrap();
+    }
+
+    pub fn join<S>(mut self, seg: S) -> Self
+    where
+        S: AsRef<str>,
+    {
+        self.push(seg);
+        self
+    }
+}
+
 impl PagePathRef {
     pub fn to_path(&self) -> PathBuf {
         let mut pb = PathBuf::default();
@@ -53,10 +83,9 @@ impl PagePathRef {
         pb
     }
 
-    pub fn split_first(&self) -> (&str, Option<Cow<'_, PagePathRef>>) {
+    pub fn split_first(&self) -> (&str, Option<&PagePathRef>) {
         if let Some((seg, suffix)) = self.0.split_once(SEPARATOR) {
-            let suffix =
-                Self::from_str(suffix).expect("This should always be valid due to validation.");
+            let suffix = Self::from_normalized_str(suffix).expect("This should always be valid");
             (seg, Some(suffix))
         } else {
             (&self.0, None)

@@ -8,6 +8,7 @@ edition = "2024"
 [workspace.dependencies]
 aliri_braid = "0.4.0"
 clap = { version = "4.5.54", features = ["derive"] }
+datetime = "0.5.2"
 derive-new = "0.7.0"
 derive_more = "2.1.1"
 eframe = "0.33"
@@ -20,4 +21,5 @@ extension-traits = "2.0.1"
 include_dir = "0.7.4"
 log = "0.4.29"
 logging-options = "0.1.0"
+strum = "0.27"
 thiserror = "2.0.17"

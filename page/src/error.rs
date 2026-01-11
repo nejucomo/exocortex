@@ -15,8 +15,8 @@ pub struct PageError {
 pub enum PageErrorReason {
     #[error(transparent)]
     InvalidPath(InvalidPath),
-    #[error("no page found")]
-    Nonexistent,
+    #[error(transparent)]
+    Nonexistent(NonexistentPage),
     #[error("the page contained malformed utf8")]
     MalformedUtf8,
 }
@@ -27,6 +27,12 @@ pub enum InvalidPath {
     EmptySegment,
     #[error("disallowed leading/trailing whitespace in a segment")]
     ForbiddenWhitespace,
+    #[error("missing required whitespace around the separator")]
+    MissingWhitespace,
 }
 
 aliri_braid::from_infallible!(InvalidPath);
+
+#[derive(Debug, Error)]
+#[error("no page found")]
+pub struct NonexistentPage;

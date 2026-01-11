@@ -1,16 +1,24 @@
+use datetime::convenience::Today as _;
+use datetime::{ISO as _, LocalDate, LocalDateTime};
 use eframe::egui::{
     CentralPanel, Context, Key, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_page::{Page, PagePath};
+use exocortex_page::error::{NonexistentPage, PageError};
+use exocortex_page::{Page, PageDb, PagePath};
+use exocortex_squeeze_frame::UiExt as _;
 
-use crate::pagewidget::PageWidget as _;
+use crate::commandkey::CommandKey;
+use crate::modaleditor::ModalEditor;
+use crate::viewer::Viewer;
 
+#[derive(Debug, Default)]
 pub(crate) struct App {
     cmcache: CommonMarkCache,
+    pagedb: PageDb,
     path: PagePath,
-    page: Page,
+    editmode: bool,
 }
 
 impl App {
@@ -18,25 +26,12 @@ impl App {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {
-                viewport: ViewportBuilder::default().with_fullscreen(true),
+                viewport: ViewportBuilder::default().with_maximized(true),
                 persist_window: false,
                 ..Default::default()
             },
             Box::new(|_cc| Ok(Box::new(Self::default()))),
         )
-    }
-}
-
-impl Default for App {
-    fn default() -> Self {
-        let cmcache = CommonMarkCache::default();
-        let path = PagePath::from_static("help > welcome");
-        let page = Page::open_path(&path).unwrap();
-        Self {
-            cmcache,
-            path,
-            page,
-        }
     }
 }
 
@@ -52,24 +47,35 @@ impl Widget for &mut App {
             ui.label(RichText::new(self.path.as_str()).italics());
         });
 
-        let resp = self.page.show_page(ui, &mut self.cmcache);
+        let resp = ui.within_squeeze_frame(|ui| self.show_page(ui)).response;
 
-        if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
-            ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+        if let Some(cmdkey) = CommandKey::get(ui) {
+            use CommandKey::*;
+
+            match cmdkey {
+                Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
+                OpenNewJournal => {
+                    let now = LocalDateTime::now();
+                    self.path = PagePath::from_static("journal").join(now.date().iso().to_string());
+                }
+            }
         }
 
-        // let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
-
-        // ui.input(|i| {
-        //     if self.textframe.editmode {
-        //         if i.key_pressed(Key::Escape) {
-        //             self.textframe.editmode = false;
-        //         }
-        //     } else if i.key_pressed(Key::I) {
-        //         self.textframe.editmode = true;
-        //     }
-        // });
-
         resp
+    }
+}
+
+impl App {
+    fn show_page(&mut self, ui: &mut Ui) -> Response {
+        use Page::*;
+
+        // TODO: Don't clone every frame!
+        match self.pagedb.access(self.path.clone()) {
+            Ok(ReadOnly(text)) => Viewer::new(&mut self.cmcache, text).ui(ui),
+            Ok(ReadWrite(text)) => {
+                ModalEditor::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)
+            }
+            Err(NonexistentPage) => todo!(),
+        }
     }
 }
