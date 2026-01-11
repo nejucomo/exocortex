@@ -1,7 +1,7 @@
 #![deny(unsafe_code)]
 
 use egui::epaint::MarginF32;
-use egui::{Frame, InnerResponse, TextStyle, Ui};
+use egui::{Frame, InnerResponse, Sense, TextStyle, Ui, UiBuilder};
 use extension_traits::extension;
 
 #[extension(pub trait UiExt)]
@@ -23,8 +23,12 @@ impl Ui {
             .squeezed_outer_margin(self)
             .inner_margin(margin(self))
             .show(self, |ui| {
-                ui.set_min_size(ui.available_size());
-                f(ui)
+                let avail = ui.available_size();
+                let (rect, _resp) = ui.allocate_exact_size(avail, Sense::hover());
+
+                let mut child_ui = ui.new_child(UiBuilder::new().max_rect(rect));
+                child_ui.set_min_size(child_ui.available_size());
+                f(&mut child_ui)
             })
     }
 }
