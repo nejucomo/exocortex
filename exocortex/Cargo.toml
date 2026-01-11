@@ -1,6 +1,7 @@
 [package]
 name = "exocortex"
-version = "0.1.0"
+description = "placeholder for a journaling/productivity app"
+version = "0.0.1"
 edition = "2024"
 
 [dependencies]
