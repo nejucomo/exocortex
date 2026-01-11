@@ -30,7 +30,7 @@ impl App {
 impl Default for App {
     fn default() -> Self {
         let cmcache = CommonMarkCache::default();
-        let path = PagePath::from_static("help>welcome");
+        let path = PagePath::from_static("help > welcome");
         let page = Page::open_path(&path).unwrap();
         Self {
             cmcache,

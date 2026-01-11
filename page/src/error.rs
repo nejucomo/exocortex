@@ -11,8 +11,6 @@ pub struct PageError {
     pub reason: PageErrorReason,
 }
 
-aliri_braid::from_infallible!(PageError);
-
 #[derive(Debug, Error, From)]
 pub enum PageErrorReason {
     #[error(transparent)]
@@ -30,3 +28,5 @@ pub enum InvalidPath {
     #[error("disallowed leading/trailing whitespace in a segment")]
     ForbiddenWhitespace,
 }
+
+aliri_braid::from_infallible!(InvalidPath);
