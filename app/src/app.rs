@@ -5,6 +5,7 @@ use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_page::{Page, PagePath};
 
+use crate::commandkey::CommandKey;
 use crate::pagewidget::PageWidget as _;
 
 pub(crate) struct App {
@@ -54,21 +55,13 @@ impl Widget for &mut App {
 
         let resp = self.page.show_page(ui, &mut self.cmcache);
 
-        if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
-            ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+        if let Some(cmdkey) = CommandKey::get(ui) {
+            use CommandKey::*;
+
+            match cmdkey {
+                Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
+            }
         }
-
-        // let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
-
-        // ui.input(|i| {
-        //     if self.textframe.editmode {
-        //         if i.key_pressed(Key::Escape) {
-        //             self.textframe.editmode = false;
-        //         }
-        //     } else if i.key_pressed(Key::I) {
-        //         self.textframe.editmode = true;
-        //     }
-        // });
 
         resp
     }

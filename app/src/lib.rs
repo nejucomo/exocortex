@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 
 mod app;
+mod commandkey;
 mod dbgexpr;
 mod pagewidget;
 mod run;
