@@ -2,6 +2,8 @@
 name = "exocortex"
 description = "placeholder for a journaling/productivity app"
 version = "0.0.1"
+homepage = "https://github.com/nejucomo/exocortex"
+license = "MIT"
 edition = "2024"
 
 [dependencies]
