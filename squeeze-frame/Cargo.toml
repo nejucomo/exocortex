@@ -1,0 +1,8 @@
+[package]
+edition.workspace = true
+name = "exocortex-squeeze-frame"
+version = "0.1.0"
+
+[dependencies]
+egui.workspace = true
+extension-traits.workspace = true

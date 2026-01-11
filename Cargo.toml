@@ -1,5 +1,5 @@
 [workspace]
-members = ["app", "page"]
+members = ["app", "squeeze-frame", "page"]
 resolver = "3"
 
 [workspace.package]
@@ -11,9 +11,12 @@ clap = { version = "4.5.54", features = ["derive"] }
 derive-new = "0.7.0"
 derive_more = "2.1.1"
 eframe = "0.33"
+egui = "0.33"
 egui_commonmark = "0.22"
 env_logger = "0.11.8"
 exocortex-page = { version = "0.1.0", path = "page" }
+exocortex-squeeze-frame = { version = "0.1.0", path = "squeeze-frame" }
+extension-traits = "2.0.1"
 include_dir = "0.7.4"
 log = "0.4.29"
 logging-options = "0.1.0"

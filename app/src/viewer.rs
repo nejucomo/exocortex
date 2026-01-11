@@ -2,6 +2,7 @@ use derive_new::new;
 use eframe::egui::{Frame, Margin, Response, TextStyle, Ui, Widget};
 use eframe::epaint::MarginF32;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use exocortex_squeeze_frame::FrameExt as _;
 
 #[derive(new)]
 pub(super) struct Viewer<'a> {
@@ -21,7 +22,7 @@ impl<'a> Widget for Viewer<'a> {
             })
             .fill(visuals.panel_fill)
             .corner_radius(visuals.widgets.active.corner_radius)
-            .outer_margin(0)
+            .squeezed_outer_margin(ui)
             .inner_margin(margin(ui))
             .show(ui, |ui| {
                 ui.set_min_size(ui.available_size());
