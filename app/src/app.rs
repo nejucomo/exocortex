@@ -7,6 +7,7 @@ use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_page::error::{NonexistentPage, PageError};
 use exocortex_page::{Page, PageDb, PagePath};
+use exocortex_squeeze_frame::UiExt as _;
 
 use crate::commandkey::CommandKey;
 use crate::textframe::TextFrame;
@@ -46,7 +47,7 @@ impl Widget for &mut App {
             ui.label(RichText::new(self.path.as_str()).italics());
         });
 
-        let resp = self.show_page(ui);
+        let resp = ui.within_squeeze_frame(|ui| self.show_page(ui)).response;
 
         if let Some(cmdkey) = CommandKey::get(ui) {
             use CommandKey::*;
