@@ -70,7 +70,7 @@ impl App {
         use Page::*;
 
         // TODO: Don't clone every frame!
-        match self.pagedb.open(self.path.clone()) {
+        match self.pagedb.access(self.path.clone()) {
             Ok(ReadOnly(text)) => Viewer::new(&mut self.cmcache, text).ui(ui),
             Ok(ReadWrite(text)) => {
                 ModalEditor::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)

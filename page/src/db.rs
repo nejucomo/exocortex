@@ -15,7 +15,7 @@ pub struct PageDb {
 }
 
 impl PageDb {
-    pub fn open(&mut self, path: PagePath) -> Result<Page<'_>, NonexistentPage> {
+    pub fn access(&mut self, path: PagePath) -> Result<Page<'_>, NonexistentPage> {
         use PathPrefix::*;
 
         #[derive(EnumString)]
@@ -28,15 +28,15 @@ impl PageDb {
         let (prefix, _) = path.split_first();
         let p: PathPrefix = prefix.parse().map_err(|_| NonexistentPage)?;
         match p {
-            Help => open_help(&path).map(ReadOnly),
+            Help => access_help(&path).map(ReadOnly),
             Journal => Ok(ReadWrite(self.pages.entry(path).or_default())),
         }
     }
 }
 
-fn open_help(path: &PagePathRef) -> Result<&'static str, NonexistentPage> {
+fn access_help(path: &PagePathRef) -> Result<&'static str, NonexistentPage> {
     let path = path.to_path();
-    log::debug!("open_help({:?})", path.display());
+    // log::debug!("open_help({:?})", path.display());
     HELP_DOCS
         .get_file(path)
         .map(|f| f.contents_utf8().expect("static help doc is non-utf8"))
