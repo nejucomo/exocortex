@@ -85,7 +85,6 @@ impl PagePathRef {
 
     pub fn split_first(&self) -> (&str, Option<&PagePathRef>) {
         if let Some((seg, suffix)) = self.0.split_once(SEPARATOR) {
-            dbg!(&self.0, seg, suffix);
             let suffix = Self::from_normalized_str(suffix).expect("This should always be valid");
             (seg, Some(suffix))
         } else {

@@ -18,6 +18,18 @@ pub(crate) struct TextFrame<'a> {
 
 impl<'a> Widget for TextFrame<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
+        ui.input(|i| {
+            use eframe::egui::Key::{Escape, I};
+
+            if *self.editmode {
+                if i.key_pressed(Escape) {
+                    *self.editmode = false;
+                }
+            } else if i.key_pressed(I) {
+                *self.editmode = true;
+            }
+        });
+
         let avail = ui.available_size();
         let (rect, resp) = ui.allocate_exact_size(avail, Sense::hover());
 

@@ -68,6 +68,7 @@ impl App {
     fn show_page(&mut self, ui: &mut Ui) -> Response {
         use Page::*;
 
+        // TODO: Don't clone every frame!
         match self.pagedb.open(self.path.clone()) {
             Ok(ReadOnly(text)) => Viewer::new(&mut self.cmcache, text).ui(ui),
             Ok(ReadWrite(text)) => {
