@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 clap.workspace = true
+datetime.workspace = true
 derive-new.workspace = true
 derive_more.workspace = true
 eframe.workspace = true

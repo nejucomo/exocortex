@@ -1,8 +1,11 @@
+use datetime::convenience::Today as _;
+use datetime::{ISO as _, LocalDate, LocalDateTime};
 use eframe::egui::{
     CentralPanel, Context, Key, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use exocortex_page::error::PageError;
 use exocortex_page::{Page, PagePath};
 
 use crate::commandkey::CommandKey;
@@ -60,9 +63,28 @@ impl Widget for &mut App {
 
             match cmdkey {
                 Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
+                OpenNewJournal => {
+                    let now = LocalDateTime::now();
+
+                    self.open_page(
+                        PagePath::from_static("journal").join(now.date().iso().to_string()),
+                    )
+                    .unwrap();
+                }
             }
         }
 
         resp
+    }
+}
+
+impl App {
+    fn open_page(&mut self, path: PagePath) -> Result<(), PageError> {
+        let page = Page::open_path(&path)?;
+
+        self.path = path;
+        self.page = page;
+
+        Ok(())
     }
 }

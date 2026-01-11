@@ -6,13 +6,14 @@ use self::CommandKey::*;
 #[derive(Debug, From)]
 pub(crate) enum CommandKey {
     Viewport(ViewportCommand),
+    OpenNewJournal,
 }
 
 impl CommandKey {
     pub(crate) fn get(ui: &Ui) -> Option<Self> {
         ui.input(|i| {
             use ViewportCommand::{Close, Fullscreen};
-            use eframe::egui::Key::{Escape, F};
+            use eframe::egui::Key::{Escape, F, J};
 
             if !i.modifiers.command {
                 None
@@ -22,6 +23,8 @@ impl CommandKey {
                 Some(Viewport(Fullscreen(
                     !i.viewport().fullscreen.unwrap_or_default(),
                 )))
+            } else if i.key_pressed(J) {
+                Some(OpenNewJournal)
             } else {
                 None
             }

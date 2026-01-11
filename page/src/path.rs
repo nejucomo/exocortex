@@ -43,6 +43,33 @@ impl Normalizer for PagePath {
     }
 }
 
+impl PagePath {
+    pub fn try_push<S>(&mut self, seg: S) -> Result<(), InvalidPath>
+    where
+        S: AsRef<str>,
+    {
+        let normcow = Self::normalize(seg.as_ref())?;
+        self.0.push_str(SEPARATOR);
+        self.0.push_str(&normcow);
+        Ok(())
+    }
+
+    pub fn push<S>(&mut self, seg: S)
+    where
+        S: AsRef<str>,
+    {
+        self.try_push(seg).unwrap();
+    }
+
+    pub fn join<S>(mut self, seg: S) -> Self
+    where
+        S: AsRef<str>,
+    {
+        self.push(seg);
+        self
+    }
+}
+
 impl PagePathRef {
     pub fn to_path(&self) -> PathBuf {
         let mut pb = PathBuf::default();
