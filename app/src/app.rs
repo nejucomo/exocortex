@@ -52,13 +52,13 @@ impl Widget for &mut App {
             ui.label(RichText::new(self.path.as_str()).italics());
         });
 
-        self.page.show_page(ui, &mut self.cmcache)
+        let resp = self.page.show_page(ui, &mut self.cmcache);
+
+        if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
+            ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+        }
 
         // let resp = ui.add_sized(ui.available_size(), &mut self.textframe);
-
-        // if ui.input(|i| i.key_pressed(Key::Escape) && i.modifiers.command) {
-        //     ui.ctx().send_viewport_cmd(ViewportCommand::Close);
-        // }
 
         // ui.input(|i| {
         //     if self.textframe.editmode {
@@ -70,6 +70,6 @@ impl Widget for &mut App {
         //     }
         // });
 
-        // resp
+        resp
     }
 }
