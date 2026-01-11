@@ -30,16 +30,10 @@ impl<'a> Widget for ModalEditor<'a> {
             }
         });
 
-        let avail = ui.available_size();
-        let (rect, resp) = ui.allocate_exact_size(avail, Sense::hover());
-
-        let mut child_ui = ui.new_child(UiBuilder::new().max_rect(rect));
         if *self.editmode {
-            child_ui.add(Editor::new(self.text));
+            ui.add(Editor::new(self.text))
         } else {
-            child_ui.add(Viewer::new(self.cmcache, self.text));
+            ui.add(Viewer::new(self.cmcache, self.text))
         }
-
-        resp
     }
 }

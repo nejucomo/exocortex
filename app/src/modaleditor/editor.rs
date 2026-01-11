@@ -8,7 +8,8 @@ pub(crate) struct Editor<'a> {
 
 impl<'a> Widget for Editor<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
-        let resp = ui.add(
+        let resp = ui.add_sized(
+            ui.available_size(),
             TextEdit::multiline(self.textmut)
                 .font(TextStyle::Body)
                 .lock_focus(true)
