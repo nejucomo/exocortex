@@ -5,6 +5,8 @@ function main
 {
   unstaged_is_dirty && fail 'Refusing to proceed with unstaged changes.'
 
+  # Do this prior to auto-fmt-tomls to roll in both changes:
+  v cargo shear --fix
   auto-fmt-tomls
 
   gauntlet
