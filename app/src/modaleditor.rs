@@ -1,7 +1,7 @@
 mod editor;
 
 use derive_new::new;
-use eframe::egui::{Response, Sense, Ui, UiBuilder, Widget};
+use eframe::egui::{Response, Ui, Widget};
 use egui_commonmark::CommonMarkCache;
 
 use editor::Editor;

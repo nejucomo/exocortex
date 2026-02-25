@@ -1,20 +1,21 @@
-use datetime::convenience::Today as _;
-use datetime::{ISO as _, LocalDate, LocalDateTime};
+use datetime::{ISO as _, LocalDateTime};
 use eframe::egui::{
-    CentralPanel, Context, Key, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
+    CentralPanel, Context, Event, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
-use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_page::error::{NonexistentPage, PageError};
+use egui_commonmark::CommonMarkCache;
+use exocortex_keybinding::ShortcutState;
+use exocortex_page::error::NonexistentPage;
 use exocortex_page::{Page, PageDb, PagePath};
 use exocortex_squeeze_frame::UiExt as _;
 
-use crate::commandkey::CommandKey;
+use crate::command::Command;
 use crate::modaleditor::ModalEditor;
 use crate::viewer::Viewer;
 
 #[derive(Debug, Default)]
 pub(crate) struct App {
+    kbshortcuts: ShortcutState<Command>,
     cmcache: CommonMarkCache,
     pagedb: PageDb,
     path: PagePath,
@@ -49,17 +50,7 @@ impl Widget for &mut App {
 
         let resp = ui.within_squeeze_frame(|ui| self.show_page(ui)).response;
 
-        if let Some(cmdkey) = CommandKey::get(ui) {
-            use CommandKey::*;
-
-            match cmdkey {
-                Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
-                OpenNewJournal => {
-                    let now = LocalDateTime::now();
-                    self.path = PagePath::from_static("journal").join(now.date().iso().to_string());
-                }
-            }
-        }
+        self.handle_events(ui);
 
         resp
     }
@@ -76,6 +67,60 @@ impl App {
                 ModalEditor::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)
             }
             Err(NonexistentPage) => todo!(),
+        }
+    }
+
+    fn handle_events(&mut self, ui: &mut Ui) {
+        // TODO: Is there a better way to do this besides clone or hazardous recursive locking?
+        for event in ui.input(|input| input.events.clone()) {
+            self.handle_event(ui, event);
+        }
+    }
+
+    fn handle_event(&mut self, ui: &mut Ui, event: Event) {
+        use eframe::egui::Event::Key;
+        use exocortex_keybinding::HandleKey::*;
+
+        match event {
+            Key {
+                key,
+                modifiers,
+                pressed: true,
+                ..
+            } => match self.kbshortcuts.handle_key((key, modifiers)) {
+                Ok(hk) => match hk {
+                    Pending => {
+                        // ok...
+                    }
+                    Command(cmd) => self.handle_command(ui, cmd),
+                    Unhandled(chord) => {
+                        dbg!("{chord:#?}");
+                        let _ = chord;
+                    }
+                },
+                Err(_) => todo!(),
+            },
+
+            _ => {
+                // Ignored
+            }
+        }
+    }
+
+    fn handle_command(&mut self, ui: &mut Ui, cmd: Command) {
+        use Command::*;
+        use ViewportCommand::Fullscreen;
+
+        match cmd {
+            Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
+            ViewportToggleFullscreen => {
+                let fs = ui.input(|i| i.viewport().fullscreen.unwrap_or_default());
+                ui.ctx().send_viewport_cmd(Fullscreen(!fs));
+            }
+            OpenNewJournal => {
+                let now = LocalDateTime::now();
+                self.path = PagePath::from_static("journal").join(now.date().iso().to_string());
+            }
         }
     }
 }

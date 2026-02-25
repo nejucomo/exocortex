@@ -1,0 +1,8 @@
+[package]
+edition.workspace = true
+name = "exocortex-keybinding"
+version = "0.1.0"
+
+[dependencies]
+egui.workspace = true
+thiserror.workspace = true
