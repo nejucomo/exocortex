@@ -4,6 +4,7 @@
 mod chord;
 mod keycmd;
 mod keymap;
+mod node;
 mod state;
 
 pub use self::chord::KeyChord;

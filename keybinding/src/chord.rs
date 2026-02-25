@@ -1,8 +1,7 @@
-use derive_more::From;
 use egui::{Key, Modifiers};
 
 /// Equivalent to [egui::KeyboardShortcut] with additional [From]/[Into] impls
-#[derive(Copy, Clone, Debug, From, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct KeyChord {
     key: Key,
     modifiers: Modifiers,
@@ -13,6 +12,18 @@ impl From<Key> for KeyChord {
         KeyChord {
             key,
             modifiers: Modifiers::default(),
+        }
+    }
+}
+
+impl From<(Key, Modifiers)> for KeyChord {
+    fn from((key, modifiers): (Key, Modifiers)) -> Self {
+        KeyChord {
+            key,
+            modifiers: Modifiers {
+                mac_cmd: false,
+                ..modifiers
+            },
         }
     }
 }

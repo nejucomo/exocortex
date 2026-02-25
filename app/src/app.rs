@@ -93,7 +93,10 @@ impl App {
                         // ok...
                     }
                     Command(cmd) => self.handle_command(ui, cmd),
-                    Unhandled(chord) => todo!("{chord:#?}"),
+                    Unhandled(chord) => {
+                        dbg!("{chord:#?}");
+                        let _ = chord;
+                    }
                 },
                 Err(_) => todo!(),
             },

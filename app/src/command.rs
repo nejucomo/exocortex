@@ -19,5 +19,6 @@ impl KeyCommand for Command {
         scs.define_command([(Escape, Modifiers::COMMAND)], Viewport(Close));
         scs.define_command([(F, Modifiers::COMMAND)], ViewportToggleFullscreen);
         scs.define_command([(J, Modifiers::COMMAND)], OpenNewJournal);
+        dbg!(scs);
     }
 }

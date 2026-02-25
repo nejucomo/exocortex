@@ -1,6 +1,7 @@
 use thiserror::Error;
 
-use crate::keymap::{KeyMap, KeyMapNode};
+use crate::keymap::KeyMap;
+use crate::node::Node;
 use crate::{KeyChord, KeyCommand};
 
 /// Manage tracking keymap command input sequences
@@ -86,8 +87,8 @@ where
         match current.match_key(key) {
             None if top_level => Ok(Unhandled(key)),
             None => Err(UnknownSequence),
-            Some(KeyMapNode::Command(cmd)) => Ok(Command(cmd)),
-            Some(KeyMapNode::Submap(submap)) => {
+            Some(Node::Command(cmd)) => Ok(Command(cmd)),
+            Some(Node::Submap(submap)) => {
                 self.current = Some(submap.clone());
                 Ok(Pending)
             }
