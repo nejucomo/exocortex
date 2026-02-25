@@ -1267,6 +1267,10 @@ dependencies = [
 [[package]]
 name = "exocortex-keybinding"
 version = "0.1.0"
+dependencies = [
+ "egui",
+ "thiserror 2.0.17",
+]
 
 [[package]]
 name = "exocortex-page"

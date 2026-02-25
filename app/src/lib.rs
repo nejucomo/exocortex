@@ -1,5 +1,4 @@
 #![deny(unsafe_code)]
-#![allow(unused_imports)]
 
 mod app;
 mod commandkey;
