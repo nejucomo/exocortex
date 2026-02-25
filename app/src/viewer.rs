@@ -1,6 +1,5 @@
 use derive_new::new;
-use eframe::egui::{Frame, Margin, Response, TextStyle, Ui, Widget};
-use eframe::epaint::MarginF32;
+use eframe::egui::{Response, Ui, Widget};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
 #[derive(new)]

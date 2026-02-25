@@ -2,11 +2,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use egui::KeyboardShortcut;
+use crate::KeyChord;
 
 /// A mapping from key sequences to app commands `C`
 #[derive(Clone, Debug)]
-pub struct KeyMap<C: Clone>(Rc<RefCell<HashMap<KeyboardShortcut, KeyMapNode<C>>>>);
+pub struct KeyMap<C: Clone>(Rc<RefCell<HashMap<KeyChord, KeyMapNode<C>>>>);
 
 #[derive(Clone, Debug)]
 pub(crate) enum KeyMapNode<C: Clone> {
@@ -30,16 +30,16 @@ where
     /// Insert a command, returning the number of prior keybindings overwritten
     pub(crate) fn define_command<I>(&mut self, keys: I, command: C) -> usize
     where
-        I: IntoIterator<Item = KeyboardShortcut>,
+        I: IntoIterator<Item = KeyChord>,
     {
         let mut keys = keys.into_iter();
         let key = keys.next().unwrap();
         self.define_command_inner(key, keys, command)
     }
 
-    fn define_command_inner<I>(&mut self, key: KeyboardShortcut, keys: I, command: C) -> usize
+    fn define_command_inner<I>(&mut self, key: KeyChord, keys: I, command: C) -> usize
     where
-        I: Iterator<Item = KeyboardShortcut>,
+        I: Iterator<Item = KeyChord>,
     {
         let mut hm = self.0.borrow_mut();
 
@@ -52,7 +52,7 @@ where
     }
 
     /// Attempt to match `key`
-    pub(crate) fn match_key(&self, key: KeyboardShortcut) -> Option<KeyMapNode<C>> {
+    pub(crate) fn match_key(&self, key: KeyChord) -> Option<KeyMapNode<C>> {
         self.0.borrow().get(&key).cloned()
     }
 }
@@ -63,7 +63,7 @@ where
 {
     fn new<I>(mut keys: I, command: C) -> Self
     where
-        I: Iterator<Item = KeyboardShortcut>,
+        I: Iterator<Item = KeyChord>,
     {
         use KeyMapNode::*;
 
@@ -79,7 +79,7 @@ where
 
     fn define_command<I>(&mut self, mut keys: I, command: C) -> usize
     where
-        I: Iterator<Item = KeyboardShortcut>,
+        I: Iterator<Item = KeyChord>,
     {
         use KeyMapNode::*;
 

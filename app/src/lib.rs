@@ -1,7 +1,7 @@
 #![deny(unsafe_code)]
 
 mod app;
-mod commandkey;
+mod command;
 mod dbgexpr;
 mod modaleditor;
 mod run;

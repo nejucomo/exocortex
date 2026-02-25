@@ -1258,6 +1258,7 @@ dependencies = [
  "eframe",
  "egui_commonmark",
  "env_logger",
+ "exocortex-keybinding",
  "exocortex-page",
  "exocortex-squeeze-frame",
  "log",
@@ -1268,6 +1269,7 @@ dependencies = [
 name = "exocortex-keybinding"
 version = "0.1.0"
 dependencies = [
+ "derive_more",
  "egui",
  "thiserror 2.0.17",
 ]

@@ -11,6 +11,7 @@ derive_more.workspace = true
 eframe.workspace = true
 egui_commonmark.workspace = true
 env_logger.workspace = true
+exocortex-keybinding.workspace = true
 exocortex-page.workspace = true
 exocortex-squeeze-frame.workspace = true
 log.workspace = true
