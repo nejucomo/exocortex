@@ -7,14 +7,25 @@ use exocortex_damo_mem::MemProvider;
 use exocortex_keybinding::ShortcutState;
 
 use crate::command::Command;
+use crate::prepop::open_or_prepopulate;
 
-#[allow(dead_code)]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(crate) struct App {
     kbshortcuts: ShortcutState<Command>,
     cmcache: CommonMarkCache,
     damo: MemProvider,
     editmode: bool,
+}
+
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            damo: open_or_prepopulate(()).unwrap(),
+            kbshortcuts: ShortcutState::default(),
+            cmcache: CommonMarkCache::default(),
+            editmode: false,
+        }
+    }
 }
 
 impl App {

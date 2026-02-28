@@ -6,10 +6,11 @@ version = "0.1.0"
 [dependencies]
 clap.workspace = true
 derive-new.workspace = true
-derive_more.workspace = true
+derive_more = { workspace = true, features = ["from"] }
 eframe.workspace = true
 egui_commonmark.workspace = true
 env_logger.workspace = true
+exocortex-damo.workspace = true
 exocortex-damo-mem.workspace = true
 exocortex-keybinding.workspace = true
 log.workspace = true

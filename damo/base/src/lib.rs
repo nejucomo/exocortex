@@ -6,12 +6,15 @@ use time::OffsetDateTime;
 /// A data model instance
 ///
 /// The operations here aim to correspond to minimally human-meaningful actions. For example, this interface updates a Card's synopsis at once, so it doesn't include the detail of editing the synopsis (key strokes, voice input, etc...).
-pub trait Provider: ProviderErrors {
+pub trait Provider<A>: Sized + ProviderErrors {
+    /// Open the provider; on success `(self, b)` where `b` signifies if a new instance was created
+    fn open(args: A) -> Result<(Self, bool), Self::UpdateError>;
+
     /// A identifier for cards
     type CardId: Identifier;
 
     /// A card handle
-    type Card: Card;
+    type Card: Card<UpdateError = Self::UpdateError, QueryError = Self::QueryError>;
 
     // A handle to a stack
     // type Stack: Stack;

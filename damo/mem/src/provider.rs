@@ -24,7 +24,11 @@ impl ProviderErrors for MemProvider {
     type QueryError = UnknownId;
 }
 
-impl Provider for MemProvider {
+impl Provider<()> for MemProvider {
+    fn open((): ()) -> Result<(Self, bool), Self::UpdateError> {
+        Ok((MemProvider::default(), true))
+    }
+
     type CardId = Id;
     type Card = MemCard;
 

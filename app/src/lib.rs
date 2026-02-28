@@ -4,6 +4,7 @@ mod app;
 mod command;
 mod dbgexpr;
 mod modaleditor;
+mod prepop;
 mod run;
 mod viewer;
 
