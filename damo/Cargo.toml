@@ -4,4 +4,4 @@ name = "exocortex-damo"
 version = "0.1.0"
 
 [dependencies]
-derive_more = { workspace = true, features = ["from", "into"] }
+derive-new.workspace = true

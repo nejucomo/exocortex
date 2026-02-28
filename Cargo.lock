@@ -1270,7 +1270,7 @@ dependencies = [
 name = "exocortex-damo"
 version = "0.1.0"
 dependencies = [
- "derive_more",
+ "derive-new",
 ]
 
 [[package]]
