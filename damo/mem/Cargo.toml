@@ -1,7 +1,7 @@
 [package]
+edition.workspace = true
 name = "exocortex-damo-mem"
 version = "0.1.0"
-edition.workspace = true
 
 [dependencies]
 exocortex-damo.workspace = true

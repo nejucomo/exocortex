@@ -24,9 +24,9 @@ impl ProviderErrors for MemProvider {
     type QueryError = UnknownId;
 }
 
-impl Provider<()> for MemProvider {
-    fn open((): ()) -> Result<(Self, bool), Self::UpdateError> {
-        Ok((MemProvider::default(), true))
+impl Provider for MemProvider {
+    fn is_empty(&self) -> bool {
+        self.nextid == 0
     }
 
     type CardId = Id;
@@ -36,6 +36,14 @@ impl Provider<()> for MemProvider {
         let id = self.alloc_id();
         self.cards.insert(id, MemCard::new());
         Ok(id)
+    }
+
+    fn prev_card(
+        &self,
+        optfrom: Option<Self::CardId>,
+    ) -> Result<Option<Self::CardId>, Self::QueryError> {
+        let id = optfrom.unwrap_or(self.nextid);
+        Ok(id.checked_sub(1))
     }
 
     fn open_card_ref(&self, id: Self::CardId) -> Result<&Self::Card, Self::QueryError> {

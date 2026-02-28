@@ -6,9 +6,9 @@ use time::OffsetDateTime;
 /// A data model instance
 ///
 /// The operations here aim to correspond to minimally human-meaningful actions. For example, this interface updates a Card's synopsis at once, so it doesn't include the detail of editing the synopsis (key strokes, voice input, etc...).
-pub trait Provider<A>: Sized + ProviderErrors {
-    /// Open the provider; on success `(self, b)` where `b` signifies if a new instance was created
-    fn open(args: A) -> Result<(Self, bool), Self::UpdateError>;
+pub trait Provider: Sized + ProviderErrors {
+    /// Whether or not this provider contains any state
+    fn is_empty(&self) -> bool;
 
     /// A identifier for cards
     type CardId: Identifier;
@@ -22,6 +22,12 @@ pub trait Provider<A>: Sized + ProviderErrors {
     /// Create a new blank card
     fn new_card(&mut self) -> Result<Self::CardId, Self::UpdateError>;
 
+    /// Return the card just prior to `optfrom`, or the most recent card if [None]
+    fn prev_card(
+        &self,
+        optfrom: Option<Self::CardId>,
+    ) -> Result<Option<Self::CardId>, Self::QueryError>;
+
     /// Open a card reference
     fn open_card_ref(&self, id: Self::CardId) -> Result<&Self::Card, Self::QueryError>;
 
@@ -32,9 +38,9 @@ pub trait Provider<A>: Sized + ProviderErrors {
 /// The base of [Provider] which unifies the errors across updates and queries
 pub trait ProviderErrors {
     /// The error type for updates
-    type UpdateError;
+    type UpdateError: std::error::Error;
     /// The error type for queries
-    type QueryError;
+    type QueryError: std::error::Error;
 }
 
 /// A card-specific sub-API

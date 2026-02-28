@@ -1,3 +1,3 @@
-fn main() -> eframe::Result<()> {
+fn main() -> color_eyre::eyre::Result<()> {
     exocortex::run()
 }

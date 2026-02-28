@@ -1,3 +1,4 @@
+use derive_new::new;
 use eframe::egui::{
     CentralPanel, Context, Event, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
@@ -7,29 +8,20 @@ use exocortex_damo_mem::MemProvider;
 use exocortex_keybinding::ShortcutState;
 
 use crate::command::Command;
-use crate::prepop::open_or_prepopulate;
+use crate::logview::LogView;
 
-#[derive(Debug)]
+#[derive(Debug, new)]
 pub(crate) struct App {
-    kbshortcuts: ShortcutState<Command>,
-    cmcache: CommonMarkCache,
     damo: MemProvider,
-    editmode: bool,
-}
 
-impl Default for App {
-    fn default() -> Self {
-        Self {
-            damo: open_or_prepopulate(()).unwrap(),
-            kbshortcuts: ShortcutState::default(),
-            cmcache: CommonMarkCache::default(),
-            editmode: false,
-        }
-    }
+    #[new(default)]
+    kbshortcuts: ShortcutState<Command>,
+    #[new(default)]
+    cmcache: CommonMarkCache,
 }
 
 impl App {
-    pub(crate) fn run() -> eframe::Result<()> {
+    pub(crate) fn run(damo: MemProvider) -> eframe::Result<()> {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {
@@ -37,7 +29,7 @@ impl App {
                 persist_window: false,
                 ..Default::default()
             },
-            Box::new(|_cc| Ok(Box::new(Self::default()))),
+            Box::new(|_cc| Ok(Box::new(Self::new(damo)))),
         )
     }
 }
@@ -50,13 +42,17 @@ impl eframe::App for App {
 
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
-        let resp = ui.vertical_centered(|ui| {
-            ui.label(RichText::new("exocortex").italics());
-        });
+        let mut resp = ui
+            .vertical_centered(|ui| {
+                ui.label(RichText::new("exocortex").italics());
+            })
+            .response;
+
+        resp |= ui.add(LogView::new(&self.damo, &mut self.cmcache));
 
         self.handle_events(ui);
 
-        resp.response
+        resp
     }
 }
 
