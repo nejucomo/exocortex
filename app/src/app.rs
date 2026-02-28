@@ -1,4 +1,3 @@
-use datetime::{ISO as _, LocalDateTime};
 use eframe::egui::{
     CentralPanel, Context, Event, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
@@ -8,6 +7,8 @@ use exocortex_keybinding::ShortcutState;
 use exocortex_page::error::NonexistentPage;
 use exocortex_page::{Page, PageDb, PagePath};
 use exocortex_squeeze_frame::UiExt as _;
+use time::OffsetDateTime;
+use time::format_description::well_known::Rfc3339;
 
 use crate::command::Command;
 use crate::modaleditor::ModalEditor;
@@ -118,8 +119,9 @@ impl App {
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
             OpenNewJournal => {
-                let now = LocalDateTime::now();
-                self.path = PagePath::from_static("journal").join(now.date().iso().to_string());
+                let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
+                let nowstr = now.format(&Rfc3339).unwrap();
+                self.path = PagePath::from_static("journal").join(nowstr);
             }
         }
     }
