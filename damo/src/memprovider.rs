@@ -1,30 +1,35 @@
+mod card;
+
 use std::collections::BTreeMap;
 
 use thiserror::Error;
+use time::OffsetDateTime;
 
-use crate::queries::GetSynopsis;
+use crate::queries::{GetSynopsis, GetTimeOfCreation};
 use crate::updates::SetSynopsis;
-use crate::{Id, Provider, ProviderBase, Query, Update};
+use crate::{Id, Provider, ProviderBase, Queryable, Update};
+
+use self::card::MemCard;
+
+#[derive(Debug, Error)]
+#[error("Unknown {:?}", .0)]
+pub struct UnknownId(Id);
 
 /// An ephemral [Provider] backed by runtime memory
 #[derive(Debug)]
 pub struct MemoryProvider {
     nextid: Id,
-    synopsis: BTreeMap<Id, String>,
+    cards: BTreeMap<Id, MemCard>,
 }
 
 impl Default for MemoryProvider {
     fn default() -> Self {
         Self {
             nextid: Id::from(0),
-            synopsis: BTreeMap::default(),
+            cards: BTreeMap::default(),
         }
     }
 }
-
-#[derive(Debug, Error)]
-#[error("Unknown {:?}", .0)]
-pub struct UnknownId(Id);
 
 impl ProviderBase for MemoryProvider {
     type UpdateError = UnknownId;
@@ -35,6 +40,8 @@ impl Provider for MemoryProvider {
     fn new_card(&mut self) -> Result<Id, Self::UpdateError> {
         let id = self.nextid;
         self.nextid = Id::new(self.nextid.into_u64() + 1);
+        let card = MemCard::new();
+        self.cards.insert(id, card);
         Ok(id)
     }
 }
@@ -42,19 +49,33 @@ impl Provider for MemoryProvider {
 impl<'a> Update<SetSynopsis<'a>> for MemoryProvider {
     fn update(&mut self, request: SetSynopsis<'a>) -> Result<(), Self::UpdateError> {
         let SetSynopsis { card, synopsis } = request;
-        self.synopsis.insert(card, synopsis.to_string());
+        let card = self.get_card_mut(card)?;
+        card.synopsis = synopsis.to_string();
         Ok(())
     }
 }
 
-impl<'a> Query<'a, GetSynopsis> for MemoryProvider {
-    type Answer = &'a str;
+impl Queryable<GetTimeOfCreation> for MemoryProvider {
+    fn query(
+        &self,
+        GetTimeOfCreation(id): GetTimeOfCreation,
+    ) -> Result<OffsetDateTime, Self::QueryError> {
+        self.get_card(id).map(|c| c.ctime)
+    }
+}
 
-    fn query(&'a self, query: GetSynopsis) -> Result<Self::Answer, Self::QueryError> {
-        let GetSynopsis(id) = query;
-        self.synopsis
-            .get(&id)
-            .map(String::as_str)
-            .ok_or(UnknownId(id))
+impl Queryable<GetSynopsis> for MemoryProvider {
+    fn query<'p>(&'p self, GetSynopsis(id): GetSynopsis) -> Result<&'p str, Self::QueryError> {
+        self.get_card(id).map(|c| c.synopsis.as_str())
+    }
+}
+
+impl MemoryProvider {
+    fn get_card(&self, id: Id) -> Result<&MemCard, UnknownId> {
+        self.cards.get(&id).ok_or(UnknownId(id))
+    }
+
+    fn get_card_mut(&mut self, id: Id) -> Result<&mut MemCard, UnknownId> {
+        self.cards.get_mut(&id).ok_or(UnknownId(id))
     }
 }

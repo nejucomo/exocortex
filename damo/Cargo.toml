@@ -7,3 +7,4 @@ version = "0.1.0"
 derive-new.workspace = true
 derive_more = { workspace = true, features = ["from", "into"] }
 thiserror.workspace = true
+time = { workspace = true, features = ["local-offset"] }

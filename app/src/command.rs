@@ -8,7 +8,7 @@ use self::Command::*;
 pub(crate) enum Command {
     Viewport(ViewportCommand),
     ViewportToggleFullscreen,
-    OpenNewJournal,
+    CreateNewCard,
 }
 
 impl KeyCommand for Command {
@@ -18,7 +18,6 @@ impl KeyCommand for Command {
 
         scs.define_command([(Escape, Modifiers::COMMAND)], Viewport(Close));
         scs.define_command([(F, Modifiers::COMMAND)], ViewportToggleFullscreen);
-        scs.define_command([(J, Modifiers::COMMAND)], OpenNewJournal);
         dbg!(scs);
     }
 }

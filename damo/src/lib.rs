@@ -13,5 +13,5 @@ pub mod updates;
 pub use self::id::Id;
 pub use self::memprovider::MemoryProvider;
 pub use self::provider::{Provider, ProviderBase};
-pub use self::query::Query;
+pub use self::query::{Query, Queryable};
 pub use self::update::Update;

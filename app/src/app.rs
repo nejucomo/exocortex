@@ -3,9 +3,8 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
+use exocortex_damo::MemoryProvider;
 use exocortex_keybinding::ShortcutState;
-use exocortex_page::error::NonexistentPage;
-use exocortex_page::{Page, PageDb, PagePath};
 use exocortex_squeeze_frame::UiExt as _;
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
@@ -18,8 +17,7 @@ use crate::viewer::Viewer;
 pub(crate) struct App {
     kbshortcuts: ShortcutState<Command>,
     cmcache: CommonMarkCache,
-    pagedb: PageDb,
-    path: PagePath,
+    damo: MemoryProvider,
     editmode: bool,
 }
 
@@ -45,11 +43,11 @@ impl eframe::App for App {
 
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
-        ui.vertical_centered(|ui| {
-            ui.label(RichText::new(self.path.as_str()).italics());
-        });
+        // ui.vertical_centered(|ui| {
+        //     ui.label(RichText::new(self.path.as_str()).italics());
+        // });
 
-        let resp = ui.within_squeeze_frame(|ui| self.show_page(ui)).response;
+        // let resp = ui.within_squeeze_frame(|ui| self.show_page(ui)).response;
 
         self.handle_events(ui);
 
@@ -58,19 +56,6 @@ impl Widget for &mut App {
 }
 
 impl App {
-    fn show_page(&mut self, ui: &mut Ui) -> Response {
-        use Page::*;
-
-        // TODO: Don't clone every frame!
-        match self.pagedb.access(self.path.clone()) {
-            Ok(ReadOnly(text)) => Viewer::new(&mut self.cmcache, text).ui(ui),
-            Ok(ReadWrite(text)) => {
-                ModalEditor::new(&mut self.cmcache, text, &mut self.editmode).ui(ui)
-            }
-            Err(NonexistentPage) => todo!(),
-        }
-    }
-
     fn handle_events(&mut self, ui: &mut Ui) {
         // TODO: Is there a better way to do this besides clone or hazardous recursive locking?
         for event in ui.input(|input| input.events.clone()) {
@@ -118,7 +103,7 @@ impl App {
                 let fs = ui.input(|i| i.viewport().fullscreen.unwrap_or_default());
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
-            OpenNewJournal => {
+            CreateNewCard => {
                 let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
                 let nowstr = now.format(&Rfc3339).unwrap();
                 self.path = PagePath::from_static("journal").join(nowstr);

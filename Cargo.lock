@@ -137,26 +137,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aliri_braid"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df233d014e7a9ad9693f08f17eb198251fb75d94c345dcfa4bdedfecc67f24fb"
-dependencies = [
- "aliri_braid_impl",
-]
-
-[[package]]
-name = "aliri_braid_impl"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1eb7c4fcde1858a6796c18a729b661346d38e05a207e2d9028bce822fc20283"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "android-activity"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1258,8 +1238,8 @@ dependencies = [
  "eframe",
  "egui_commonmark",
  "env_logger",
+ "exocortex-damo",
  "exocortex-keybinding",
- "exocortex-page",
  "exocortex-squeeze-frame",
  "log",
  "logging-options",
@@ -1273,6 +1253,7 @@ dependencies = [
  "derive-new",
  "derive_more",
  "thiserror 2.0.18",
+ "time",
 ]
 
 [[package]]
@@ -1280,18 +1261,6 @@ name = "exocortex-keybinding"
 version = "0.1.0"
 dependencies = [
  "egui",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "exocortex-page"
-version = "0.1.0"
-dependencies = [
- "aliri_braid",
- "derive-new",
- "derive_more",
- "include_dir",
- "strum",
  "thiserror 2.0.18",
 ]
 
@@ -1835,25 +1804,6 @@ dependencies = [
  "num-traits",
  "png",
  "tiff",
-]
-
-[[package]]
-name = "include_dir"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "923d117408f1e49d914f1a379a309cffe4f18c05cf4e3d12e613a15fc81bd0dd"
-dependencies = [
- "include_dir_macros",
-]
-
-[[package]]
-name = "include_dir_macros"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cab85a7ed0bd5f0e76d93846e0147172bed2e2d3f859bcc33a8d9699cad1a75"
-dependencies = [
- "proc-macro2",
- "quote",
 ]
 
 [[package]]
@@ -3242,27 +3192,6 @@ name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
-
-[[package]]
-name = "strum"
-version = "0.27.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af23d6f6c1a224baef9d3f61e287d2761385a5b88fdab4eb4c6f11aeb54c4bcf"
-dependencies = [
- "strum_macros",
-]
-
-[[package]]
-name = "strum_macros"
-version = "0.27.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7695ce3845ea4b33927c055a39dc438a45b059f7c1b3d91d38d10355fb8cbca7"
-dependencies = [
- "heck",
- "proc-macro2",
- "quote",
- "syn",
-]
 
 [[package]]
 name = "syn"
