@@ -1239,6 +1239,7 @@ dependencies = [
  "egui_commonmark",
  "env_logger",
  "exocortex-damo",
+ "exocortex-damo-mem",
  "exocortex-keybinding",
  "exocortex-squeeze-frame",
  "log",
@@ -1252,6 +1253,15 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "thiserror 2.0.18",
+ "time",
+]
+
+[[package]]
+name = "exocortex-damo-mem"
+version = "0.1.0"
+dependencies = [
+ "exocortex-damo",
  "thiserror 2.0.18",
  "time",
 ]

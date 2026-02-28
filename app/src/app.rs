@@ -3,21 +3,17 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
-use exocortex_damo::MemoryProvider;
+use exocortex_damo_mem::MemProvider;
 use exocortex_keybinding::ShortcutState;
-use exocortex_squeeze_frame::UiExt as _;
-use time::OffsetDateTime;
-use time::format_description::well_known::Rfc3339;
 
 use crate::command::Command;
-use crate::modaleditor::ModalEditor;
-use crate::viewer::Viewer;
 
+#[allow(dead_code)]
 #[derive(Debug, Default)]
 pub(crate) struct App {
     kbshortcuts: ShortcutState<Command>,
     cmcache: CommonMarkCache,
-    damo: MemoryProvider,
+    damo: MemProvider,
     editmode: bool,
 }
 
@@ -43,15 +39,13 @@ impl eframe::App for App {
 
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
-        // ui.vertical_centered(|ui| {
-        //     ui.label(RichText::new(self.path.as_str()).italics());
-        // });
-
-        // let resp = ui.within_squeeze_frame(|ui| self.show_page(ui)).response;
+        let resp = ui.vertical_centered(|ui| {
+            ui.label(RichText::new("exocortex").italics());
+        });
 
         self.handle_events(ui);
 
-        resp
+        resp.response
     }
 }
 
@@ -104,9 +98,7 @@ impl App {
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
             CreateNewCard => {
-                let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
-                let nowstr = now.format(&Rfc3339).unwrap();
-                self.path = PagePath::from_static("journal").join(nowstr);
+                todo!("FIXME")
             }
         }
     }
