@@ -1271,6 +1271,8 @@ name = "exocortex-damo"
 version = "0.1.0"
 dependencies = [
  "derive-new",
+ "derive_more",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
