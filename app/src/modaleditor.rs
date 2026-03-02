@@ -8,6 +8,7 @@ use editor::Editor;
 
 use crate::viewer::Viewer;
 
+#[allow(dead_code)]
 #[derive(new)]
 #[new(visibility = "pub(crate)")]
 pub(crate) struct ModalEditor<'a> {

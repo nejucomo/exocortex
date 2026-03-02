@@ -1,6 +1,7 @@
 use derive_new::new;
 use eframe::egui::{EventFilter, Response, TextEdit, TextStyle, Ui, Widget};
 
+#[allow(dead_code)]
 #[derive(new)]
 pub(crate) struct Editor<'a> {
     textmut: &'a mut String,
