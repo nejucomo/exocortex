@@ -35,7 +35,7 @@ where
                     .show(ui, self.cmcache, synopsis)
                     .response;
 
-                optid = self.damo.prev_card(None).unwrap();
+                optid = self.damo.prev_card(Some(id)).unwrap();
             }
             resp
         });
