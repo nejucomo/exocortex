@@ -14,5 +14,6 @@ env_logger.workspace = true
 exocortex-damo.workspace = true
 exocortex-damo-mem.workspace = true
 exocortex-keybinding.workspace = true
+indoc.workspace = true
 log.workspace = true
 logging-options.workspace = true
