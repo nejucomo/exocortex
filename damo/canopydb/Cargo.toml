@@ -4,3 +4,4 @@ name = "exocortex-damo-canopydb"
 version = "0.1.0"
 
 [dependencies]
+canopydb.workspace = true
