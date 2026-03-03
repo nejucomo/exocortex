@@ -1,5 +1,12 @@
 [workspace]
-members = ["app", "damo/base", "damo/mem", "squeeze-frame", "keybinding"]
+members = [
+  "app",
+  "damo/base",
+  "damo/mem",
+  "damo/canopydb",
+  "squeeze-frame",
+  "keybinding",
+]
 resolver = "3"
 
 [workspace.package]

@@ -1306,6 +1306,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exocortex-damo-canopydb"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-damo-mem"
 version = "0.1.0"
 dependencies = [
