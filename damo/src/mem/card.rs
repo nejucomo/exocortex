@@ -1,7 +1,6 @@
-use exocortex_damo::{Card, ProviderErrors};
 use time::OffsetDateTime;
 
-use crate::UnknownId;
+use crate::{Card, ProviderErrors, UnknownId};
 
 /// An in-memory card representation
 #[derive(Debug)]

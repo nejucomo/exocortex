@@ -12,7 +12,6 @@ eframe.workspace = true
 egui_commonmark.workspace = true
 env_logger.workspace = true
 exocortex-damo.workspace = true
-exocortex-damo-mem.workspace = true
 exocortex-keybinding.workspace = true
 indoc.workspace = true
 log.workspace = true

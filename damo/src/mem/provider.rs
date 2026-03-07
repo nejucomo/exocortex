@@ -1,8 +1,6 @@
 use std::collections::BTreeMap;
 
-use exocortex_damo::{Provider, ProviderErrors};
-
-use crate::{Id, MemCard, UnknownId};
+use crate::{Id, MemCard, Provider, ProviderErrors, UnknownId};
 
 /// An ephemral [Provider] backed by runtime memory
 #[derive(Debug, Default)]

@@ -1,7 +1,7 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_damo_mem::MemProvider;
+use exocortex_damo::MemProvider;
 use logging_options::Backend as _;
 
 use crate::app::App;

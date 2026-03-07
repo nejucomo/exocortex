@@ -1,6 +1,3 @@
-//! The `exocortex` <u>da</u>ta <u>mo</u>del
-#![deny(unsafe_code, missing_docs)]
-
 use time::OffsetDateTime;
 
 /// A data model instance

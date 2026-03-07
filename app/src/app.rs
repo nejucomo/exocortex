@@ -4,7 +4,7 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
-use exocortex_damo_mem::MemProvider;
+use exocortex_damo::MemProvider;
 use exocortex_keybinding::ShortcutState;
 
 use crate::command::Command;

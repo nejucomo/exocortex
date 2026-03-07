@@ -1,19 +1,11 @@
 [workspace]
-members = [
-  "app",
-  "damo/base",
-  "damo/mem",
-  "damo/canopydb",
-  "squeeze-frame",
-  "keybinding",
-]
+members = ["app", "damo", "squeeze-frame", "keybinding"]
 resolver = "3"
 
 [workspace.package]
 edition = "2024"
 
 [workspace.dependencies]
-canopydb = "0.2.5"
 clap = { version = "4.5.54", features = ["derive"] }
 color-eyre = "0.6.5"
 derive-new = "0.7.0"
@@ -22,8 +14,7 @@ eframe = "0.33"
 egui = "0.33"
 egui_commonmark = "0.22"
 env_logger = "0.11.8"
-exocortex-damo = { version = "0.1.0", path = "damo/base" }
-exocortex-damo-mem = { version = "0.1.0", path = "damo/mem" }
+exocortex-damo = { version = "0.1.0", path = "damo" }
 exocortex-keybinding = { version = "0.1.0", path = "keybinding" }
 extension-traits = "2.0.1"
 indoc = "2.0.7"
