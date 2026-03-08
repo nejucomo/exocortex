@@ -1,4 +1,5 @@
-use exocortex_damo::{Card as _, Provider};
+use exocortex_damo::Provider;
+use exocortex_damo::errors::UnknownId;
 use indoc::indoc;
 
 const CANNED_CARDS: &[&str] = &[
@@ -26,12 +27,11 @@ const CANNED_CARDS: &[&str] = &[
     "# },
 ];
 
-pub(crate) fn prepopulated<P: Provider>(mut prov: P) -> Result<P, P::UpdateError> {
+pub(crate) fn prepopulated<P: Provider>(mut prov: P) -> Result<P, UnknownId> {
     if prov.is_empty() {
         for cardtxt in CANNED_CARDS.iter().rev() {
             let cardid = prov.card_new()?;
-            let card = prov.open_card_mut(cardid)?;
-            card.set_synopsis(cardtxt)?;
+            prov.card_set_synopsis(cardid, cardtxt)?;
         }
     }
     Ok(prov)

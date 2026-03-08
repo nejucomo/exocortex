@@ -4,7 +4,7 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
-use exocortex_damo::MemProvider;
+use exocortex_damo::MultiProvider;
 use exocortex_keybinding::ShortcutState;
 
 use crate::command::Command;
@@ -12,7 +12,7 @@ use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
-    damo: MemProvider,
+    damo: MultiProvider,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
@@ -21,7 +21,7 @@ pub(crate) struct App {
 }
 
 impl App {
-    pub(crate) fn run(damo: MemProvider) -> eframe::Result<()> {
+    pub(crate) fn run(damo: MultiProvider) -> eframe::Result<()> {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {

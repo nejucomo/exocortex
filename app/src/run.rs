@@ -21,8 +21,11 @@ pub fn run() -> Result<()> {
     Logger::init_from_options(&opts.logopts);
     log::debug!("Logging initialized.");
 
-    let damo = MultiProvider::open_or_create(opts.db_path.as_opt_path())?;
+    let damo = MultiProvider::open_or_create(opts.db_path.as_opt_path())
+        .wrap_err_with(|| format!("{:?}", opts.db_path))?;
+
     let damo = prepopulated(damo)?;
+
     App::run(damo).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
 
     Ok(())

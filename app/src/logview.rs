@@ -1,7 +1,7 @@
 use derive_new::new;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2, Widget};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_damo::{Card as _, Provider};
+use exocortex_damo::Provider;
 
 #[derive(Debug, new)]
 pub(crate) struct LogView<'a, P>
@@ -28,8 +28,7 @@ where
 
             let mut optid = self.damo.card_prev(None).unwrap();
             while let Some(id) = optid {
-                let card = self.damo.open_card_ref(id).unwrap();
-                let synopsis = card.get_synopsis().unwrap();
+                let synopsis = self.damo.card_get_synopsis(id).unwrap();
 
                 resp |= CommonMarkViewer::new()
                     .show(ui, self.cmcache, synopsis)
