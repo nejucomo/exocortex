@@ -8,11 +8,11 @@ clap.workspace = true
 color-eyre.workspace = true
 derive-new.workspace = true
 derive_more = { workspace = true, features = ["from"] }
+dirs.workspace = true
 eframe.workspace = true
 egui_commonmark.workspace = true
 env_logger.workspace = true
 exocortex-damo.workspace = true
-exocortex-damo-mem.workspace = true
 exocortex-keybinding.workspace = true
 indoc.workspace = true
 log.workspace = true

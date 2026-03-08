@@ -1,7 +1,7 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_damo_mem::MemProvider;
+use exocortex_damo::MultiProvider;
 use logging_options::Backend as _;
 
 use crate::app::App;
@@ -21,7 +21,11 @@ pub fn run() -> Result<()> {
     Logger::init_from_options(&opts.logopts);
     log::debug!("Logging initialized.");
 
-    let damo = prepopulated(MemProvider::default())?;
+    let damo = MultiProvider::open_or_create(opts.db_path.as_opt_path())
+        .wrap_err_with(|| format!("{:?}", opts.db_path))?;
+
+    let damo = prepopulated(damo)?;
+
     App::run(damo).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
 
     Ok(())
