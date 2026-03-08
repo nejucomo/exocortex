@@ -21,7 +21,13 @@ pub fn run() -> Result<()> {
     Logger::init_from_options(&opts.logopts);
     log::debug!("Logging initialized.");
 
-    let damo = prepopulated(MemProvider::default())?;
+    let damo = if let Some(p) = opts.db_path.as_opt_path() {
+        todo!("Not implemented: open/create db {p:?}");
+    } else {
+        MemProvider::default()
+    };
+
+    let damo = prepopulated(damo)?;
     App::run(damo).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
 
     Ok(())
