@@ -1,9 +1,0 @@
-[package]
-edition.workspace = true
-name = "exocortex-damo-mem"
-version = "0.1.0"
-
-[dependencies]
-exocortex-damo.workspace = true
-thiserror.workspace = true
-time = { workspace = true, features = ["local-offset"] }
