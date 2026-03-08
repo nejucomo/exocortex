@@ -29,7 +29,7 @@ const CANNED_CARDS: &[&str] = &[
 pub(crate) fn prepopulated<P: Provider>(mut prov: P) -> Result<P, P::UpdateError> {
     if prov.is_empty() {
         for cardtxt in CANNED_CARDS.iter().rev() {
-            let cardid = prov.new_card()?;
+            let cardid = prov.card_new()?;
             let card = prov.open_card_mut(cardid)?;
             card.set_synopsis(cardtxt)?;
         }

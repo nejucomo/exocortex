@@ -26,7 +26,7 @@ where
 
             let mut resp = ui.allocate_response(Vec2::ZERO, Sense::hover());
 
-            let mut optid = self.damo.prev_card(None).unwrap();
+            let mut optid = self.damo.card_prev(None).unwrap();
             while let Some(id) = optid {
                 let card = self.damo.open_card_ref(id).unwrap();
                 let synopsis = card.get_synopsis().unwrap();
@@ -35,7 +35,7 @@ where
                     .show(ui, self.cmcache, synopsis)
                     .response;
 
-                optid = self.damo.prev_card(Some(id)).unwrap();
+                optid = self.damo.card_prev(Some(id)).unwrap();
             }
             resp
         });
