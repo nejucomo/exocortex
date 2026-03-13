@@ -1350,6 +1350,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exocortex-reqrep"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-squeeze-frame"
 version = "0.1.0"
 dependencies = [
