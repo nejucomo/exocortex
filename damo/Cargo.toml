@@ -4,7 +4,7 @@ name = "exocortex-damo"
 version = "0.1.0"
 
 [dependencies]
-canopydb.workspace = true
 enum_dispatch.workspace = true
+redb.workspace = true
 thiserror.workspace = true
 time = { workspace = true, features = ["local-offset"] }

@@ -1,9 +1,8 @@
 use std::path::Path;
 
-use canopydb::Error;
 use enum_dispatch::enum_dispatch;
 
-use crate::{CanopyProvider, MemProvider};
+use crate::{DamoResult, MemProvider, RedProvider};
 
 #[allow(unused_imports)] // Silence a false-positive necessary for `enum_dispatch`
 use crate::Provider;
@@ -12,18 +11,18 @@ use crate::Provider;
 #[enum_dispatch(Provider)]
 pub enum MultiProvider {
     Mem(MemProvider),
-    Canopy(CanopyProvider),
+    Red(RedProvider),
 }
 
 impl MultiProvider {
-    pub fn open_or_create<P>(optpath: Option<P>) -> Result<Self, Error>
+    pub fn open_or_create<P>(optpath: Option<P>) -> DamoResult<Self>
     where
         P: AsRef<Path>,
     {
         use MultiProvider::*;
 
         if let Some(p) = optpath {
-            CanopyProvider::open_or_create(p).map(Canopy)
+            RedProvider::open_or_create(p).map(Red)
         } else {
             Ok(Mem(MemProvider::default()))
         }
