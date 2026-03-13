@@ -1,13 +1,17 @@
+mod tabdefs;
+
 use std::path::Path;
 
-use redb::Database;
+use redb::{Database, ReadableDatabase as _, ReadableTableMetadata as _};
 
 use crate::{CardView, DamoResult, Id, Provider};
 
+use self::tabdefs::TableDefinitions;
+
 #[derive(Debug)]
 pub struct RedProvider {
-    #[allow(dead_code)]
     db: Database,
+    tables: TableDefinitions,
 }
 
 impl RedProvider {
@@ -16,13 +20,17 @@ impl RedProvider {
         P: AsRef<Path>,
     {
         let db = Database::create(dbpath)?;
-        Ok(RedProvider { db })
+        let tables = TableDefinitions::default();
+        Ok(RedProvider { db, tables })
     }
 }
 
 impl Provider for RedProvider {
     fn is_empty(&self) -> DamoResult<bool> {
-        todo!()
+        let txn = self.db.begin_read()?;
+        let tab = txn.open_table(self.tables.synopsis)?;
+        let len = tab.len()?;
+        Ok(len == 0)
     }
 
     fn card_new(&mut self) -> DamoResult<Id> {

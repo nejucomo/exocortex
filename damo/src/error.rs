@@ -15,4 +15,13 @@ pub enum DamoError {
 
     #[error("db error: {}", .0)]
     Redb(#[from] redb::DatabaseError),
+
+    #[error("db txn error: {}", .0)]
+    RedbTxn(#[from] redb::TransactionError),
+
+    #[error("db table error: {}", .0)]
+    RedbTable(#[from] redb::TableError),
+
+    #[error("db storage error: {}", .0)]
+    RedbStorage(#[from] redb::StorageError),
 }
