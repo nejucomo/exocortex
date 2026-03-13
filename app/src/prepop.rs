@@ -27,7 +27,7 @@ const CANNED_CARDS: &[&str] = &[
 ];
 
 pub(crate) fn prepopulated<P: Provider>(mut prov: P) -> DamoResult<P> {
-    if prov.is_empty() {
+    if prov.is_empty()? {
         for cardtxt in CANNED_CARDS.iter().rev() {
             let cardid = prov.card_new()?;
             prov.card_set_synopsis(cardid, cardtxt)?;

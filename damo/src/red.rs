@@ -1,9 +1,8 @@
 use std::path::Path;
 
 use redb::Database;
-use time::OffsetDateTime;
 
-use crate::{DamoResult, Id, Provider};
+use crate::{CardView, DamoResult, Id, Provider};
 
 #[derive(Debug)]
 pub struct RedProvider {
@@ -21,9 +20,8 @@ impl RedProvider {
     }
 }
 
-#[allow(unused_variables)]
 impl Provider for RedProvider {
-    fn is_empty(&self) -> bool {
+    fn is_empty(&self) -> DamoResult<bool> {
         todo!()
     }
 
@@ -31,19 +29,18 @@ impl Provider for RedProvider {
         todo!()
     }
 
-    fn card_prev(&self, optfrom: Option<Id>) -> DamoResult<Option<Id>> {
-        todo!()
-    }
-
-    fn card_get_time_of_creation(&self, card: Id) -> DamoResult<OffsetDateTime> {
-        todo!()
-    }
-
-    fn card_get_synopsis(&self, card: Id) -> DamoResult<&str> {
-        todo!()
-    }
-
     fn card_set_synopsis(&mut self, card: Id, synopsis: &str) -> DamoResult<()> {
+        let _ = (card, synopsis);
         todo!()
+    }
+
+    // Temporary stub:
+    type CardScan<'a>
+        = std::option::IntoIter<DamoResult<CardView<'a>>>
+    where
+        Self: 'a;
+
+    fn card_scan(&self) -> DamoResult<Self::CardScan<'_>> {
+        Ok(None.into_iter())
     }
 }

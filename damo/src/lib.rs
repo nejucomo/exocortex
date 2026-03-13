@@ -2,6 +2,7 @@
 #![deny(unsafe_code, missing_docs)]
 #![allow(missing_docs)] // Expedient
 
+mod cardview;
 mod error;
 mod mem;
 mod multi;
@@ -11,6 +12,7 @@ mod red;
 /// The local-identifier type for cards
 pub type Id = u64;
 
+pub use self::cardview::CardView;
 pub use self::error::{DamoError, DamoResult};
 pub use self::mem::MemProvider;
 pub use self::multi::MultiProvider;

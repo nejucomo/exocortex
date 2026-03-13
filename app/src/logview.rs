@@ -26,15 +26,14 @@ where
 
             let mut resp = ui.allocate_response(Vec2::ZERO, Sense::hover());
 
-            let mut optid = self.damo.card_prev(None).unwrap();
-            while let Some(id) = optid {
-                let synopsis = self.damo.card_get_synopsis(id).unwrap();
+            // TODO: Move this into a separate thread from GUI! -and handle errors.
+            let cards = self.damo.card_scan().unwrap();
+            for cardres in cards {
+                let card = cardres.unwrap();
 
                 resp |= CommonMarkViewer::new()
-                    .show(ui, self.cmcache, synopsis)
+                    .show(ui, self.cmcache, card.synopsis)
                     .response;
-
-                optid = self.damo.card_prev(Some(id)).unwrap();
             }
             resp
         });
