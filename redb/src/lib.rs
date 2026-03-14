@@ -1,14 +1,19 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! The `exocortex` database
+#![deny(missing_docs, unsafe_code)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use std::path::Path;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+/// The `exocortex` database
+#[derive(Debug)]
+pub struct Database {}
+
+impl Database {
+    /// Open or create a new database at the given path
+    pub fn open_or_create<P>(dbpath: P) -> Result<Self, std::io::Error>
+    where
+        P: AsRef<Path>,
+    {
+        let _ = dbpath;
+        todo!()
     }
 }

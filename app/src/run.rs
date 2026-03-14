@@ -1,12 +1,12 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_damo::MultiProvider;
+use exocortex_redb::Database;
 use logging_options::Backend as _;
 
 use crate::app::App;
 use crate::cliopts::Options;
-use crate::prepop::prepopulated;
+use crate::prepop::prepopulate;
 
 /// Run the app
 ///
@@ -21,12 +21,12 @@ pub fn run() -> Result<()> {
     Logger::init_from_options(&opts.logopts);
     log::debug!("Logging initialized.");
 
-    let damo = MultiProvider::open_or_create(opts.db_path.as_opt_path())
-        .wrap_err_with(|| format!("{:?}", opts.db_path))?;
+    let mut db =
+        Database::open_or_create(&opts.db_path).wrap_err_with(|| format!("{:?}", opts.db_path))?;
 
-    let damo = prepopulated(damo)?;
+    prepopulate(&mut db)?;
 
-    App::run(damo).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
+    App::run(db).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
 
     Ok(())
 }

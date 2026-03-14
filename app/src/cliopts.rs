@@ -10,7 +10,7 @@ pub struct Options {
     #[clap(flatten)]
     pub logopts: logging_options::StandardConsole,
 
-    /// The DB path or `:memory:` for non-persistence
+    /// The DB path
     #[clap(long, default_value_t)]
     pub db_path: DbPath,
 }

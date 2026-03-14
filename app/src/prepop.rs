@@ -1,7 +1,7 @@
-use exocortex_damo::Provider;
-use exocortex_damo::errors::UnknownId;
+use exocortex_redb::Database;
 use indoc::indoc;
 
+#[allow(dead_code)]
 const CANNED_CARDS: &[&str] = &[
     "# Welcome to exocortex!",
     "# The previous welcome line and this line are each separate `cards`.",
@@ -27,12 +27,14 @@ const CANNED_CARDS: &[&str] = &[
     "# },
 ];
 
-pub(crate) fn prepopulated<P: Provider>(mut prov: P) -> Result<P, UnknownId> {
-    if prov.is_empty() {
-        for cardtxt in CANNED_CARDS.iter().rev() {
-            let cardid = prov.card_new()?;
-            prov.card_set_synopsis(cardid, cardtxt)?;
-        }
-    }
-    Ok(prov)
+pub(crate) fn prepopulate(db: &mut Database) -> Result<(), std::io::Error> {
+    let _ = db;
+    todo!()
+    // if prov.is_empty() {
+    //     for cardtxt in CANNED_CARDS.iter().rev() {
+    //         let cardid = prov.card_new()?;
+    //         prov.card_set_synopsis(cardid, cardtxt)?;
+    //     }
+    // }
+    // Ok(prov)
 }

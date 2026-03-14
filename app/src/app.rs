@@ -4,15 +4,16 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
-use exocortex_damo::MultiProvider;
 use exocortex_keybinding::ShortcutState;
+use exocortex_redb::Database;
 
 use crate::command::Command;
 use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
-    damo: MultiProvider,
+    #[allow(dead_code)]
+    db: Database,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
@@ -21,7 +22,7 @@ pub(crate) struct App {
 }
 
 impl App {
-    pub(crate) fn run(damo: MultiProvider) -> eframe::Result<()> {
+    pub(crate) fn run(db: Database) -> eframe::Result<()> {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {
@@ -29,7 +30,7 @@ impl App {
                 persist_window: false,
                 ..Default::default()
             },
-            Box::new(|_cc| Ok(Box::new(Self::new(damo)))),
+            Box::new(|_cc| Ok(Box::new(Self::new(db)))),
         )
     }
 }
@@ -48,7 +49,7 @@ impl Widget for &mut App {
             })
             .response;
 
-        resp |= ui.add(LogView::new(&self.damo, &mut self.cmcache));
+        resp |= ui.add(LogView::new(&mut self.cmcache));
 
         self.handle_events(ui);
 
