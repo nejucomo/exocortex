@@ -1416,7 +1416,9 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "log",
  "redb",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

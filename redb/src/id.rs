@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use derive_new::new;
@@ -7,7 +8,7 @@ use redb::{Key, TypeName, Value};
 pub type IdNum = u64;
 
 /// A locally unique identifier for a `T` value
-#[derive(Debug, new)]
+#[derive(new)]
 pub struct Id<T> {
     pub(crate) id: IdNum, // BUG: We need to kill id's for request identification
     #[new(default)]
@@ -43,7 +44,16 @@ impl<T> PartialEq for Id<T> {
     }
 }
 
-impl<T: 'static + std::fmt::Debug> Value for Id<T> {
+impl<T> Debug for Id<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let id = self.id;
+        let tname = std::any::type_name::<T>();
+        let tnick = tname.rsplit_once("::").map(|(_, s)| s).unwrap_or(tname);
+        write!(f, "Id:{tnick}({id})")
+    }
+}
+
+impl<T: 'static> Value for Id<T> {
     type SelfType<'a>
         = Id<T>
     where
@@ -80,7 +90,7 @@ impl<T: 'static + std::fmt::Debug> Value for Id<T> {
     }
 }
 
-impl<T: 'static + std::fmt::Debug> Key for Id<T> {
+impl<T: 'static> Key for Id<T> {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
         let a = u64::from_le_bytes(data1.try_into().expect("Id<T> key must be 8 bytes"));
         let b = u64::from_le_bytes(data2.try_into().expect("Id<T> key must be 8 bytes"));

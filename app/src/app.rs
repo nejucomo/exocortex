@@ -28,7 +28,7 @@ pub(crate) struct App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        if let Some(reply) = self.dbman.poll_reply() {
+        if let Some(reply) = self.dbman.poll_reply().unwrap() {
             self.handle_db_reply(reply.repspec);
         }
 
