@@ -69,9 +69,8 @@ pub struct CardSetSynopsis(pub String);
 
 /// The top-level reply sent from the DB thread to applications
 #[derive(Debug, From, new)]
-#[allow(missing_docs)]
 pub struct Reply {
-    #[allow(missing_docs)]
+    /// The corresponding request id:
     pub reqid: Id<ReqSpec>,
     #[allow(missing_docs)]
     #[new(into)]

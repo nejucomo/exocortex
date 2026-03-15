@@ -5,7 +5,6 @@ use exocortex_redb::messages::{
 };
 use indoc::indoc;
 
-#[allow(dead_code)]
 const CANNED_CARDS: &[&str] = &[
     "# Welcome to exocortex!",
     "# The previous welcome line and this line are each separate `cards`.",
