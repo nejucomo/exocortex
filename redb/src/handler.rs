@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
-use redb::{Database, ReadableTableMetadata as _, WriteTransaction};
+use redb::{
+    Database, ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction,
+};
 
 use crate::messages::{
-    Card, CardAction, CardCreate, CardModification, CardModify, CardSetSynopsis, CardUpdated,
-    Reply, Request,
+    Card, CardCreate, CardModification, CardModify, CardSetSynopsis, CardUpdated, DbIsEmpty,
+    Modify, Queried, Query, RepSpec, Reply, ReqSpec, Request,
 };
 use crate::tables::TABLES;
 use crate::{Id, IdTagged};
@@ -25,26 +27,69 @@ impl Handler<Request> for Database {
         &mut self,
         IdTagged {
             id: reqid,
-            tagged: action,
-        }: IdTagged<CardAction>,
+            tagged: reqspec,
+        }: Request,
     ) -> HResult<Self::Reply> {
-        let updated = self.handle(action)?;
+        let repspec = self.handle(reqspec)?;
 
-        Ok(Reply { reqid, updated })
+        Ok(Reply { reqid, repspec })
     }
 }
 
-impl Handler<CardAction> for Database {
+impl Handler<ReqSpec> for Database {
+    type Reply = RepSpec;
+
+    fn handle(&mut self, request: ReqSpec) -> HResult<Self::Reply> {
+        use RepSpec::*;
+        use ReqSpec::*;
+
+        match request {
+            Query(q) => {
+                let mut txn = self.begin_read()?;
+                txn.handle(q).map(Queried)
+            }
+
+            Modify(m) => {
+                let mut txn = self.begin_write()?;
+                txn.handle(m).map(Modified)
+            }
+        }
+    }
+}
+
+impl Handler<Query> for ReadTransaction {
+    type Reply = Queried;
+
+    fn handle(&mut self, q: Query) -> HResult<Self::Reply> {
+        use Queried::*;
+        use Query::*;
+
+        match q {
+            DbIsEmpty(x) => self.handle(x).map(DbWasEmpty),
+        }
+    }
+}
+
+impl Handler<DbIsEmpty> for ReadTransaction {
+    type Reply = bool;
+
+    fn handle(&mut self, _: DbIsEmpty) -> HResult<Self::Reply> {
+        let tab = self.open_table(TABLES.card_synopsis)?;
+        let len = tab.len()?;
+        Ok(len == 0)
+    }
+}
+
+impl Handler<Modify> for WriteTransaction {
     type Reply = CardUpdated;
 
-    fn handle(&mut self, action: CardAction) -> HResult<Self::Reply> {
-        use CardAction::*;
+    fn handle(&mut self, action: Modify) -> HResult<Self::Reply> {
         use CardUpdated::*;
+        use Modify::*;
 
-        let mut txn = self.begin_write()?;
         match action {
-            Create(x) => txn.handle(x).map(Created),
-            Modify(x) => txn.handle(x).map(Modified),
+            CardCreate(x) => self.handle(x).map(Created),
+            CardModify(x) => self.handle(x).map(Modified),
         }
     }
 }

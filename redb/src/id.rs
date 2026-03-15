@@ -2,26 +2,27 @@ use std::cmp::Ordering;
 use std::marker::PhantomData;
 
 use derive_new::new;
+use redb::{Key, TypeName, Value};
 
 pub type IdNum = u64;
 
 /// A locally unique identifier for a `T` value
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, new)]
+// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, new)]
+#[derive(Copy, Clone, Debug, new)]
 pub struct Id<T> {
-    id: IdNum,
+    pub(crate) id: IdNum, // BUG: We need to kill id's for request identification
     #[new(default)]
     ph: PhantomData<T>,
 }
 
 /// A `T` value along with its [Id]
+#[derive(Debug, new)]
 pub struct IdTagged<T> {
     /// The [Id] of the value
     pub id: Id<T>,
     /// The tagged value
     pub tagged: T,
 }
-
-use redb::{Key, TypeName, Value};
 
 impl<T: 'static + std::fmt::Debug> Value for Id<T> {
     type SelfType<'a>

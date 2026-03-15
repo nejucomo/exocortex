@@ -1,4 +1,8 @@
 use exocortex_redb::ExoDb;
+use exocortex_redb::messages::RepSpec::{Modified, Queried};
+use exocortex_redb::messages::{
+    CardCreate, CardModify, CardSetSynopsis, CardUpdated::Created, DbIsEmpty, Queried::DbWasEmpty,
+};
 use indoc::indoc;
 
 #[allow(dead_code)]
@@ -28,13 +32,15 @@ const CANNED_CARDS: &[&str] = &[
 ];
 
 pub(crate) fn prepopulate(db: &mut ExoDb) -> Result<(), std::io::Error> {
-    let _ = db;
-    todo!()
-    // if prov.is_empty() {
-    //     for cardtxt in CANNED_CARDS.iter().rev() {
-    //         let cardid = prov.card_new()?;
-    //         prov.card_set_synopsis(cardid, cardtxt)?;
-    //     }
-    // }
-    // Ok(prov)
+    if matches!(db.request(DbIsEmpty), Queried(DbWasEmpty(true))) {
+        for cardtxt in CANNED_CARDS.iter().rev() {
+            let card = match db.request(CardCreate) {
+                Modified(Created(c)) => c,
+                other => panic!("incoherent db response: {other:?}"),
+            };
+
+            db.request(CardModify::new(card, CardSetSynopsis(cardtxt.to_string())));
+        }
+    }
+    Ok(())
 }

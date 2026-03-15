@@ -3,8 +3,9 @@ use std::path::Path;
 use redb::Database;
 
 use crate::channel::{FromDb, ToDb, channel_pair};
-use crate::messages::{Reply, Request};
+use crate::messages::{RepSpec, Reply, ReqSpec, Request};
 use crate::thread::run_db_thread;
+use crate::{Id, IdTagged};
 
 /// The `exocortex` database
 #[derive(Debug)]
@@ -27,6 +28,16 @@ impl ExoDb {
         std::thread::spawn(|| run_db_thread(redb, to_from_app));
 
         Ok(ExoDb::from(to_from_db))
+    }
+
+    /// Post a request and block on the reply
+    pub fn request(&self, req: impl Into<ReqSpec>) -> RepSpec {
+        // FIXME: This seems goofy; so maybe the "request id API" design needs change
+        let reqid_in = Id::<ReqSpec>::new(0);
+        self.post_request(IdTagged::new(Id::new(0), req.into()));
+        let Reply { reqid, repspec } = self.from_db.recv().unwrap();
+        assert_eq!(reqid.id, reqid_in.id);
+        repspec
     }
 
     /// Post a request to the database
