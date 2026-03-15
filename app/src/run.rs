@@ -28,9 +28,16 @@ pub fn run() -> Result<()> {
         )
     })?;
 
-    prepopulate(&mut db)?;
-
-    App::run(db).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
+    // FIXME: figure out how to avoid `e.to_string`
+    stringify_error("db prepopulation error", prepopulate(&mut db))?;
+    stringify_error("eframe error", App::run(db))?;
 
     Ok(())
+}
+
+fn stringify_error<E>(tag: &'static str, r: Result<(), E>) -> Result<()>
+where
+    E: ToString,
+{
+    r.or_else(|e| Err(eyre!(tag)).wrap_err_with(|| e.to_string()))
 }

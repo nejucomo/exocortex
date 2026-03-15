@@ -38,7 +38,7 @@ pub(crate) fn prepopulate(db: &mut ExoDb) -> DbResult<()> {
                 other => panic!("incoherent db response: {other:?}"),
             };
 
-            db.request(CardModify::new(card, CardSetSynopsis(cardtxt.to_string())));
+            db.request(CardModify::new(card, CardSetSynopsis(cardtxt.to_string())))?;
         }
     }
     Ok(())

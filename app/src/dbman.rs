@@ -15,6 +15,6 @@ pub(crate) struct DbManager {
 impl DbManager {
     pub(crate) fn post_scan_request_if_none_outstanding(&mut self, req: CardScan) {
         self.outstanding_scan_request
-            .get_or_insert_with(|| self.db.post_request(req));
+            .get_or_insert_with(|| self.db.post_request(req).unwrap());
     }
 }
