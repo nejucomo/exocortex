@@ -1,11 +1,15 @@
 use derive_new::new;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2, Widget};
-use egui_commonmark::CommonMarkCache;
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use exocortex_redb::messages::CardScan;
+
+use crate::dbman::DbManager;
 
 #[derive(Debug, new)]
 pub(crate) struct LogView<'a> {
-    #[allow(dead_code)]
+    dbman: &'a mut DbManager,
     cmcache: &'a mut CommonMarkCache,
+    cards: &'a [String],
 }
 
 impl<'a> Widget for LogView<'a> {
@@ -17,21 +21,25 @@ impl<'a> Widget for LogView<'a> {
         let inner = ui.allocate_ui_with_layout(desired, layout, |ui| {
             ui.set_width(w);
 
-            let resp = ui.allocate_response(Vec2::ZERO, Sense::hover());
+            let mut resp = ui.allocate_response(Vec2::ZERO, Sense::hover());
 
-            /*
-            let mut optid = self.db.card_prev(None).unwrap();
-            while let Some(id) = optid {
-                let synopsis = self.db.card_get_synopsis(id).unwrap();
-
-                resp |= CommonMarkViewer::new()
-                    .show(ui, self.cmcache, synopsis)
-                    .response;
-
-                optid = self.db.card_prev(Some(id)).unwrap();
+            for synopsis in self.cards {
+                if ui.available_height() > 0.0 {
+                    resp |= CommonMarkViewer::new()
+                        .show(ui, self.cmcache, synopsis)
+                        .response;
+                } else {
+                    break;
+                }
             }
-            */
-            #[allow(clippy::let_and_return)]
+
+            self.dbman
+                .post_scan_request_if_none_outstanding(if ui.available_height() > 0.0 {
+                    CardScan::Next
+                } else {
+                    CardScan::Stop
+                });
+
             resp
         });
 

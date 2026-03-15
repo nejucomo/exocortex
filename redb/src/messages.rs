@@ -4,16 +4,23 @@ use std::sync::Arc;
 use derive_more::From;
 use derive_new::new;
 
-use crate::{Id, IdTagged};
+use crate::Id;
 
 /// The top-level request sent by applications to the DB thread
-pub type Request = IdTagged<ReqSpec>;
+#[derive(Debug, From, new)]
+pub struct Request {
+    /// The corresponding request id:
+    pub id: Id<Request>,
+    #[allow(missing_docs)]
+    #[new(into)]
+    pub reqspec: ReqSpec,
+}
 
 /// A request to modify cards
 #[derive(Debug, From)]
 pub enum ReqSpec {
     #[allow(missing_docs)]
-    #[from(Query, DbIsEmpty)]
+    #[from(Query, DbIsEmpty, CardScan)]
     Query(Query),
     #[allow(missing_docs)]
     #[from(Modify, CardCreate, CardModify)]
@@ -25,11 +32,25 @@ pub enum ReqSpec {
 pub enum Query {
     #[allow(missing_docs)]
     DbIsEmpty(DbIsEmpty),
+    #[allow(missing_docs)]
+    CardScan(CardScan),
 }
 
 /// A query if the db is empty (ie: newly created)
 #[derive(Copy, Clone, Debug)]
 pub struct DbIsEmpty;
+
+/// A request to scan cards
+#[derive(Debug, From)]
+pub enum CardScan {
+    /// Request the next card in the scan
+    ///
+    /// If there is no active scan, start a new one.
+    Next,
+
+    /// Drop the current scan if there is one, freeing its resources
+    Stop,
+}
 
 /// A request to modify cards
 #[derive(Debug, From)]
@@ -71,7 +92,7 @@ pub struct CardSetSynopsis(pub String);
 #[derive(Debug, From, new)]
 pub struct Reply {
     /// The corresponding request id:
-    pub reqid: Id<ReqSpec>,
+    pub reqid: Id<Request>,
     #[allow(missing_docs)]
     #[new(into)]
     pub repspec: RepSpec,
@@ -91,6 +112,18 @@ pub enum RepSpec {
 pub enum Queried {
     #[allow(missing_docs)]
     DbWasEmpty(bool),
+    CardScanned(CardScanned),
+}
+
+/// A reply about a successful update to a card
+#[derive(Debug, From)]
+pub enum CardScanned {
+    /// The synopsis of the next card
+    Found(String),
+    /// No more cards
+    Ended,
+    /// The scan was stopped by the app
+    Stopped,
 }
 
 /// A reply about a successful update to a card

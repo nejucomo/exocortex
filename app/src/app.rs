@@ -6,37 +6,30 @@ use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_keybinding::ShortcutState;
 use exocortex_redb::ExoDb;
+use exocortex_redb::messages::RepSpec;
 
 use crate::command::Command;
+use crate::dbman::DbManager;
 use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
-    #[allow(dead_code)]
-    db: ExoDb,
+    dbman: DbManager,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
     #[new(default)]
     cmcache: CommonMarkCache,
-}
-
-impl App {
-    pub(crate) fn run(db: ExoDb) -> eframe::Result<()> {
-        run_native(
-            env!("CARGO_PKG_NAME"),
-            NativeOptions {
-                viewport: ViewportBuilder::default().with_maximized(true),
-                persist_window: false,
-                ..Default::default()
-            },
-            Box::new(|_cc| Ok(Box::new(Self::new(db)))),
-        )
-    }
+    #[new(default)]
+    cards: Vec<String>,
 }
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+        if let Some(reply) = self.dbman.poll_reply() {
+            self.handle_db_reply(reply);
+        }
+
         CentralPanel::default().show(ctx, |ui| ui.add(self));
     }
 }
@@ -49,23 +42,56 @@ impl Widget for &mut App {
             })
             .response;
 
-        resp |= ui.add(LogView::new(&mut self.cmcache));
+        resp |= ui.add(LogView::new(
+            &mut self.dbman,
+            &mut self.cmcache,
+            &self.cards,
+        ));
 
-        self.handle_events(ui);
+        self.handle_ui_events(ui);
 
         resp
     }
 }
 
 impl App {
-    fn handle_events(&mut self, ui: &mut Ui) {
-        // TODO: Is there a better way to do this besides clone or hazardous recursive locking?
-        for event in ui.input(|input| input.events.clone()) {
-            self.handle_event(ui, event);
+    pub(crate) fn run(db: ExoDb) -> eframe::Result<()> {
+        let dbman = DbManager::new(db);
+
+        run_native(
+            env!("CARGO_PKG_NAME"),
+            NativeOptions {
+                viewport: ViewportBuilder::default().with_maximized(true),
+                persist_window: false,
+                ..Default::default()
+            },
+            Box::new(|_cc| Ok(Box::new(Self::new(dbman)))),
+        )
+    }
+
+    fn handle_db_reply(&mut self, reply: RepSpec) {
+        use RepSpec::Queried;
+        use exocortex_redb::messages::Queried::CardScanned;
+
+        match reply {
+            Queried(CardScanned(Some(synopsis)) => {
+                self.cards.push(synopsis);
+            }
+                Some(_) => todo!(),
+                None => todo!(),
+            },
+            other => panic!("Unexpected DB reply: {other:?}"),
         }
     }
 
-    fn handle_event(&mut self, ui: &mut Ui, event: Event) {
+    fn handle_ui_events(&mut self, ui: &mut Ui) {
+        // TODO: Is there a better way to do this besides clone or hazardous recursive locking?
+        for event in ui.input(|input| input.events.clone()) {
+            self.handle_ui_event(ui, event);
+        }
+    }
+
+    fn handle_ui_event(&mut self, ui: &mut Ui, event: Event) {
         use eframe::egui::Event::Key;
         use exocortex_keybinding::HandleKey::*;
 

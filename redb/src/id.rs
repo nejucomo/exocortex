@@ -7,21 +7,40 @@ use redb::{Key, TypeName, Value};
 pub type IdNum = u64;
 
 /// A locally unique identifier for a `T` value
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, new)]
-#[derive(Copy, Clone, Debug, new)]
+#[derive(Debug, new)]
 pub struct Id<T> {
     pub(crate) id: IdNum, // BUG: We need to kill id's for request identification
     #[new(default)]
     ph: PhantomData<T>,
 }
 
-/// A `T` value along with its [Id]
-#[derive(Debug, new)]
-pub struct IdTagged<T> {
-    /// The [Id] of the value
-    pub id: Id<T>,
-    /// The tagged value
-    pub tagged: T,
+impl<T> Id<T> {
+    /// Produce a new [Id] by treating `self` as a "next unallocated [Id]" tracker
+    pub fn alloc(&mut self) -> Self {
+        let id = *self;
+        self.id += 1;
+        id
+    }
+}
+
+impl<T> Copy for Id<T> {}
+
+impl<T> Clone for Id<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<T> Default for Id<T> {
+    fn default() -> Self {
+        Self::new(0)
+    }
+}
+
+impl<T> PartialEq for Id<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
 impl<T: 'static + std::fmt::Debug> Value for Id<T> {

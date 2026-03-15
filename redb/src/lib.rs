@@ -3,7 +3,6 @@
 
 mod channel;
 mod exodb;
-mod handler;
 mod id;
 mod tables;
 mod thread;
@@ -11,4 +10,4 @@ mod thread;
 pub mod messages;
 
 pub use self::exodb::ExoDb;
-pub use self::id::{Id, IdTagged};
+pub use self::id::Id;

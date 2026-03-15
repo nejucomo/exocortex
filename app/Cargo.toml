@@ -7,7 +7,12 @@ version = "0.1.0"
 clap.workspace = true
 color-eyre.workspace = true
 derive-new.workspace = true
-derive_more = { workspace = true, features = ["as_ref", "deref", "from"] }
+derive_more = { workspace = true, features = [
+  "as_ref",
+  "deref",
+  "deref_mut",
+  "from",
+] }
 dirs.workspace = true
 eframe.workspace = true
 egui_commonmark.workspace = true
