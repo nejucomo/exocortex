@@ -1,5 +1,5 @@
 [workspace]
-members = ["app", "damo", "squeeze-frame", "keybinding", "redb"]
+members = ["app", "damo", "squeeze-frame", "keybinding", "redb", "dbglog"]
 resolver = "3"
 
 [workspace.package]

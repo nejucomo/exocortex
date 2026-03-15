@@ -47,6 +47,7 @@ impl ExoDb {
     pub fn request(&mut self, req: impl Into<ReqSpec>) -> DbResult<RepSpec> {
         assert_eq!(self.nextid, self.recvid.unwrap_or_default());
         let reqid = self.post_request(req)?;
+        log::debug!("wait_reply for {reqid:?}");
         let reply = self.wait_reply()?;
         // This is implied by the earlier `assert_eq`:
         assert_eq!(reqid, reply.reqid);
@@ -98,7 +99,7 @@ impl ExoDb {
         self.jh
             .take()
             .ok_or(Prior) // no handle; prior error killed it
-            .and_then(|jh| jh.join().map_err(Join))
+            .and_then(|jh| jh.join().map_err(Join).flatten())
             .err()
             .unwrap_or_else(|| DbError::from(initial)) // if no more specific error
     }
