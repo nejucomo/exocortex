@@ -104,13 +104,8 @@ impl Handler<DbIsEmpty> for ReadTransaction {
     type Reply = bool;
 
     fn handle(self, _: DbIsEmpty) -> DbResult<Self::Reply> {
-        log::debug!("DbIsEmpty?");
-
-        let tabres = self.open_table(TABLES.card_synopsis);
-        log::debug!("tab: {:?}", tabres);
-        let tab = tabres?;
+        let tab = self.open_table(TABLES.card_synopsis)?;
         let len = tab.len()?;
-        log::debug!("tab.len: {len:?}");
         Ok(len == 0)
     }
 }
