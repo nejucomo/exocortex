@@ -112,10 +112,11 @@ pub enum RepSpec {
 pub enum Queried {
     #[allow(missing_docs)]
     DbWasEmpty(bool),
+    #[allow(missing_docs)]
     CardScanned(CardScanned),
 }
 
-/// A reply about a successful update to a card
+/// The result of scanning a card
 #[derive(Debug, From)]
 pub enum CardScanned {
     /// The synopsis of the next card

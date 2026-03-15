@@ -7,8 +7,8 @@ use redb::{
 use crate::Id;
 use crate::channel::{FromApp, ToApp};
 use crate::messages::{
-    Card, CardCreate, CardModification, CardModify, CardScan, CardSetSynopsis, CardUpdated,
-    DbIsEmpty, Modify, Queried, Query, RepSpec, Reply, ReqSpec, Request,
+    Card, CardCreate, CardModification, CardModify, CardScan, CardScanned, CardSetSynopsis,
+    CardUpdated, DbIsEmpty, Modify, Queried, Query, RepSpec, Reply, ReqSpec, Request,
 };
 use crate::tables::TABLES;
 
@@ -100,10 +100,11 @@ impl Handler<DbIsEmpty> for ReadTransaction {
 }
 
 impl Handler<CardScan> for WithScan<'_, ReadTransaction> {
-    type Reply = Option<String>;
+    type Reply = CardScanned;
 
     fn handle(self, request: CardScan) -> HResult<Self::Reply> {
         use CardScan::*;
+        use CardScanned::*;
 
         let (txn, scan) = self;
 
@@ -117,7 +118,7 @@ impl Handler<CardScan> for WithScan<'_, ReadTransaction> {
             }
             Stop => {
                 *scan = None;
-                Ok(None)
+                Ok(Stopped)
             }
         }
     }

@@ -22,12 +22,14 @@ pub(crate) struct App {
     cmcache: CommonMarkCache,
     #[new(default)]
     cards: Vec<String>,
+    #[new(default)]
+    scan_complete: bool,
 }
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         if let Some(reply) = self.dbman.poll_reply() {
-            self.handle_db_reply(reply);
+            self.handle_db_reply(reply.repspec);
         }
 
         CentralPanel::default().show(ctx, |ui| ui.add(self));
@@ -71,15 +73,23 @@ impl App {
 
     fn handle_db_reply(&mut self, reply: RepSpec) {
         use RepSpec::Queried;
+        use exocortex_redb::messages::CardScanned::*;
         use exocortex_redb::messages::Queried::CardScanned;
 
         match reply {
-            Queried(CardScanned(Some(synopsis)) => {
-                self.cards.push(synopsis);
-            }
-                Some(_) => todo!(),
-                None => todo!(),
+            Queried(CardScanned(cs)) => match cs {
+                Found(synopsis) => {
+                    self.cards.push(synopsis);
+                    self.scan_complete = false;
+                }
+                Ended => {
+                    self.scan_complete = true;
+                }
+                Stopped => {
+                    self.scan_complete = false;
+                }
             },
+
             other => panic!("Unexpected DB reply: {other:?}"),
         }
     }
