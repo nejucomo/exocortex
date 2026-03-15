@@ -1,19 +1,14 @@
 //! The `exocortex` database
 #![deny(missing_docs, unsafe_code)]
 
-use std::path::Path;
+mod channel;
+mod exodb;
+mod handler;
+mod id;
+mod tables;
+mod thread;
 
-/// The `exocortex` database
-#[derive(Debug)]
-pub struct Database {}
+pub mod messages;
 
-impl Database {
-    /// Open or create a new database at the given path
-    pub fn open_or_create<P>(dbpath: P) -> Result<Self, std::io::Error>
-    where
-        P: AsRef<Path>,
-    {
-        let _ = dbpath;
-        todo!()
-    }
-}
+pub use self::exodb::ExoDb;
+pub use self::id::{Id, IdTagged};

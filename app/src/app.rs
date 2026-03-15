@@ -5,7 +5,7 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_keybinding::ShortcutState;
-use exocortex_redb::Database;
+use exocortex_redb::ExoDb;
 
 use crate::command::Command;
 use crate::logview::LogView;
@@ -13,7 +13,7 @@ use crate::logview::LogView;
 #[derive(Debug, new)]
 pub(crate) struct App {
     #[allow(dead_code)]
-    db: Database,
+    db: ExoDb,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
@@ -22,7 +22,7 @@ pub(crate) struct App {
 }
 
 impl App {
-    pub(crate) fn run(db: Database) -> eframe::Result<()> {
+    pub(crate) fn run(db: ExoDb) -> eframe::Result<()> {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {

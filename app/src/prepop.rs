@@ -1,4 +1,4 @@
-use exocortex_redb::Database;
+use exocortex_redb::ExoDb;
 use indoc::indoc;
 
 #[allow(dead_code)]
@@ -27,7 +27,7 @@ const CANNED_CARDS: &[&str] = &[
     "# },
 ];
 
-pub(crate) fn prepopulate(db: &mut Database) -> Result<(), std::io::Error> {
+pub(crate) fn prepopulate(db: &mut ExoDb) -> Result<(), std::io::Error> {
     let _ = db;
     todo!()
     // if prov.is_empty() {

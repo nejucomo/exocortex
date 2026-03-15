@@ -1,7 +1,7 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_redb::Database;
+use exocortex_redb::ExoDb;
 use logging_options::Backend as _;
 
 use crate::app::App;
@@ -21,8 +21,12 @@ pub fn run() -> Result<()> {
     Logger::init_from_options(&opts.logopts);
     log::debug!("Logging initialized.");
 
-    let mut db =
-        Database::open_or_create(&opts.db_path).wrap_err_with(|| format!("{:?}", opts.db_path))?;
+    let mut db = ExoDb::init(&opts.db_path).wrap_err_with(|| {
+        format!(
+            "Failed to initialize database in {:?}",
+            opts.db_path.to_string()
+        )
+    })?;
 
     prepopulate(&mut db)?;
 
