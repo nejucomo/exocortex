@@ -45,7 +45,10 @@ impl ExoDb {
     ///
     /// This will panic if there are outstanding requests which have not been replied to yet.
     pub fn request(&mut self, req: impl Into<ReqSpec>) -> DbResult<RepSpec> {
-        assert_eq!(self.nextid, self.recvid.unwrap_or_default());
+        assert_eq!(
+            self.nextid,
+            self.recvid.map(|prev| prev.inc()).unwrap_or_default()
+        );
         let reqid = self.post_request(req)?;
         log::debug!("wait_reply for {reqid:?}");
         let reply = self.wait_reply()?;

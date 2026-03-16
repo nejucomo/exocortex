@@ -22,6 +22,11 @@ impl<T> Id<T> {
         self.id += 1;
         id
     }
+
+    /// The next id, one larger
+    pub fn inc(self) -> Self {
+        Id::new(self.id + 1)
+    }
 }
 
 impl<T> Copy for Id<T> {}
