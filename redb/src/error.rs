@@ -16,6 +16,7 @@ pub enum DbError {
     #[error(transparent)]
     #[from(
         redb::Error,
+        redb::CommitError,
         redb::StorageError,
         redb::TableError,
         redb::TransactionError

@@ -78,7 +78,9 @@ impl Handler<ReqSpec> for WithScan<'_, &mut Database> {
 
             Modify(m) => {
                 let txn = db.begin_write()?;
-                txn.handle(m).map(Modified)
+                let reply = txn.handle(m).map(Modified)?;
+                txn.commit()?;
+                Ok(reply)
             }
         }
     }
@@ -140,7 +142,7 @@ impl Handler<CardScan> for WithScan<'_, ReadTransaction> {
     }
 }
 
-impl Handler<Modify> for WriteTransaction {
+impl Handler<Modify> for &WriteTransaction {
     type Reply = CardUpdated;
 
     fn handle(self, action: Modify) -> DbResult<Self::Reply> {
@@ -154,7 +156,7 @@ impl Handler<Modify> for WriteTransaction {
     }
 }
 
-impl Handler<CardCreate> for WriteTransaction {
+impl Handler<CardCreate> for &WriteTransaction {
     type Reply = Id<Card>;
 
     fn handle(self, _: CardCreate) -> DbResult<Self::Reply> {
@@ -165,7 +167,7 @@ impl Handler<CardCreate> for WriteTransaction {
     }
 }
 
-impl Handler<Arc<CardModify>> for WriteTransaction {
+impl Handler<Arc<CardModify>> for &WriteTransaction {
     type Reply = Arc<CardModify>;
 
     fn handle(self, acm: Arc<CardModify>) -> DbResult<Self::Reply> {
@@ -175,7 +177,7 @@ impl Handler<Arc<CardModify>> for WriteTransaction {
     }
 }
 
-impl Handler<(Id<Card>, &CardModification)> for WriteTransaction {
+impl Handler<(Id<Card>, &CardModification)> for &WriteTransaction {
     type Reply = ();
 
     fn handle(self, (card, cmod): (Id<Card>, &CardModification)) -> DbResult<Self::Reply> {
@@ -187,7 +189,7 @@ impl Handler<(Id<Card>, &CardModification)> for WriteTransaction {
     }
 }
 
-impl Handler<(Id<Card>, &CardSetSynopsis)> for WriteTransaction {
+impl Handler<(Id<Card>, &CardSetSynopsis)> for &WriteTransaction {
     type Reply = ();
 
     fn handle(
