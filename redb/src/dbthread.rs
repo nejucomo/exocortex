@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::thread::JoinHandle;
 
+use logself::LogSelf as _;
 use redb::{
     Database, ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction,
 };
@@ -21,11 +22,9 @@ pub(crate) fn launch(db: Database, to_from_app: (ToApp, FromApp)) -> JoinHandle<
 }
 
 fn run_db_thread(db: Database, to_from_app: (ToApp, FromApp)) -> DbResult<()> {
-    let res = run_inner(db, to_from_app);
-    if let Some(e) = res.as_ref().err() {
-        log::warn!("db thread error: {e:?}");
-    }
-    res
+    run_inner(db, to_from_app).inspect_err(|e| {
+        e.log_warn_ref("db thread error");
+    })
 }
 
 fn run_inner(mut db: Database, (to_app, from_app): (ToApp, FromApp)) -> DbResult<()> {
@@ -104,9 +103,16 @@ impl Handler<DbIsEmpty> for ReadTransaction {
     type Reply = bool;
 
     fn handle(self, _: DbIsEmpty) -> DbResult<Self::Reply> {
-        let tab = self.open_table(TABLES.card_synopsis)?;
-        let len = tab.len()?;
-        Ok(len == 0)
+        use redb::TableError::TableDoesNotExist;
+
+        match self.open_table(TABLES.card_synopsis) {
+            Ok(tab) => {
+                let len = tab.len()?;
+                Ok(len == 0)
+            }
+            Err(TableDoesNotExist(_)) => Ok(true),
+            Err(e) => Err(e.into()),
+        }
     }
 }
 
