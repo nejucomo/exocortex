@@ -1,3 +1,5 @@
+mod scan;
+
 use std::sync::Arc;
 use std::thread::JoinHandle;
 
@@ -13,6 +15,8 @@ use crate::messages::{
 use crate::tables::TABLES;
 use crate::{DbResult, Id};
 
+use self::scan::ScanSlot;
+
 pub(crate) fn launch(db: Database, to_from_app: (ToApp, FromApp)) -> JoinHandle<DbResult<()>> {
     std::thread::Builder::new()
         .name(env!("CARGO_PKG_NAME").to_string())
@@ -27,13 +31,13 @@ fn run_db_thread(db: Database, to_from_app: (ToApp, FromApp)) -> DbResult<()> {
 }
 
 fn run_inner(mut db: Database, (to_app, from_app): (ToApp, FromApp)) -> DbResult<()> {
-    let mut scan: Option<Scan> = None;
+    let mut scanslot = ScanSlot::default();
 
     log::debug!("db request-handler loop starting");
     // The `RecvError` is a unit-type; no info is lost by dropping it:
     while let Ok(req) = from_app.recv() {
         log::trace!("processing {:?}: {:?}", req.id, &req.reqspec);
-        let rep = (&mut db, &mut scan).handle(req)?;
+        let rep = (&mut db, &mut scanslot).handle(req)?;
         log::trace!("sending response: {:?}", &rep);
         to_app.send(rep)?;
     }
@@ -41,9 +45,7 @@ fn run_inner(mut db: Database, (to_app, from_app): (ToApp, FromApp)) -> DbResult
     Ok(())
 }
 
-type Scan = ();
-
-type WithScan<'a, T> = (T, &'a mut Option<Scan>);
+type WithScan<'a, T> = (T, &'a mut ScanSlot);
 
 trait Handler<R> {
     type Reply;
@@ -120,25 +122,9 @@ impl Handler<DbIsEmpty> for ReadTransaction {
 impl Handler<CardScan> for WithScan<'_, ReadTransaction> {
     type Reply = CardScanned;
 
-    fn handle(self, request: CardScan) -> DbResult<Self::Reply> {
-        use CardScan::*;
-        use CardScanned::*;
-
-        let (txn, scan) = self;
-
-        match request {
-            Next => {
-                let _ = scan.get_or_insert_with(|| {
-                    let _ = txn;
-                    todo!()
-                });
-                todo!()
-            }
-            Stop => {
-                *scan = None;
-                Ok(Stopped)
-            }
-        }
+    fn handle(self, scanop: CardScan) -> DbResult<Self::Reply> {
+        let (txn, scanslot) = self;
+        scanslot.handle((txn, scanop))
     }
 }
 

@@ -41,7 +41,7 @@ pub enum Query {
 pub struct DbIsEmpty;
 
 /// A request to scan cards
-#[derive(Debug, From)]
+#[derive(Copy, Clone, Debug, From)]
 pub enum CardScan {
     /// Request the next card in the scan
     ///
@@ -102,6 +102,7 @@ pub struct Reply {
 #[derive(Debug, From)]
 pub enum RepSpec {
     #[allow(missing_docs)]
+    #[from(Queried, CardScanned)]
     Queried(Queried),
     #[allow(missing_docs)]
     Modified(CardUpdated),
@@ -117,7 +118,7 @@ pub enum Queried {
 }
 
 /// The result of scanning a card
-#[derive(Debug, From)]
+#[derive(Debug)]
 pub enum CardScanned {
     /// The synopsis of the next card
     Found(String),

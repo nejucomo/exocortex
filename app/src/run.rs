@@ -38,7 +38,7 @@ fn init_log(logopts: &logging_options::StandardConsole) {
 
     let mut b = Logger::builder();
 
-    for noisymod in ["eframe", "egui_glow"] {
+    for noisymod in ["eframe", "egui", "egui_glow", "egui_winit"] {
         b.filter_module(noisymod, log::LevelFilter::Info);
     }
 

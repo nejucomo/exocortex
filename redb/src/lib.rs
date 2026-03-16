@@ -10,6 +10,6 @@ mod tables;
 
 pub mod messages;
 
-pub use self::error::{DbError, DbResult};
+pub use self::error::{DbError, DbResult, SendReplyError, SendRequestError};
 pub use self::exodb::ExoDb;
 pub use self::id::Id;
