@@ -10,39 +10,46 @@ pub(crate) struct LogView<'a> {
     dbman: &'a mut DbManager,
     cmcache: &'a mut CommonMarkCache,
     cards: &'a [String],
+    scan_complete: bool,
 }
 
 impl<'a> Widget for LogView<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
-        let w = ui.available_width();
-        let desired = Vec2::new(w, 0.0);
-        let layout = Layout::top_down(Align::Min);
+        let mut any = ui.allocate_response(Vec2::ZERO, Sense::hover());
+        let mut overflowed = false;
 
-        let inner = ui.allocate_ui_with_layout(desired, layout, |ui| {
-            ui.set_width(w);
+        ui.with_layout(Layout::top_down(Align::Min), |ui| {
+            ui.set_max_width(ui.available_width());
 
-            let mut resp = ui.allocate_response(Vec2::ZERO, Sense::hover());
+            let bottom = ui.clip_rect().bottom();
 
             for synopsis in self.cards {
-                if ui.available_height() > 0.0 {
-                    resp |= CommonMarkViewer::new()
-                        .show(ui, self.cmcache, synopsis)
-                        .response;
-                } else {
+                let r = CommonMarkViewer::new()
+                    .show(ui, self.cmcache, synopsis)
+                    .response;
+
+                any |= r.clone();
+
+                if r.rect.bottom() > bottom {
+                    overflowed = true;
                     break;
                 }
             }
 
-            self.dbman
-                .post_scan_request_if_none_outstanding(if ui.available_height() > 0.0 {
-                    CardScan::Next
-                } else {
-                    CardScan::Stop
-                });
-
-            resp
+            any |= ui.label(if self.scan_complete {
+                "<scan complete>"
+            } else {
+                "<scan incomplete>"
+            });
         });
 
-        inner.response | inner.inner
+        self.dbman
+            .post_scan_request_if_none_outstanding(if overflowed {
+                CardScan::Stop
+            } else {
+                CardScan::Next
+            });
+
+        any
     }
 }

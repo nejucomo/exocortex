@@ -48,6 +48,7 @@ impl Widget for &mut App {
             &mut self.dbman,
             &mut self.cmcache,
             &self.cards,
+            self.scan_complete,
         ));
 
         self.handle_ui_events(ui);
