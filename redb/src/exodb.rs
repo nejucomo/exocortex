@@ -50,7 +50,7 @@ impl ExoDb {
             self.recvid.map(|prev| prev.inc()).unwrap_or_default()
         );
         let reqid = self.post_request(req)?;
-        log::debug!("wait_reply for {reqid:?}");
+        log::trace!("wait_reply for {reqid:?}");
         let reply = self.wait_reply()?;
         // This is implied by the earlier `assert_eq`:
         assert_eq!(reqid, reply.reqid);

@@ -33,9 +33,9 @@ fn run_inner(mut db: Database, (to_app, from_app): (ToApp, FromApp)) -> DbResult
     log::debug!("db request-handler loop starting");
     // The `RecvError` is a unit-type; no info is lost by dropping it:
     while let Ok(req) = from_app.recv() {
-        log::debug!("processing {:?}: {:?}", req.id, &req.reqspec);
+        log::trace!("processing {:?}: {:?}", req.id, &req.reqspec);
         let rep = (&mut db, &mut scan).handle(req)?;
-        log::debug!("sending response: {:?}", &rep);
+        log::trace!("sending response: {:?}", &rep);
         to_app.send(rep)?;
     }
     log::debug!("db request-handler loop exiting cleanly");

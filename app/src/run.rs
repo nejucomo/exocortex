@@ -17,9 +17,7 @@ pub fn run() -> Result<()> {
     color_eyre::install()?;
 
     let opts = Options::parse();
-
-    Logger::init_from_options(&opts.logopts);
-    log::debug!("Logging initialized.");
+    init_log(&opts.logopts);
 
     let mut db = ExoDb::init(&opts.db_path).wrap_err_with(|| {
         format!(
@@ -33,6 +31,20 @@ pub fn run() -> Result<()> {
     stringify_error("eframe error", App::run(db))?;
 
     Ok(())
+}
+
+fn init_log(logopts: &logging_options::StandardConsole) {
+    use logging_options::backend::LoggingOptions as _;
+
+    let mut b = Logger::builder();
+
+    for noisymod in ["eframe", "egui_glow"] {
+        b.filter_module(noisymod, log::LevelFilter::Info);
+    }
+
+    logopts.configure(b).init();
+
+    log::debug!("Logging initialized.");
 }
 
 fn stringify_error<E>(tag: &'static str, r: Result<(), E>) -> Result<()>
