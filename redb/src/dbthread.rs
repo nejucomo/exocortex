@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use std::thread::JoinHandle;
 
-use logself::LogSelf as _;
 use redb::{
     Database, ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction,
 };
@@ -23,7 +22,7 @@ pub(crate) fn launch(db: Database, to_from_app: (ToApp, FromApp)) -> JoinHandle<
 
 fn run_db_thread(db: Database, to_from_app: (ToApp, FromApp)) -> DbResult<()> {
     run_inner(db, to_from_app).inspect_err(|e| {
-        e.log_warn_ref("db thread error");
+        log::warn!("db thread error: {e}");
     })
 }
 

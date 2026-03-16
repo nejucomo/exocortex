@@ -1325,7 +1325,6 @@ dependencies = [
  "derive-new",
  "derive_more",
  "log",
- "logself",
  "redb",
  "thiserror 2.0.18",
 ]
@@ -2113,13 +2112,6 @@ checksum = "1d7df039face6ba24486c4e3e7ca7871627d41ce7ddcd0f85ede9c73216f1ba1"
 dependencies = [
  "clap",
  "env_logger",
- "log",
-]
-
-[[package]]
-name = "logself"
-version = "0.1.0"
-dependencies = [
  "log",
 ]
 
