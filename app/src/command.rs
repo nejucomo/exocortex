@@ -19,6 +19,6 @@ impl KeyCommand for Command {
 
         scs.define_command([(Escape, Modifiers::COMMAND)], Viewport(Close));
         scs.define_command([(F, Modifiers::COMMAND)], ViewportToggleFullscreen);
-        dbg!(scs);
+        // scs.log_debug("shortcuts");
     }
 }

@@ -52,7 +52,6 @@ where
 
     /// Attempt to match `key`
     pub(crate) fn match_key(&self, key: KeyChord) -> Option<Node<C>> {
-        dbg!(key);
-        dbg!(self.0.borrow().get(&key).cloned())
+        self.0.borrow().get(&key).cloned()
     }
 }

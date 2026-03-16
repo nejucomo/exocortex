@@ -1,5 +1,8 @@
-use exocortex_damo::Provider;
-use exocortex_damo::errors::UnknownId;
+use exocortex_redb::messages::RepSpec::{Modified, Queried};
+use exocortex_redb::messages::{
+    CardCreate, CardModify, CardSetSynopsis, CardUpdated::Created, DbIsEmpty, Queried::DbWasEmpty,
+};
+use exocortex_redb::{DbResult, ExoDb};
 use indoc::indoc;
 
 const CANNED_CARDS: &[&str] = &[
@@ -27,12 +30,16 @@ const CANNED_CARDS: &[&str] = &[
     "# },
 ];
 
-pub(crate) fn prepopulated<P: Provider>(mut prov: P) -> Result<P, UnknownId> {
-    if prov.is_empty() {
+pub(crate) fn prepopulate(db: &mut ExoDb) -> DbResult<()> {
+    if matches!(db.request(DbIsEmpty)?, Queried(DbWasEmpty(true))) {
         for cardtxt in CANNED_CARDS.iter().rev() {
-            let cardid = prov.card_new()?;
-            prov.card_set_synopsis(cardid, cardtxt)?;
+            let card = match db.request(CardCreate)? {
+                Modified(Created(c)) => c,
+                other => panic!("incoherent db response: {other:?}"),
+            };
+
+            db.request(CardModify::new(card, CardSetSynopsis(cardtxt.to_string())))?;
         }
     }
-    Ok(prov)
+    Ok(())
 }

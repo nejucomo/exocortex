@@ -1,12 +1,12 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_damo::MultiProvider;
+use exocortex_redb::ExoDb;
 use logging_options::Backend as _;
 
 use crate::app::App;
 use crate::cliopts::Options;
-use crate::prepop::prepopulated;
+use crate::prepop::prepopulate;
 
 /// Run the app
 ///
@@ -17,16 +17,39 @@ pub fn run() -> Result<()> {
     color_eyre::install()?;
 
     let opts = Options::parse();
+    init_log(&opts.logopts);
 
-    Logger::init_from_options(&opts.logopts);
-    log::debug!("Logging initialized.");
+    let mut db = ExoDb::init(&opts.db_path).wrap_err_with(|| {
+        format!(
+            "Failed to initialize database in {:?}",
+            opts.db_path.to_string()
+        )
+    })?;
 
-    let damo = MultiProvider::open_or_create(opts.db_path.as_opt_path())
-        .wrap_err_with(|| format!("{:?}", opts.db_path))?;
-
-    let damo = prepopulated(damo)?;
-
-    App::run(damo).or_else(|e| Err(eyre!("eframe error")).wrap_err_with(|| format!("{e}")))?;
+    // FIXME: figure out how to avoid `e.to_string`
+    stringify_error("db prepopulation error", prepopulate(&mut db))?;
+    stringify_error("eframe error", App::run(db))?;
 
     Ok(())
+}
+
+fn init_log(logopts: &logging_options::StandardConsole) {
+    use logging_options::backend::LoggingOptions as _;
+
+    let mut b = Logger::builder();
+
+    for noisymod in ["eframe", "egui_glow"] {
+        b.filter_module(noisymod, log::LevelFilter::Info);
+    }
+
+    logopts.configure(b).init();
+
+    log::debug!("Logging initialized.");
+}
+
+fn stringify_error<E>(tag: &'static str, r: Result<(), E>) -> Result<()>
+where
+    E: ToString,
+{
+    r.or_else(|e| Err(eyre!(tag)).wrap_err_with(|| e.to_string()))
 }

@@ -1,0 +1,11 @@
+[package]
+edition.workspace = true
+name = "exocortex-redb"
+version = "0.1.0"
+
+[dependencies]
+derive-new.workspace = true
+derive_more = { workspace = true, features = ["from"] }
+log.workspace = true
+redb.workspace = true
+thiserror.workspace = true

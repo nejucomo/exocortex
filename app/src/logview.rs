@@ -1,44 +1,55 @@
 use derive_new::new;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2, Widget};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_damo::Provider;
+use exocortex_redb::messages::CardScan;
+
+use crate::dbman::DbManager;
 
 #[derive(Debug, new)]
-pub(crate) struct LogView<'a, P>
-where
-    P: Provider,
-{
-    damo: &'a P,
+pub(crate) struct LogView<'a> {
+    dbman: &'a mut DbManager,
     cmcache: &'a mut CommonMarkCache,
+    cards: &'a [String],
+    scan_complete: bool,
 }
 
-impl<'a, P> Widget for LogView<'a, P>
-where
-    P: Provider,
-{
+impl<'a> Widget for LogView<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
-        let w = ui.available_width();
-        let desired = Vec2::new(w, 0.0);
-        let layout = Layout::top_down(Align::Min);
+        let mut any = ui.allocate_response(Vec2::ZERO, Sense::hover());
+        let mut overflowed = false;
 
-        let inner = ui.allocate_ui_with_layout(desired, layout, |ui| {
-            ui.set_width(w);
+        ui.with_layout(Layout::top_down(Align::Min), |ui| {
+            ui.set_max_width(ui.available_width());
 
-            let mut resp = ui.allocate_response(Vec2::ZERO, Sense::hover());
+            let bottom = ui.clip_rect().bottom();
 
-            let mut optid = self.damo.card_prev(None).unwrap();
-            while let Some(id) = optid {
-                let synopsis = self.damo.card_get_synopsis(id).unwrap();
-
-                resp |= CommonMarkViewer::new()
+            for synopsis in self.cards {
+                let r = CommonMarkViewer::new()
                     .show(ui, self.cmcache, synopsis)
                     .response;
 
-                optid = self.damo.card_prev(Some(id)).unwrap();
+                any |= r.clone();
+
+                if r.rect.bottom() > bottom {
+                    overflowed = true;
+                    break;
+                }
             }
-            resp
+
+            any |= ui.label(if self.scan_complete {
+                "<scan complete>"
+            } else {
+                "<scan incomplete>"
+            });
         });
 
-        inner.response | inner.inner
+        self.dbman
+            .post_scan_request_if_none_outstanding(if overflowed {
+                CardScan::Stop
+            } else {
+                CardScan::Next
+            });
+
+        any
     }
 }
