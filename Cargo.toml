@@ -1,5 +1,5 @@
 [workspace]
-members = ["app", "squeeze-frame", "keybinding", "redb"]
+members = ["app", "squeeze-frame", "keybinding", "redb", "tchan"]
 resolver = "3"
 
 [workspace.package]
