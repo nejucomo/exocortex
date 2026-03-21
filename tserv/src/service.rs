@@ -1,6 +1,5 @@
 use moveslot::{MapInPlace as _, MoveSlot};
 
-use crate::ReqRepRes;
 use crate::svcinner::SvcInner;
 
 #[derive(Debug)]
@@ -23,15 +22,15 @@ where
         Self(MoveSlot::from(SvcInner::launch(f)))
     }
 
-    pub fn post_request(&mut self, request: Req) -> ReqRepRes<Option<Req>, Error> {
+    pub fn post_request(&mut self, request: Req) -> Result<Option<Req>, Error> {
         self.0.mip_out_res(|inner| inner.post_request(request))
     }
 
-    pub fn poll_reply(&mut self) -> ReqRepRes<Option<Rep>, Error> {
+    pub fn poll_reply(&mut self) -> Result<Option<Rep>, Error> {
         self.0.mip_out_res(|inner| inner.poll_reply())
     }
 
-    pub fn wait_reply(&mut self) -> ReqRepRes<Rep, Error> {
+    pub fn wait_reply(&mut self) -> Result<Rep, Error> {
         self.0.mip_out_res(|inner| inner.wait_reply())
     }
 }

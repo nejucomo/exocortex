@@ -1344,7 +1344,6 @@ dependencies = [
  "derive-new",
  "derive_more",
  "moveslot",
- "thiserror 2.0.18",
 ]
 
 [[package]]

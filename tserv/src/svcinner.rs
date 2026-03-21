@@ -1,11 +1,10 @@
-use std::any::Any;
 use std::sync::mpsc::{TryRecvError, TrySendError};
 use std::thread::JoinHandle;
 
 use derive_new::new;
 
+use crate::child;
 use crate::interface::Interface;
-use crate::{ReqRepError, ReqRepRes, child};
 
 #[derive(Debug, new)]
 #[new(visbility = "")]
@@ -33,38 +32,39 @@ where
         Self::new(jh, iface)
     }
 
-    pub(crate) fn post_request(self, request: Req) -> ReqRepRes<(Self, Option<Req>), Error> {
+    pub(crate) fn post_request(self, request: Req) -> Result<(Self, Option<Req>), Error> {
         use TrySendError::*;
 
         match self.iface.to.try_send(request) {
             Ok(()) => Ok((self, None)),
             Err(Full(req)) => Ok((self, Some(req))),
-            Err(Disconnected(_)) => incorporate_join_error(self.jh.join()),
+            Err(Disconnected(_)) => self.join_unwind(),
         }
     }
 
-    pub fn poll_reply(self) -> ReqRepRes<(Self, Option<Rep>), Error> {
+    pub fn poll_reply(self) -> Result<(Self, Option<Rep>), Error> {
         use TryRecvError::*;
 
         match self.iface.from.try_recv() {
             Ok(rep) => Ok((self, Some(rep))),
             Err(Empty) => Ok((self, None)),
-            Err(Disconnected) => incorporate_join_error(self.jh.join()),
+            Err(Disconnected) => self.join_unwind(),
         }
     }
 
-    pub fn wait_reply(self) -> ReqRepRes<(Self, Rep), Error> {
+    pub fn wait_reply(self) -> Result<(Self, Rep), Error> {
         match self.iface.from.recv() {
             Ok(rep) => Ok((self, rep)),
-            Err(_) => incorporate_join_error(self.jh.join()),
+            Err(_) => self.join_unwind(),
         }
     }
-}
 
-fn incorporate_join_error<T, Error>(
-    joinres: Result<Result<(), Error>, Box<dyn Any + Send + 'static>>,
-) -> ReqRepRes<T, Error> {
-    let appres = joinres?;
-    let () = appres.map_err(ReqRepError::Custom)?;
-    panic!("Assertion Failed: send failed but child exited ok");
+    fn join_unwind<T>(self) -> Result<T, Error> {
+        match self.jh.join() {
+            Ok(Ok(())) => panic!("expected child error"),
+            Ok(Err(e)) => Err(e),
+            // Propagate child panics:
+            Err(e) => std::panic::resume_unwind(e),
+        }
+    }
 }
