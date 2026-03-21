@@ -1,15 +1,6 @@
-#![allow(missing_docs)]
-
-mod error;
-mod inner;
-
 use moveslot::{MapInPlace as _, MoveSlot};
 
-use crate::{Interface, InterfacePair};
-
-use self::inner::Inner;
-
-pub use self::error::{ReqRepError, ReqRepRes};
+use crate::{Inner, Interface, InterfacePair, ReqRepRes};
 
 #[derive(Debug)]
 pub struct ParentInterface<Req, Rep, Error>(MoveSlot<Inner<Req, Rep, Error>>)
@@ -17,16 +8,6 @@ where
     Req: Send + 'static,
     Rep: Send + 'static,
     Error: std::error::Error + Send + 'static;
-
-pub fn launch<F, Req, Rep, Error>(f: F) -> ParentInterface<Req, Rep, Error>
-where
-    F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
-    Req: Send + 'static,
-    Rep: Send + 'static,
-    Error: std::error::Error + Send + 'static,
-{
-    ParentInterface::launch(f)
-}
 
 impl<Req, Rep, Error> ParentInterface<Req, Rep, Error>
 where

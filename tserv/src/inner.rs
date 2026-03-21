@@ -4,8 +4,7 @@ use std::thread::JoinHandle;
 
 use derive_new::new;
 
-use crate::Interface;
-use crate::reqrep::{ReqRepError, ReqRepRes};
+use crate::{Interface, ReqRepError, ReqRepRes};
 
 #[derive(Debug, new)]
 #[new(visbility = "pub(super)")]
