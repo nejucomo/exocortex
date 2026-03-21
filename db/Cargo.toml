@@ -4,3 +4,9 @@ name = "exocortex-db"
 version = "0.1.0"
 
 [dependencies]
+derive-new.workspace = true
+derive_more = { workspace = true, features = ["from"] }
+jiff.workspace = true
+log.workspace = true
+redb.workspace = true
+thiserror.workspace = true

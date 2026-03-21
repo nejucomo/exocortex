@@ -19,7 +19,7 @@ pub fn run() -> Result<()> {
     let opts = Options::parse();
     init_log(&opts.logopts);
 
-    let mut db = ExoDb::init(&opts.db_path).wrap_err_with(|| {
+    let mut db = Database::init(&opts.db_path).wrap_err_with(|| {
         format!(
             "Failed to initialize database in {:?}",
             opts.db_path.to_string()

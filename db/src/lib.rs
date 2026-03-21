@@ -1,14 +1,19 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! The `exocortex` database
+#![deny(missing_docs, unsafe_code)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+mod db;
+// mod load;
+mod error;
+mod handler;
+mod id;
+mod save;
+mod tables;
+mod timestamp;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod entities;
+pub mod messages;
+
+pub use self::db::Database;
+pub use self::error::{Error, Result};
+pub use self::id::Id;
+pub use self::timestamp::Timestamp;

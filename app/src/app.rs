@@ -9,12 +9,11 @@ use exocortex_redb::ExoDb;
 use exocortex_redb::messages::RepSpec;
 
 use crate::command::Command;
-use crate::dbman::DbManager;
 use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
-    dbman: DbManager,
+    dbserv: ThreadService<DbRequest, DbReply, DbError>,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
@@ -24,37 +23,6 @@ pub(crate) struct App {
     cards: Vec<String>,
     #[new(default)]
     scan_complete: bool,
-}
-
-impl eframe::App for App {
-    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        if let Some(reply) = self.dbman.poll_reply().unwrap() {
-            self.handle_db_reply(reply.repspec);
-        }
-
-        CentralPanel::default().show(ctx, |ui| ui.add(self));
-    }
-}
-
-impl Widget for &mut App {
-    fn ui(self, ui: &mut Ui) -> Response {
-        let mut resp = ui
-            .vertical_centered(|ui| {
-                ui.label(RichText::new("exocortex").italics());
-            })
-            .response;
-
-        resp |= ui.add(LogView::new(
-            &mut self.dbman,
-            &mut self.cmcache,
-            &self.cards,
-            self.scan_complete,
-        ));
-
-        self.handle_ui_events(ui);
-
-        resp
-    }
 }
 
 impl App {
@@ -146,5 +114,36 @@ impl App {
                 todo!("FIXME")
             }
         }
+    }
+}
+
+impl eframe::App for App {
+    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+        if let Some(reply) = self.dbman.poll_reply().unwrap() {
+            self.handle_db_reply(reply.repspec);
+        }
+
+        CentralPanel::default().show(ctx, |ui| ui.add(self));
+    }
+}
+
+impl Widget for &mut App {
+    fn ui(self, ui: &mut Ui) -> Response {
+        let mut resp = ui
+            .vertical_centered(|ui| {
+                ui.label(RichText::new("exocortex").italics());
+            })
+            .response;
+
+        resp |= ui.add(LogView::new(
+            &mut self.dbman,
+            &mut self.cmcache,
+            &self.cards,
+            self.scan_complete,
+        ));
+
+        self.handle_ui_events(ui);
+
+        resp
     }
 }

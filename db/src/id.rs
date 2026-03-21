@@ -5,60 +5,62 @@ use std::marker::PhantomData;
 use derive_new::new;
 use redb::{Key, TypeName, Value};
 
-pub type IdNum = u64;
-
 /// A locally unique identifier for a `T` value
 #[derive(new)]
-pub struct Id<T> {
-    pub(crate) id: IdNum, // BUG: We need to kill id's for request identification
+pub struct Id<T: ?Sized + 'static> {
+    n: u64,
     #[new(default)]
     ph: PhantomData<T>,
 }
 
-impl<T> Id<T> {
+impl<T: ?Sized + 'static> Id<T> {
     /// Produce a new [Id] by treating `self` as a "next unallocated [Id]" tracker
     pub fn alloc(&mut self) -> Self {
         let id = *self;
-        self.id += 1;
+        self.n += 1;
         id
     }
 
     /// The next id, one larger
     pub fn inc(self) -> Self {
-        Id::new(self.id + 1)
+        Id::new(self.n + 1)
+    }
+
+    pub(crate) fn unwrap(self) -> u64 {
+        self.n
     }
 }
 
-impl<T> Copy for Id<T> {}
+impl<T: ?Sized + 'static> Copy for Id<T> {}
 
-impl<T> Clone for Id<T> {
+impl<T: ?Sized + 'static> Clone for Id<T> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<T> Default for Id<T> {
+impl<T: ?Sized + 'static> Default for Id<T> {
     fn default() -> Self {
         Self::new(0)
     }
 }
 
-impl<T> PartialEq for Id<T> {
+impl<T: ?Sized + 'static> PartialEq for Id<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
+        self.n == other.n
     }
 }
 
-impl<T> Debug for Id<T> {
+impl<T: ?Sized + 'static> Debug for Id<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let id = self.id;
+        let id = self.n;
         let tname = std::any::type_name::<T>();
         let tnick = tname.rsplit_once("::").map(|(_, s)| s).unwrap_or(tname);
         write!(f, "Id:{tnick}({id})")
     }
 }
 
-impl<T: 'static> Value for Id<T> {
+impl<T: ?Sized + 'static> Value for Id<T> {
     type SelfType<'a>
         = Id<T>
     where
@@ -77,14 +79,14 @@ impl<T: 'static> Value for Id<T> {
         Self: 'a,
     {
         let bytes: [u8; 8] = data.try_into().expect("Id<T> must be 8 bytes");
-        Id::new(u64::from_le_bytes(bytes))
+        Id::new(u64::from_be_bytes(bytes))
     }
 
     fn as_bytes<'a, 'b: 'a>(value: &'a Self::SelfType<'b>) -> Self::AsBytes<'a>
     where
         Self: 'b,
     {
-        value.id.to_le_bytes()
+        value.n.to_be_bytes()
     }
 
     fn type_name() -> TypeName {
@@ -95,10 +97,10 @@ impl<T: 'static> Value for Id<T> {
     }
 }
 
-impl<T: 'static> Key for Id<T> {
+impl<T: ?Sized + 'static> Key for Id<T> {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
-        let a = u64::from_le_bytes(data1.try_into().expect("Id<T> key must be 8 bytes"));
-        let b = u64::from_le_bytes(data2.try_into().expect("Id<T> key must be 8 bytes"));
+        let a = u64::from_be_bytes(data1.try_into().expect("Id<T> key must be 8 bytes"));
+        let b = u64::from_be_bytes(data2.try_into().expect("Id<T> key must be 8 bytes"));
         a.cmp(&b)
     }
 }
