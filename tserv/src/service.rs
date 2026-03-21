@@ -1,6 +1,7 @@
 use moveslot::{MapInPlace as _, MoveSlot};
 
-use crate::{Interface, InterfacePair, ReqRepRes, SvcInner};
+use crate::ReqRepRes;
+use crate::svcinner::SvcInner;
 
 #[derive(Debug)]
 pub struct ThreadService<Req, Rep, Error>(MoveSlot<SvcInner<Req, Rep, Error>>)
@@ -19,10 +20,7 @@ where
     where
         F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
     {
-        // FIXME: Pick a better name, given the rendevous-request design.
-        let (to_from_child, to_from_parent) = InterfacePair::alloc(0, 1).into();
-        let jh = std::thread::spawn(|| child_loop(f, to_from_parent));
-        Self(MoveSlot::from(SvcInner::new(jh, to_from_child)))
+        Self(MoveSlot::from(SvcInner::launch(f)))
     }
 
     pub fn post_request(&mut self, request: Req) -> ReqRepRes<Option<Req>, Error> {
@@ -36,21 +34,4 @@ where
     pub fn wait_reply(&mut self) -> ReqRepRes<Rep, Error> {
         self.0.mip_out_res(|inner| inner.wait_reply())
     }
-}
-
-fn child_loop<F, Req, Rep, Error>(mut f: F, tfp: Interface<Rep, Req>) -> Result<(), Error>
-where
-    F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
-{
-    // It's ok to drop `RecvError` which indicates the parent hung up:
-    while let Ok(request) = tfp.from.recv() {
-        let rep = f(request)?;
-        if tfp.to.send(rep).is_err() {
-            // The parent hung up, so we silently swallow the reply.
-            break;
-        }
-    }
-
-    // The parent hung up, or we exited
-    Ok(())
 }

@@ -4,10 +4,11 @@ use std::thread::JoinHandle;
 
 use derive_new::new;
 
-use crate::{Interface, ReqRepError, ReqRepRes};
+use crate::interface::Interface;
+use crate::{ReqRepError, ReqRepRes, child};
 
 #[derive(Debug, new)]
-#[new(visbility = "pub(crate)")]
+#[new(visbility = "")]
 pub(crate) struct SvcInner<Req, Rep, Error>
 where
     Req: Send + 'static,
@@ -24,6 +25,14 @@ where
     Rep: Send + 'static,
     Error: std::error::Error + Send + 'static,
 {
+    pub(crate) fn launch<F>(f: F) -> Self
+    where
+        F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
+    {
+        let (jh, iface) = child::spawn(f);
+        Self::new(jh, iface)
+    }
+
     pub(crate) fn post_request(self, request: Req) -> ReqRepRes<(Self, Option<Req>), Error> {
         use TrySendError::*;
 
