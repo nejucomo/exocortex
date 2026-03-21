@@ -1,6 +1,5 @@
-//! channel helpers for [std::sync::mpsc] and [std::thread]
+//! Run a request -> reply child [std::thread] via [std::sync::mpsc] channels
 #![deny(unsafe_code, missing_docs)]
-#![allow(missing_docs)] // expedient
 
 mod child;
 mod interface;
