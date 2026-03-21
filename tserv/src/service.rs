@@ -1,15 +1,15 @@
 use moveslot::{MapInPlace as _, MoveSlot};
 
-use crate::{Inner, Interface, InterfacePair, ReqRepRes};
+use crate::{Interface, InterfacePair, ReqRepRes, SvcInner};
 
 #[derive(Debug)]
-pub struct ParentInterface<Req, Rep, Error>(MoveSlot<Inner<Req, Rep, Error>>)
+pub struct ThreadService<Req, Rep, Error>(MoveSlot<SvcInner<Req, Rep, Error>>)
 where
     Req: Send + 'static,
     Rep: Send + 'static,
     Error: std::error::Error + Send + 'static;
 
-impl<Req, Rep, Error> ParentInterface<Req, Rep, Error>
+impl<Req, Rep, Error> ThreadService<Req, Rep, Error>
 where
     Req: Send + 'static,
     Rep: Send + 'static,
@@ -22,7 +22,7 @@ where
         // FIXME: Pick a better name, given the rendevous-request design.
         let (to_from_child, to_from_parent) = InterfacePair::alloc(0, 1).into();
         let jh = std::thread::spawn(|| child_loop(f, to_from_parent));
-        Self(MoveSlot::from(Inner::new(jh, to_from_child)))
+        Self(MoveSlot::from(SvcInner::new(jh, to_from_child)))
     }
 
     pub fn post_request(&mut self, request: Req) -> ReqRepRes<Option<Req>, Error> {

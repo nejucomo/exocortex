@@ -7,8 +7,8 @@ use derive_new::new;
 use crate::{Interface, ReqRepError, ReqRepRes};
 
 #[derive(Debug, new)]
-#[new(visbility = "pub(super)")]
-pub(super) struct Inner<Req, Rep, Error>
+#[new(visbility = "pub(crate)")]
+pub(crate) struct SvcInner<Req, Rep, Error>
 where
     Req: Send + 'static,
     Rep: Send + 'static,
@@ -18,13 +18,13 @@ where
     iface: Interface<Req, Rep>,
 }
 
-impl<Req, Rep, Error> Inner<Req, Rep, Error>
+impl<Req, Rep, Error> SvcInner<Req, Rep, Error>
 where
     Req: Send + 'static,
     Rep: Send + 'static,
     Error: std::error::Error + Send + 'static,
 {
-    pub(super) fn post_request(self, request: Req) -> ReqRepRes<(Self, Option<Req>), Error> {
+    pub(crate) fn post_request(self, request: Req) -> ReqRepRes<(Self, Option<Req>), Error> {
         use TrySendError::*;
 
         match self.iface.to.try_send(request) {

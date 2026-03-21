@@ -4,15 +4,15 @@
 
 mod channel;
 mod error;
-mod inner;
 mod interface;
 mod pair;
-mod tserv;
+mod service;
+mod svcinner;
 
 pub(crate) use self::channel::Channel;
-pub(crate) use self::inner::Inner;
 pub(crate) use self::interface::Interface;
 pub(crate) use self::pair::InterfacePair;
+pub(crate) use self::svcinner::SvcInner;
 
 pub use self::error::{ReqRepError, ReqRepRes};
-pub use self::tserv::ParentInterface;
+pub use self::service::ThreadService;
