@@ -1,6 +1,6 @@
 [package]
 edition.workspace = true
-name = "exocortex-tchan"
+name = "exocortex-tserv"
 version = "0.1.0"
 
 [dependencies]
