@@ -1311,6 +1311,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exocortex-db"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-keybinding"
 version = "0.1.0"
 dependencies = [
