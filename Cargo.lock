@@ -1340,6 +1340,12 @@ dependencies = [
 [[package]]
 name = "exocortex-tchan"
 version = "0.1.0"
+dependencies = [
+ "derive-new",
+ "derive_more",
+ "moveslot",
+ "thiserror 2.0.18",
+]
 
 [[package]]
 name = "ext-trait"
@@ -2194,6 +2200,12 @@ dependencies = [
  "adler2",
  "simd-adler32",
 ]
+
+[[package]]
+name = "moveslot"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0385876592e2649011f78366175ce8cc89b381ba13612c3f8b7efbddd864e7a"
 
 [[package]]
 name = "moxcms"

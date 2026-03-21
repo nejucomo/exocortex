@@ -4,3 +4,7 @@ name = "exocortex-tchan"
 version = "0.1.0"
 
 [dependencies]
+derive-new.workspace = true
+derive_more = { workspace = true, features = ["from", "into"] }
+moveslot.workspace = true
+thiserror.workspace = true
