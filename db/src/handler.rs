@@ -2,7 +2,7 @@ use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, W
 
 use crate::entities::Card;
 use crate::messages::{DbIsEmpty, DbReply, DbRequest, LogScan, Modify, Queried, Query, Request};
-use crate::store::Store as _;
+use crate::store::WriteTransactionStore as _;
 use crate::{Id, Result, tables};
 
 pub(crate) trait Handler<R: Request> {
@@ -73,7 +73,8 @@ impl Handler<LogScan> for ReadTransaction {
 
 impl Handler<Modify> for WriteTransaction {
     fn handle(&mut self, m: Modify) -> Result<Id<Card>> {
-        let (_, card) = m.store_into(self)?;
+        let (modid, card) = self.store(&m)?;
+        log::debug!("dropping {modid:?} from memory.");
         Ok(card)
     }
 }

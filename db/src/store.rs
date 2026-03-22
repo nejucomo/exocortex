@@ -1,11 +1,19 @@
 use std::borrow::Borrow;
 
+use extension_traits::extension;
 use redb::{ReadableTableMetadata as _, TableDefinition, WriteTransaction};
 
 use crate::entities::Card;
 use crate::messages::{CardCreate, CardModification, CardModify, CardSetSynopsis, Modify};
 use crate::tables::{EnumValue, Variant};
 use crate::{Id, Result, tables};
+
+#[extension(pub(crate) trait WriteTransactionStore)]
+impl WriteTransaction {
+    fn store<S: Store>(&self, value: &S) -> Result<(Id<S>, S::Aux)> {
+        value.store_into(self)
+    }
+}
 
 pub(crate) trait Store: PreStore {
     fn store_into(&self, txn: &WriteTransaction) -> Result<(Id<Self>, Self::Aux)> {
@@ -49,13 +57,13 @@ impl PreStore for Modify {
         match self {
             CardCreate(sub) => {
                 let v: Variant = 0;
-                let (id, NO_AUX) = sub.store_into(txn)?;
+                let (id, NO_AUX) = txn.store(sub)?;
                 Ok(((v, id.transmute()), id.transmute()))
             }
 
             CardModify(sub) => {
                 let v: Variant = 1;
-                let (id, card) = sub.store_into(txn)?;
+                let (id, card) = txn.store(sub)?;
                 Ok(((v, id.transmute()), card))
             }
         }
@@ -103,7 +111,7 @@ impl PreStore for CardModification {
         match self {
             SetSynopsis(sub) => {
                 let v: Variant = 0;
-                let (id, NO_AUX) = sub.store_into(txn)?;
+                let (id, NO_AUX) = txn.store(sub)?;
                 Ok(((v, id.transmute()), NO_AUX))
             }
         }
