@@ -1,8 +1,8 @@
-use redb::{MultimapTableDefinition, TableDefinition};
+use redb::TableDefinition;
 
+use crate::Id;
 use crate::entities::Card;
 use crate::messages::{CardCreate, CardModify, CardSetSynopsis, Modify};
-use crate::{Id, Timestamp};
 
 /// Every (normalized) enum value is a variant selector and the id of the variant table
 ///
@@ -25,7 +25,7 @@ macro_rules! def_tables {
 }
 
 def_tables!(
-    MultimapTableDefinition { LOG_V0 : Timestamp => Id<Modify> };
+    // MultimapTableDefinition { LOG_V0 : Timestamp => Id<Modify> };
 
     TableDefinition { MODIFY_V0 : Id<Modify> => EnumValue };
     TableDefinition { CARD_CREATE_V0: Id<CardCreate> => () };

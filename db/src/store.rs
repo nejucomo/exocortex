@@ -7,9 +7,9 @@ use crate::messages::{CardCreate, CardModification, CardModify, CardSetSynopsis,
 use crate::tables::{EnumValue, Variant};
 use crate::{Id, Result, tables};
 
-pub(crate) trait Save: SaveValue {
-    fn save_into(&self, txn: &WriteTransaction) -> Result<(Id<Self>, Self::Aux)> {
-        let (value, aux) = self.prepare_value(txn)?;
+pub(crate) trait Store: PreStore {
+    fn store_into(&self, txn: &WriteTransaction) -> Result<(Id<Self>, Self::Aux)> {
+        let (value, aux) = self.prestore_into(txn)?;
 
         let mut cctab = txn.open_table(Self::table_definition())?;
         let idnum = cctab.len()?;
@@ -22,105 +22,105 @@ pub(crate) trait Save: SaveValue {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value>;
 }
 
-pub(crate) trait SaveValue {
+pub(crate) trait PreStore {
     type Value: redb::Value + for<'a> Borrow<<Self::Value as redb::Value>::SelfType<'a>>;
     type Aux;
 
-    fn prepare_value(&self, txn: &WriteTransaction) -> Result<(Self::Value, Self::Aux)>;
+    fn prestore_into(&self, txn: &WriteTransaction) -> Result<(Self::Value, Self::Aux)>;
 }
 
 /// Prevent going cross-eyed with parenthesesitis
 type NoAux = ();
 const NO_AUX: NoAux = ();
 
-impl Save for Modify {
+impl Store for Modify {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value> {
         tables::MODIFY_V0
     }
 }
 
-impl SaveValue for Modify {
+impl PreStore for Modify {
     type Value = EnumValue;
     type Aux = Id<Card>;
 
-    fn prepare_value(&self, txn: &WriteTransaction) -> Result<(EnumValue, Id<Card>)> {
+    fn prestore_into(&self, txn: &WriteTransaction) -> Result<(EnumValue, Id<Card>)> {
         use Modify::*;
 
         match self {
             CardCreate(sub) => {
                 let v: Variant = 0;
-                let (id, NO_AUX) = sub.save_into(txn)?;
+                let (id, NO_AUX) = sub.store_into(txn)?;
                 Ok(((v, id.transmute()), id.transmute()))
             }
 
             CardModify(sub) => {
                 let v: Variant = 1;
-                let (id, card) = sub.save_into(txn)?;
+                let (id, card) = sub.store_into(txn)?;
                 Ok(((v, id.transmute()), card))
             }
         }
     }
 }
 
-impl Save for CardCreate {
+impl Store for CardCreate {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value> {
         tables::CARD_CREATE_V0
     }
 }
 
-impl SaveValue for CardCreate {
+impl PreStore for CardCreate {
     type Value = ();
     type Aux = NoAux;
 
-    fn prepare_value(&self, _: &WriteTransaction) -> Result<((), NoAux)> {
+    fn prestore_into(&self, _: &WriteTransaction) -> Result<((), NoAux)> {
         Ok(((), NO_AUX))
     }
 }
 
-impl Save for CardModify {
+impl Store for CardModify {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value> {
         tables::CARD_MODIFY_V0
     }
 }
 
-impl SaveValue for CardModify {
+impl PreStore for CardModify {
     type Value = (Id<Card>, EnumValue);
     type Aux = Id<Card>;
 
-    fn prepare_value(&self, txn: &WriteTransaction) -> Result<(Self::Value, Id<Card>)> {
-        let (sub, NO_AUX) = self.modif.prepare_value(txn)?;
+    fn prestore_into(&self, txn: &WriteTransaction) -> Result<(Self::Value, Id<Card>)> {
+        let (sub, NO_AUX) = self.modif.prestore_into(txn)?;
         Ok(((self.card, sub), self.card))
     }
 }
 
-impl SaveValue for CardModification {
+impl PreStore for CardModification {
     type Value = EnumValue;
     type Aux = NoAux;
 
-    fn prepare_value(&self, txn: &WriteTransaction) -> Result<(Self::Value, NoAux)> {
+    fn prestore_into(&self, txn: &WriteTransaction) -> Result<(Self::Value, NoAux)> {
         use CardModification::*;
 
         match self {
             SetSynopsis(sub) => {
                 let v: Variant = 0;
-                let (id, NO_AUX) = sub.save_into(txn)?;
+                let (id, NO_AUX) = sub.store_into(txn)?;
                 Ok(((v, id.transmute()), NO_AUX))
             }
         }
     }
 }
 
-impl Save for CardSetSynopsis {
+impl Store for CardSetSynopsis {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value> {
         tables::CARD_SET_SYNOPSIS_V0
     }
 }
 
-impl SaveValue for CardSetSynopsis {
+impl PreStore for CardSetSynopsis {
     type Value = String; // TODO: Switch to `&str`
     type Aux = NoAux;
 
-    fn prepare_value(&self, _: &WriteTransaction) -> Result<(Self::Value, NoAux)> {
+    fn prestore_into(&self, _: &WriteTransaction) -> Result<(Self::Value, NoAux)> {
         Ok((self.0.clone(), NO_AUX))
     }
 }

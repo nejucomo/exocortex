@@ -6,7 +6,7 @@ mod db;
 mod error;
 mod handler;
 mod id;
-mod save;
+mod store;
 mod tables;
 mod timestamp;
 

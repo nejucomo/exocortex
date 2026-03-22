@@ -8,14 +8,17 @@ use redb::{Key, Value};
 pub struct Timestamp(JTS);
 
 impl Timestamp {
+    /// The time now
     pub fn now() -> Self {
         Self(JTS::now())
     }
 
+    /// The given a number of microseconds since the unix epoch as a [Timestamp]
     pub fn from_microseconds(t: i64) -> Self {
         Self(JTS::from_microsecond(t).unwrap())
     }
 
+    /// `self` as a number of microseconds since the unix epoch
     pub fn into_microseconds(self) -> i64 {
         self.0.as_microsecond()
     }

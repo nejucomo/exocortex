@@ -1,8 +1,8 @@
 use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction};
 
 use crate::entities::Card;
-use crate::messages::{DbIsEmpty, DbReply, DbRequest, Modify, Queried, Query, Request};
-use crate::save::Save as _;
+use crate::messages::{DbIsEmpty, DbReply, DbRequest, LogScan, Modify, Queried, Query, Request};
+use crate::store::Store as _;
 use crate::{Id, Result, tables};
 
 pub(crate) trait Handler<R: Request> {
@@ -64,9 +64,16 @@ impl Handler<DbIsEmpty> for ReadTransaction {
     }
 }
 
+impl Handler<LogScan> for ReadTransaction {
+    fn handle(&mut self, request: LogScan) -> Result<Vec<Modify>> {
+        let _ = request;
+        todo!()
+    }
+}
+
 impl Handler<Modify> for WriteTransaction {
     fn handle(&mut self, m: Modify) -> Result<Id<Card>> {
-        let (_, card) = m.save_into(self)?;
+        let (_, card) = m.store_into(self)?;
         Ok(card)
     }
 }
