@@ -26,8 +26,8 @@ impl<T: ?Sized + 'static> Id<T> {
         Id::new(self.n + 1)
     }
 
-    pub(crate) fn unwrap(self) -> u64 {
-        self.n
+    pub(crate) fn transmute<U: ?Sized + 'static>(self) -> Id<U> {
+        Id::new(self.n)
     }
 }
 

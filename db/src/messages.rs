@@ -1,6 +1,4 @@
-//! Message types sent to/from the DB thread
-use std::sync::Arc;
-
+//! Message types sent to/from the DB
 use derive_more::From;
 use derive_new::new;
 
@@ -15,7 +13,7 @@ pub(crate) trait Request {
 #[derive(Debug, From, new)]
 pub enum DbRequest {
     #[allow(missing_docs)]
-    #[from(Query, DbIsEmpty, CardScan)]
+    #[from(Query, DbIsEmpty, LogScan)]
     Query(Query),
     #[allow(missing_docs)]
     #[from(Modify, CardCreate, CardModify)]
@@ -26,10 +24,9 @@ pub enum DbRequest {
 #[derive(Debug, From, new)]
 pub enum DbReply {
     #[allow(missing_docs)]
-    #[from(Queried, CardScanned)]
     Queried(Queried),
     #[allow(missing_docs)]
-    Modified(CardUpdated),
+    Modified(Id<Card>),
 }
 
 impl Request for DbRequest {
@@ -86,16 +83,12 @@ pub enum Modify {
 }
 
 impl Request for Modify {
-    type Reply = ();
+    type Reply = Id<Card>;
 }
 
 /// A request to create a new card
 #[derive(Copy, Clone, Debug)]
 pub struct CardCreate;
-
-impl Request for CardCreate {
-    type Reply = Id<Card>;
-}
 
 /// A request to modify a specific card
 #[derive(Debug, From, new)]
@@ -107,10 +100,6 @@ pub struct CardModify {
     pub modif: CardModification,
 }
 
-impl Request for CardModify {
-    type Reply = ();
-}
-
 /// A requested modification of a card
 #[derive(Debug, From)]
 pub enum CardModification {
@@ -118,14 +107,6 @@ pub enum CardModification {
     SetSynopsis(CardSetSynopsis),
 }
 
-impl Request for CardModification {
-    type Reply = ();
-}
-
 /// A request to set a card synopsis
 #[derive(Debug, From, new)]
 pub struct CardSetSynopsis(pub String);
-
-impl Request for CardSetSynopsis {
-    type Reply = ();
-}

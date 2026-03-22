@@ -1,7 +1,9 @@
-use redb::{ReadTransaction, ReadableDatabase as _};
+use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction};
 
-use crate::Result;
-use crate::messages::{DbIsEmpty, DbReply, DbRequest, Queried, Query, Request};
+use crate::entities::Card;
+use crate::messages::{DbIsEmpty, DbReply, DbRequest, Modify, Queried, Query, Request};
+use crate::save::Save as _;
+use crate::{Id, Result, tables};
 
 pub(crate) trait Handler<R: Request> {
     fn handle(&mut self, request: R) -> Result<R::Reply>;
@@ -13,18 +15,25 @@ impl Handler<DbRequest> for redb::Database {
         use DbRequest::*;
 
         match request {
-            Query(q) => {
-                let txn = self.begin_read()?;
-                txn.handle(q).map(Queried)
-            }
-
-            Modify(m) => {
-                let txn = self.begin_write()?;
-                let reply = txn.handle(m).map(Modified)?;
-                txn.commit()?;
-                Ok(reply)
-            }
+            Query(q) => self.handle(q).map(Queried),
+            Modify(m) => self.handle(m).map(Modified),
         }
+    }
+}
+
+impl Handler<Query> for redb::Database {
+    fn handle(&mut self, q: Query) -> Result<Queried> {
+        let mut txn = self.begin_read()?;
+        txn.handle(q)
+    }
+}
+
+impl Handler<Modify> for redb::Database {
+    fn handle(&mut self, m: Modify) -> Result<Id<Card>> {
+        let mut txn = self.begin_write()?;
+        let reply = txn.handle(m)?;
+        txn.commit()?;
+        Ok(reply)
     }
 }
 
@@ -44,7 +53,7 @@ impl Handler<DbIsEmpty> for ReadTransaction {
     fn handle(&mut self, _: DbIsEmpty) -> Result<bool> {
         use redb::TableError::TableDoesNotExist;
 
-        match self.open_table(TABLES.card_synopsis) {
+        match self.open_table(tables::CARD_CREATE_V0) {
             Ok(tab) => {
                 let len = tab.len()?;
                 Ok(len == 0)
@@ -52,5 +61,12 @@ impl Handler<DbIsEmpty> for ReadTransaction {
             Err(TableDoesNotExist(_)) => Ok(true),
             Err(e) => Err(e.into()),
         }
+    }
+}
+
+impl Handler<Modify> for WriteTransaction {
+    fn handle(&mut self, m: Modify) -> Result<Id<Card>> {
+        let (_, card) = m.save_into(self)?;
+        Ok(card)
     }
 }
