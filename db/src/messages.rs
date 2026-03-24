@@ -48,7 +48,7 @@ pub enum Queried {
     #[allow(missing_docs)]
     DbWasEmpty(bool),
     #[allow(missing_docs)]
-    LogScanned(Vec<Modify>),
+    LogScanned(Vec<(Id<Modify>, Modify)>),
 }
 
 impl Request for Query {
@@ -68,7 +68,7 @@ impl Request for DbIsEmpty {
 pub struct LogScan;
 
 impl Request for LogScan {
-    type Reply = Vec<Modify>;
+    type Reply = Vec<(Id<Modify>, Modify)>;
 }
 
 /// A request to modify cards

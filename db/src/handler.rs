@@ -2,7 +2,7 @@ use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, W
 
 use crate::entities::Card;
 use crate::messages::{DbIsEmpty, DbReply, DbRequest, LogScan, Modify, Queried, Query, Request};
-use crate::store::WriteTransactionStore as _;
+use crate::storeload::{ReadTransactionLoad as _, WriteTransactionStore as _};
 use crate::{Id, Result, tables};
 
 pub(crate) trait Handler<R: Request> {
@@ -65,9 +65,8 @@ impl Handler<DbIsEmpty> for ReadTransaction {
 }
 
 impl Handler<LogScan> for ReadTransaction {
-    fn handle(&mut self, request: LogScan) -> Result<Vec<Modify>> {
-        let _ = request;
-        todo!()
+    fn handle(&mut self, LogScan: LogScan) -> Result<Vec<(Id<Modify>, Modify)>> {
+        self.scan()
     }
 }
 

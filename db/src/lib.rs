@@ -2,11 +2,10 @@
 #![deny(missing_docs, unsafe_code)]
 
 mod db;
-// mod load;
 mod error;
 mod handler;
 mod id;
-mod store;
+mod storeload;
 mod tables;
 mod timestamp;
 
