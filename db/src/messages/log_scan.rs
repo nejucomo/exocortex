@@ -1,7 +1,7 @@
 //! LogScan request type
 use crate::{Id, Timestamped};
 
-use crate::messages::{Modify, Request};
+use crate::messages::{CardModify, Request};
 
 /// Scan the log
 #[derive(Copy, Clone, Debug)]
@@ -19,4 +19,4 @@ impl Request for LogScan {
 pub type ScannedItems = Vec<ScanItem>;
 
 /// An individual item scanned
-pub type ScanItem = (Id<Timestamped<Modify>>, Timestamped<Modify>);
+pub type ScanItem = (Id<CardModify>, Timestamped<CardModify>);

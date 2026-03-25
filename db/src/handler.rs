@@ -1,7 +1,9 @@
 use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction};
 
 use crate::entities::Card;
-use crate::messages::{DbIsEmpty, DbReply, DbRequest, LogScan, Modify, Queried, Query, Request};
+use crate::messages::{
+    DbIsEmpty, DbReply, DbRequest, LogScan, CardModify, Queried, Query, Request, ScannedItems,
+};
 use crate::storeload::{ReadTransactionLoad as _, WriteTransactionStore as _};
 use crate::{Id, Result, Timestamped, tables};
 
@@ -43,8 +45,8 @@ impl Handler<Query> for redb::Database {
     }
 }
 
-impl Handler<Modify> for redb::Database {
-    fn handle(&mut self, m: Modify) -> Result<Id<Card>> {
+impl Handler<CardModify> for redb::Database {
+    fn handle(&mut self, m: CardModify) -> Result<Id<Card>> {
         let mut txn = self.begin_write()?;
         let reply = txn.handle(m)?;
         txn.commit()?;
@@ -80,18 +82,15 @@ impl Handler<DbIsEmpty> for ReadTransaction {
 }
 
 impl Handler<LogScan> for ReadTransaction {
-    fn handle(
-        &mut self,
-        LogScan: LogScan,
-    ) -> Result<Vec<(Id<Timestamped<Modify>>, Timestamped<Modify>)>> {
+    fn handle(&mut self, LogScan: LogScan) -> Result<ScannedItems> {
         self.scan()
     }
 }
 
-impl Handler<Modify> for WriteTransaction {
-    fn handle(&mut self, m: Modify) -> Result<Id<Card>> {
-        let (modid, card) = self.store(&Timestamped::now(m))?;
-        log::debug!("dropping {modid:?} from memory.");
-        Ok(card)
+impl Handler<CardModify> for WriteTransaction {
+    fn handle(&mut self, m: CardModify) -> Result<()> {
+        let item = self.store(m)?;
+        log::debug!("dropping {item:?} from memory.");
+        Ok(())
     }
 }

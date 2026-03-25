@@ -1,41 +1,41 @@
-use std::borrow::Borrow;
-
 use extension_traits::extension;
-use redb::{
-    ReadTransaction, ReadableTable as _, ReadableTableMetadata as _, TableDefinition,
-    WriteTransaction,
-};
+use redb::{ReadTransaction, WriteTransaction};
 
-use crate::DbError::{self, LoadInvalidEnumVariant};
-use crate::entities::Card;
-use crate::messages::{CardCreate, CardModification, CardModify, CardSetSynopsis, Modify};
-use crate::tables::{EnumValue, Variant};
-use crate::{Id, Result, Timestamp, Timestamped, tables};
+use crate::{Id, Result};
 
 #[extension(pub(crate) trait WriteTransactionStore)]
 impl WriteTransaction {
-    fn store<S: StoreLoad>(&self, value: &S) -> Result<(Id<S>, S::StoreAux)> {
+    fn store<S: Store>(&self, value: S) -> Result<(Id<S>, S::Stored)> {
         value.store_into(self)
     }
 }
 
 #[extension(pub(crate) trait ReadTransactionLoad)]
 impl ReadTransaction {
-    fn load<L>(&self, id: Id<L>) -> Result<L>
-    where
-        L: StoreLoad,
-    {
+    fn load<L: Load>(&self, id: Id<L::IdType>) -> Result<L> {
         L::load_from(self, id)
     }
 
-    fn scan<L>(&self) -> Result<Vec<(Id<L>, L)>>
-    where
-        L: StoreLoad,
-    {
+    fn scan<L: Load>(&self) -> Result<Vec<(Id<L::IdType>, L)>> {
         L::scan(self)
     }
 }
 
+pub(crate) trait Store {
+    type Stored: Load;
+
+    fn store_into(self, txn: &WriteTransaction) -> Result<(Id<Self>, Self::Stored)>;
+}
+
+pub(crate) trait Load: Sized {
+    type IdType: Store<Stored = Self>;
+
+    fn load_from(txn: &ReadTransaction, id: Id<Self::IdType>) -> Result<Self>;
+
+    fn scan(txn: &ReadTransaction) -> Result<Vec<(Id<Self::IdType>, Self)>>;
+}
+
+/*
 pub(crate) trait StoreLoad: SLValue + 'static {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value>;
 
@@ -254,3 +254,4 @@ impl SLValue for CardSetSynopsis {
         Ok(CardSetSynopsis(synstr))
     }
 }
+*/
