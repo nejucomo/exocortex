@@ -2,8 +2,8 @@
 use derive_more::{From, TryInto, TryIntoError};
 use derive_new::new;
 
-use crate::Id;
 use crate::entities::Card;
+use crate::{Id, Timestamped};
 
 macro_rules! def_try_into_transitive {
     ( $a:ty => $b:ty => $c:ty ) => {
@@ -103,7 +103,7 @@ impl Request for LogScan {
 pub type ScannedItems = Vec<ScanItem>;
 
 /// An individual item scanned
-pub type ScanItem = (Id<Modify>, Modify);
+pub type ScanItem = (Id<Timestamped<Modify>>, Timestamped<Modify>);
 
 /// A request to modify cards
 #[derive(Debug, From, TryInto)]

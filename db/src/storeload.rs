@@ -10,7 +10,7 @@ use crate::DbError::{self, LoadInvalidEnumVariant};
 use crate::entities::Card;
 use crate::messages::{CardCreate, CardModification, CardModify, CardSetSynopsis, Modify};
 use crate::tables::{EnumValue, Variant};
-use crate::{Id, Result, tables};
+use crate::{Id, Result, Timestamp, Timestamped, tables};
 
 #[extension(pub(crate) trait WriteTransactionStore)]
 impl WriteTransaction {
@@ -92,9 +92,28 @@ pub(crate) trait SLValue: Sized {
 type NoAux = ();
 const NO_AUX: NoAux = ();
 
-impl StoreLoad for Modify {
+impl StoreLoad for Timestamped<Modify> {
     fn table_definition() -> TableDefinition<'static, Id<Self>, Self::Value> {
         tables::MODIFY_V0
+    }
+}
+
+impl SLValue for Timestamped<Modify> {
+    type Value = (Timestamp, EnumValue);
+    type StoreAux = Id<Card>;
+
+    fn prestore_into(&self, txn: &WriteTransaction) -> Result<(Self::Value, Self::StoreAux)> {
+        let (enval, aux) = self.val.prestore_into(txn)?;
+        Ok(((self.time, enval), aux))
+    }
+
+    fn load_from_value<'a>(
+        txn: &ReadTransaction,
+        v: <Self::Value as redb::Value>::SelfType<'a>,
+    ) -> Result<Self> {
+        let (time, enval) = v;
+        let val = Modify::load_from_value(txn, enval)?;
+        Ok(Timestamped { time, val })
     }
 }
 
