@@ -3,7 +3,6 @@
 mod app;
 mod command;
 mod dbgexpr;
-mod dbman;
 mod logview;
 mod modaleditor;
 mod prepop;

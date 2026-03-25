@@ -1,0 +1,14 @@
+[package]
+edition.workspace = true
+name = "exocortex-db"
+version = "0.1.0"
+
+[dependencies]
+derive-new.workspace = true
+derive_more = { workspace = true, features = ["from", "try_into"] }
+exocortex-tserv.workspace = true
+extension-traits.workspace = true
+jiff.workspace = true
+log.workspace = true
+redb.workspace = true
+thiserror.workspace = true

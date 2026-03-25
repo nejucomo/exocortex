@@ -1,5 +1,5 @@
 [workspace]
-members = ["app", "squeeze-frame", "keybinding", "redb"]
+members = ["app", "squeeze-frame", "keybinding", "tserv", "db"]
 resolver = "3"
 
 [workspace.package]
@@ -15,11 +15,14 @@ eframe = "0.33"
 egui = "0.33"
 egui_commonmark = "0.22"
 env_logger = "0.11.8"
+exocortex-db = { version = "0.1.0", path = "db" }
 exocortex-keybinding = { version = "0.1.0", path = "keybinding" }
-exocortex-redb = { version = "0.1.0", path = "redb" }
+exocortex-tserv = { version = "0.1.0", path = "tserv" }
 extension-traits = "2.0.1"
 indoc = "2.0.7"
+jiff = "0.2.23"
 log = "0.4.29"
 logging-options = "0.1.0"
+moveslot = "0.1.0"
 redb = "3.1.1"
 thiserror = "2.0.17"
