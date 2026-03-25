@@ -24,7 +24,7 @@ impl<'a> Widget for LogView<'a> {
 
             for (modid, modify) in self.scanned {
                 let r = CommonMarkViewer::new()
-                    .show(ui, self.cmcache, &format!("`{modid:?} | {modify:?}`"))
+                    .show(ui, self.cmcache, &format!("```{modid:?} | {modify:?}```"))
                     .response;
 
                 any |= r.clone();
