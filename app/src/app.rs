@@ -4,31 +4,27 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
+use exocortex_db::DatabaseThreadService;
+use exocortex_db::messages::{DbReply, ScannedItems};
 use exocortex_keybinding::ShortcutState;
-use exocortex_redb::ExoDb;
-use exocortex_redb::messages::RepSpec;
 
 use crate::command::Command;
 use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
-    dbserv: ThreadService<DbRequest, DbReply, DbError>,
+    db: DatabaseThreadService,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
     #[new(default)]
     cmcache: CommonMarkCache,
     #[new(default)]
-    cards: Vec<String>,
-    #[new(default)]
-    scan_complete: bool,
+    scanned: ScannedItems,
 }
 
 impl App {
-    pub(crate) fn run(db: ExoDb) -> eframe::Result<()> {
-        let dbman = DbManager::new(db);
-
+    pub(crate) fn run(db: DatabaseThreadService) -> eframe::Result<()> {
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {
@@ -36,30 +32,18 @@ impl App {
                 persist_window: false,
                 ..Default::default()
             },
-            Box::new(|_cc| Ok(Box::new(Self::new(dbman)))),
+            Box::new(|_cc| Ok(Box::new(Self::new(db)))),
         )
     }
 
-    fn handle_db_reply(&mut self, reply: RepSpec) {
-        use RepSpec::Queried;
-        use exocortex_redb::messages::CardScanned::*;
-        use exocortex_redb::messages::Queried::CardScanned;
+    fn handle_db_reply(&mut self, reply: DbReply) {
+        use DbReply::*;
+        use exocortex_db::messages::Queried::LogScanned;
 
         match reply {
-            Queried(CardScanned(cs)) => match cs {
-                Found(synopsis) => {
-                    self.cards.push(synopsis);
-                    self.scan_complete = false;
-                }
-                Ended => {
-                    self.scan_complete = true;
-                }
-                Stopped => {
-                    self.scan_complete = false;
-                }
-            },
-
-            other => panic!("Unexpected DB reply: {other:?}"),
+            Queried(LogScanned(items)) => self.scanned = items,
+            Modified(card) => log::debug!("modified: {card:?}"),
+            other => panic!("unexpected db reply: {other:?}"),
         }
     }
 
@@ -119,8 +103,8 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
-        if let Some(reply) = self.dbman.poll_reply().unwrap() {
-            self.handle_db_reply(reply.repspec);
+        if let Some(reply) = self.db.poll_reply().unwrap() {
+            self.handle_db_reply(reply);
         }
 
         CentralPanel::default().show(ctx, |ui| ui.add(self));
@@ -135,12 +119,7 @@ impl Widget for &mut App {
             })
             .response;
 
-        resp |= ui.add(LogView::new(
-            &mut self.dbman,
-            &mut self.cmcache,
-            &self.cards,
-            self.scan_complete,
-        ));
+        resp |= ui.add(LogView::new(&mut self.db, &mut self.cmcache, &self.scanned));
 
         self.handle_ui_events(ui);
 

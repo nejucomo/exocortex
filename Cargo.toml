@@ -7,8 +7,6 @@ edition = "2024"
 
 [workspace.dependencies]
 clap = { version = "4.5.54", features = ["derive"] }
-jiff = "0.2.23"
-zerocopy = "0.8.47"
 color-eyre = "0.6.5"
 derive-new = "0.7.0"
 derive_more = "2.1.1"
@@ -22,6 +20,7 @@ exocortex-keybinding = { version = "0.1.0", path = "keybinding" }
 exocortex-tserv = { version = "0.1.0", path = "tserv" }
 extension-traits = "2.0.1"
 indoc = "2.0.7"
+jiff = "0.2.23"
 log = "0.4.29"
 logging-options = "0.1.0"
 moveslot = "0.1.0"

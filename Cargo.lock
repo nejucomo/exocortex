@@ -1305,7 +1305,6 @@ dependencies = [
  "env_logger",
  "exocortex-db",
  "exocortex-keybinding",
- "exocortex-tserv",
  "indoc",
  "log",
  "logging-options",
@@ -1317,6 +1316,7 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "exocortex-tserv",
  "extension-traits",
  "jiff",
  "log",

@@ -2,13 +2,14 @@ use derive_more::From;
 use thiserror::Error;
 
 use crate::Id;
+use crate::messages::DbReply;
 
 /// The database error type [Result](std::result::Result) shorthand
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, DbError>;
 
 /// The database error type
 #[derive(Debug, Error, From)]
-pub enum Error {
+pub enum DbError {
     /// An internal [redb::Error]
     #[from(
         redb::CommitError,
@@ -40,10 +41,21 @@ pub enum Error {
         /// The unrecognized variant
         variant_code: u32,
     },
+
+    /// The db returned the incorrect reply type for a request
+    #[error("db returned the incorrect reply type for a request: {0}")]
+    #[from(derive_more::TryIntoError<DbReply>)]
+    InvalidReply(derive_more::TryIntoError<DbReply>),
 }
 
-impl<T> From<Id<T>> for Error {
+impl<T> From<Id<T>> for DbError {
     fn from(id: Id<T>) -> Self {
-        Error::MissingEntity(format!("{id:?}"))
+        DbError::MissingEntity(format!("{id:?}"))
+    }
+}
+
+impl From<std::convert::Infallible> for DbError {
+    fn from(_: std::convert::Infallible) -> Self {
+        unreachable!()
     }
 }

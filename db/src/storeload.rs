@@ -6,7 +6,7 @@ use redb::{
     WriteTransaction,
 };
 
-use crate::Error::{self, LoadInvalidEnumVariant};
+use crate::DbError::{self, LoadInvalidEnumVariant};
 use crate::entities::Card;
 use crate::messages::{CardCreate, CardModification, CardModify, CardSetSynopsis, Modify};
 use crate::tables::{EnumValue, Variant};
@@ -53,7 +53,7 @@ pub(crate) trait StoreLoad: SLValue + 'static {
     fn load_from(txn: &ReadTransaction, id: Id<Self>) -> Result<Self> {
         let tab = txn.open_table(Self::table_definition())?;
         let optg = tab.get(id)?;
-        let guard = optg.ok_or_else(|| Error::from(id))?;
+        let guard = optg.ok_or_else(|| DbError::from(id))?;
         let rowval = guard.value();
         let value = Self::load_from_value(txn, rowval)?;
         Ok(value)
