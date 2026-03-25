@@ -1,11 +1,27 @@
 use std::sync::mpsc::{self, Receiver, SyncSender};
-use std::thread::JoinHandle;
 
 use derive_more::From;
 
 use crate::interface::Interface;
+use crate::svcinner::SvcInner;
 
-pub(crate) fn spawn<F, Req, Rep, E>(f: F) -> (JoinHandle<Result<(), E>>, Interface<Req, Rep>)
+use InnerReply::{AppReply, Started};
+
+pub(crate) enum InnerReply<Rep> {
+    Started,
+    AppReply(Rep),
+}
+
+impl<Rep> InnerReply<Rep> {
+    pub(crate) fn unwrap(self) -> Rep {
+        match self {
+            Started => panic!("internal tserv synchronization invariant failure"),
+            AppReply(r) => r,
+        }
+    }
+}
+
+pub(crate) fn spawn<F, Req, Rep, E>(f: F) -> SvcInner<Req, Rep, E>
 where
     F: FnMut(Req) -> Result<Rep, E> + Send + 'static,
     Req: Send + 'static,
@@ -18,19 +34,28 @@ where
     let to_from_child = Interface::new(request.sender, reply.receiver);
     let to_from_parent = Interface::new(reply.sender, request.receiver);
 
-    let jh = std::thread::spawn(|| child_loop(f, to_from_parent));
+    let jh = std::thread::spawn(|| {
+        to_from_parent.to.send(Started).unwrap();
+        child_loop(f, to_from_parent)
+    });
 
-    (jh, to_from_child)
+    // Block until child thread signals ready:
+    assert!(matches!(to_from_child.from.recv().unwrap(), Started));
+
+    SvcInner::new(jh, to_from_child)
 }
 
-fn child_loop<F, Req, Rep, Error>(mut f: F, tfp: Interface<Rep, Req>) -> Result<(), Error>
+fn child_loop<F, Req, Rep, Error>(
+    mut f: F,
+    tfp: Interface<InnerReply<Rep>, Req>,
+) -> Result<(), Error>
 where
     F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
 {
     // It's ok to drop `RecvError` which indicates the parent hung up:
     while let Ok(request) = tfp.from.recv() {
         let rep = f(request)?;
-        if tfp.to.send(rep).is_err() {
+        if tfp.to.send(AppReply(rep)).is_err() {
             // The parent hung up, so we silently swallow the reply.
             break;
         }

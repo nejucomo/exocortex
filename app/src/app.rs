@@ -5,7 +5,7 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::{DbReply, ScannedItems};
+use exocortex_db::messages::{DbReply, LogScan, ScannedItems};
 use exocortex_keybinding::ShortcutState;
 
 use crate::command::Command;
@@ -24,7 +24,9 @@ pub(crate) struct App {
 }
 
 impl App {
-    pub(crate) fn run(db: DatabaseThreadService) -> eframe::Result<()> {
+    pub(crate) fn run(mut db: DatabaseThreadService) -> eframe::Result<()> {
+        db.post_request(LogScan).unwrap();
+
         run_native(
             env!("CARGO_PKG_NAME"),
             NativeOptions {

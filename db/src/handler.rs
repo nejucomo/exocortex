@@ -9,8 +9,23 @@ pub(crate) trait Handler<R: Request> {
     fn handle(&mut self, request: R) -> Result<R::Reply>;
 }
 
+struct HiddenSentinel;
+
+impl Request for (HiddenSentinel, DbRequest) {
+    type Reply = DbReply;
+}
+
 impl Handler<DbRequest> for redb::Database {
     fn handle(&mut self, request: DbRequest) -> Result<DbReply> {
+        log::trace!("{:#?}", &request);
+        let res = self.handle((HiddenSentinel, request));
+        log::trace!("{:#?}", &res);
+        res
+    }
+}
+
+impl Handler<(HiddenSentinel, DbRequest)> for redb::Database {
+    fn handle(&mut self, (_, request): (HiddenSentinel, DbRequest)) -> Result<DbReply> {
         use DbReply::*;
         use DbRequest::*;
 

@@ -7,7 +7,7 @@ use crate::child;
 use crate::interface::Interface;
 
 #[derive(Debug, new)]
-#[new(visbility = "")]
+#[new(visbility = "pub(crate)")]
 pub(crate) struct SvcInner<Req, Rep, Error>
 where
     Req: Send + 'static,
@@ -15,7 +15,7 @@ where
     Error: std::error::Error + Send + 'static,
 {
     jh: JoinHandle<Result<(), Error>>,
-    iface: Interface<Req, Rep>,
+    iface: Interface<Req, child::InnerReply<Rep>>,
 }
 
 impl<Req, Rep, Error> SvcInner<Req, Rep, Error>
@@ -28,8 +28,7 @@ where
     where
         F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
     {
-        let (jh, iface) = child::spawn(f);
-        Self::new(jh, iface)
+        child::spawn(f)
     }
 
     pub(crate) fn post_request(self, request: Req) -> Result<(Self, Option<Req>), Error> {
@@ -46,7 +45,7 @@ where
         use TryRecvError::*;
 
         match self.iface.from.try_recv() {
-            Ok(rep) => Ok((self, Some(rep))),
+            Ok(rep) => Ok((self, Some(rep.unwrap()))),
             Err(Empty) => Ok((self, None)),
             Err(Disconnected) => self.join_unwind(),
         }
@@ -54,7 +53,7 @@ where
 
     pub fn wait_reply(self) -> Result<(Self, Rep), Error> {
         match self.iface.from.recv() {
-            Ok(rep) => Ok((self, rep)),
+            Ok(rep) => Ok((self, rep.unwrap())),
             Err(_) => self.join_unwind(),
         }
     }
