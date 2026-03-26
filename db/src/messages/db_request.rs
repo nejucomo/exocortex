@@ -4,11 +4,9 @@ use derive_new::new;
 
 use crate::Id;
 use crate::entities::Card;
-use crate::messages::ScannedItems;
+use crate::messages::{CardSetSynopsis, ScannedItems};
 
-use crate::messages::{
-    CardCreate, CardModify, CardModify, DbIsEmpty, LogScan, Queried, Query, Request,
-};
+use crate::messages::{CardCreate, CardModify, DbIsEmpty, LogScan, Queried, Query, Request};
 
 /// The top-level request sent by applications to the DB
 #[derive(Debug, From, TryInto, new)]
@@ -17,7 +15,7 @@ pub enum DbRequest {
     #[from(Query, DbIsEmpty, LogScan)]
     Query(Query),
     #[allow(missing_docs)]
-    #[from(CardModify, CardCreate, CardModify)]
+    #[from(CardModify, CardCreate, CardSetSynopsis)]
     Modify(CardModify),
 }
 
@@ -53,7 +51,6 @@ macro_rules! def_try_into_transitive {
 def_try_into_transitive!(DbRequest => Query => DbIsEmpty);
 def_try_into_transitive!(DbRequest => Query => LogScan);
 def_try_into_transitive!(DbRequest => CardModify => CardCreate);
-def_try_into_transitive!(DbRequest => CardModify => CardModify);
 
 def_try_into_transitive!(DbReply => Queried => bool);
 def_try_into_transitive!(DbReply => Queried => ScannedItems);

@@ -1,13 +1,13 @@
 use redb::TableDefinition;
 
 use crate::entities::Card;
-use crate::messages::{CardCreate, CardModify, CardSetSynopsis, CardModify};
-use crate::{Id, Timestamp, Timestamped};
+use crate::messages::{CardModify, CardSetSynopsis};
+use crate::{Id, Timestamp};
 
 /// Every (normalized) enum value is a variant selector and the id of the variant table
 ///
 /// The type `Id<Variant>` is a legibility hack.
-pub(crate) type EnumValue = (Variant, Id<Variant>);
+pub(crate) type EnumColumnar = (Variant, Id<Variant>);
 
 /// A unique value for each enum variant
 pub(crate) type Variant = u32;
@@ -27,8 +27,7 @@ macro_rules! def_tables {
 def_tables!(
     // MultimapTableDefinition { LOG_V0 : Timestamp => Id<Modify> };
 
-    TableDefinition { MODIFY_V0 : Id<Timestamped<CardModify>> => (Timestamp, EnumValue) };
-    TableDefinition { CARD_CREATE_V0: Id<CardCreate> => () };
-    TableDefinition { CARD_MODIFY_V0: Id<CardModify> => (Id<Card>, EnumValue) };
-    TableDefinition { CARD_SET_SYNOPSIS_V0: Id<CardSetSynopsis> => String };
+    TableDefinition { CARD_CREATE_V0: Id<Card> => () };
+    TableDefinition { CARD_MODIFY_V0 : Id<CardModify> => (Timestamp, EnumColumnar) };
+    TableDefinition { CARD_SET_SYNOPSIS_V0: Id<CardSetSynopsis> => (Id<Card>, String) };
 );

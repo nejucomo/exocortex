@@ -1,4 +1,5 @@
-use crate::Timestamp;
+use crate::dbio::{LoadColumnar, StoreColumnar};
+use crate::{Result, Timestamp};
 
 /// A `T` value with an associated timestamp
 ///
@@ -15,6 +16,37 @@ impl<T> Timestamped<T> {
     pub fn now(val: T) -> Self {
         let time = Timestamp::now();
         Timestamped { time, val }
+    }
+}
+
+impl<T> StoreColumnar for Timestamped<T>
+where
+    T: StoreColumnar,
+{
+    type RedValStore = (Timestamp, T::RedValStore);
+
+    fn store_columnar(
+        self,
+        txn: &redb::WriteTransaction,
+    ) -> Result<<Self::RedValStore as redb::Value>::SelfType<'static>> {
+        let inner = self.val.store_columnar(txn)?;
+        Ok((self.time, inner))
+    }
+}
+
+impl<T> LoadColumnar for Timestamped<T>
+where
+    T: LoadColumnar,
+{
+    type RedValLoad = (Timestamp, T::RedValLoad);
+
+    fn load_columnar<'a>(
+        txn: &redb::ReadTransaction,
+        v: <<Self as LoadColumnar>::RedValLoad as redb::Value>::SelfType<'a>,
+    ) -> Result<Self> {
+        let (time, inner) = v;
+        let val = T::load_columnar(txn, inner)?;
+        Ok(Timestamped { time, val })
     }
 }
 
