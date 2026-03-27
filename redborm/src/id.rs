@@ -26,6 +26,8 @@ impl<T: ?Sized + 'static> Id<T> {
         Id::new(self.n + 1)
     }
 
+    /// Convert to a different [Id] type
+    #[allow(dead_code)]
     pub(crate) fn transmute<U: ?Sized + 'static>(self) -> Id<U> {
         Id::new(self.n)
     }

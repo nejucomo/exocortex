@@ -1,15 +1,12 @@
 use derive_more::From;
 use thiserror::Error;
 
-use crate::Id;
-use crate::messages::DbReply;
-
 /// The database error type [Result](std::result::Result) shorthand
-pub type Result<T> = std::result::Result<T, DbError>;
+pub type OrmResult<T> = std::result::Result<T, OrmError>;
 
 /// The database error type
 #[derive(Debug, Error, From)]
-pub enum DbError {
+pub enum OrmError {
     /// An internal [redb::Error]
     #[from(
         redb::CommitError,
@@ -23,13 +20,13 @@ pub enum DbError {
     #[error(transparent)]
     Redb(redb::Error),
 
-    /// An attempt to load an entity with an unknown [Id]
+    /// An attempt to load a row with an unknown key
     ///
     /// # Note
     ///
-    /// The [String] must describe an [Id]`<T>`
-    #[error("failed to load {0}: unknown")]
-    MissingEntity(String),
+    /// The [String] must describe a key
+    #[error("failed to load unkown key: {0}")]
+    UnknownKey(String),
 
     /// An attempt to load an enum entity with an unknown variant
     ///
@@ -41,21 +38,4 @@ pub enum DbError {
         /// The unrecognized variant
         variant_code: u32,
     },
-
-    /// The db returned the incorrect reply type for a request
-    #[error("db returned the incorrect reply type for a request: {0}")]
-    #[from(derive_more::TryIntoError<DbReply>)]
-    InvalidReply(derive_more::TryIntoError<DbReply>),
-}
-
-impl<T> From<Id<T>> for DbError {
-    fn from(id: Id<T>) -> Self {
-        DbError::MissingEntity(format!("{id:?}"))
-    }
-}
-
-impl From<std::convert::Infallible> for DbError {
-    fn from(_: std::convert::Infallible) -> Self {
-        unreachable!()
-    }
 }
