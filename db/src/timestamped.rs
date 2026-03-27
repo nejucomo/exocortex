@@ -1,9 +1,14 @@
-use crate::dbio::{LoadColumnar, StoreColumnar};
-use crate::{Result, Timestamp};
+use derive_more::{From, Into};
+use derive_new::new;
+use exocortex_redborm::{Load, OrmResult, Store};
+use redb::{ReadTransaction, Value, WriteTransaction};
+
+use crate::Timestamp;
 
 /// A `T` value with an associated timestamp
 ///
 /// Typically this represents a creation time for a db entity
+#[derive(From, Into, new)]
 pub struct Timestamped<T> {
     /// The time associated with this value
     pub time: Timestamp,
@@ -19,33 +24,31 @@ impl<T> Timestamped<T> {
     }
 }
 
-impl<T> StoreColumnar for Timestamped<T>
+impl<T> Store for Timestamped<T>
 where
-    T: StoreColumnar,
+    T: Store,
 {
-    type RedValStore = (Timestamp, T::RedValStore);
+    type KOV = Timestamped<T::KOV>;
 
-    fn store_columnar(
-        self,
-        txn: &redb::WriteTransaction,
-    ) -> Result<<Self::RedValStore as redb::Value>::SelfType<'static>> {
-        let inner = self.val.store_columnar(txn)?;
-        Ok((self.time, inner))
+    fn store_into(self, txn: &WriteTransaction) -> OrmResult<Self::KOV> {
+        let Timestamped { time, val } = self;
+        let kov = val.store_into(txn)?;
+        Ok(Timestamped::new(time, kov))
     }
 }
 
-impl<T> LoadColumnar for Timestamped<T>
+impl<T> Load for Timestamped<T>
 where
-    T: LoadColumnar,
+    T: Load,
 {
-    type RedValLoad = (Timestamp, T::RedValLoad);
+    type KOV = Timestamped<T::KOV>;
 
-    fn load_columnar<'a>(
-        txn: &redb::ReadTransaction,
-        v: <<Self as LoadColumnar>::RedValLoad as redb::Value>::SelfType<'a>,
-    ) -> Result<Self> {
-        let (time, inner) = v;
-        let val = T::load_columnar(txn, inner)?;
+    fn load_from(
+        txn: &ReadTransaction,
+        kov: <Self::KOV as Value>::SelfType<'_>,
+    ) -> OrmResult<Self> {
+        let (time, innerkov) = kov.into();
+        let val = T::load_from(txn, innerkov)?;
         Ok(Timestamped { time, val })
     }
 }
@@ -59,5 +62,42 @@ where
         self.val.fmt(f)?;
         write!(f, ">")?;
         Ok(())
+    }
+}
+
+impl<T> Value for Timestamped<T>
+where
+    T: Value,
+{
+    type SelfType<'a>
+        = Timestamped<T::SelfType<'a>>
+    where
+        Self: 'a;
+
+    type AsBytes<'a>
+        = <(Timestamp, T) as Value>::AsBytes<'a>
+    where
+        Self: 'a;
+
+    fn fixed_width() -> Option<usize> {
+        <(Timestamp, T) as Value>::fixed_width()
+    }
+
+    fn from_bytes<'a>(data: &'a [u8]) -> Self::SelfType<'a>
+    where
+        Self: 'a,
+    {
+        Timestamped::from(<(Timestamp, T) as Value>::from_bytes(data))
+    }
+
+    fn as_bytes<'a, 'b: 'a>(value: &'a Self::SelfType<'b>) -> Self::AsBytes<'a>
+    where
+        Self: 'b,
+    {
+        value.into().as_bytes()
+    }
+
+    fn type_name() -> redb::TypeName {
+        redb::TypeName::new(std::any::type_name::<Self>())
     }
 }

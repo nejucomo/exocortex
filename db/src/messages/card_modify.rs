@@ -2,11 +2,10 @@
 use derive_more::{From, TryInto};
 use redb::TableDefinition;
 
-use crate::dbio::{StoreColumnar, Tabular};
 use crate::entities::Card;
 use crate::messages::{CardCreate, CardSetSynopsis};
 use crate::tables::{self, EnumColumnar};
-use crate::{Id, Result, Timestamp, Timestamped};
+use crate::{Id, Timestamp};
 
 /// A request to modify cards
 #[derive(Debug, From, TryInto)]
@@ -16,10 +15,6 @@ pub enum CardModify {
     #[allow(missing_docs)]
     SetSynopsis(CardSetSynopsis),
 }
-
-// impl Request for CardModify {
-//     type Reply = (Id<CardModify>, CardModified);
-// }
 
 /// A record of card modification
 #[derive(Debug, From, TryInto)]

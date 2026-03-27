@@ -1,24 +1,17 @@
-use crate::dbio::{StoreColumnar, Tabular};
+use exocortex_redborm::{OrmResult, Store};
+use redb::WriteTransaction;
+
+use crate::Id;
 use crate::entities::Card;
-use crate::{Id, Result, tables};
 
 /// A request to create a new card
 #[derive(Copy, Clone, Debug)]
 pub struct CardCreate;
 
-impl Tabular for CardCreate {
-    type IdType = Card;
-    type RedVal = ();
+impl Store for CardCreate {
+    type KOV = Id<Card>;
 
-    fn table_definition() -> redb::TableDefinition<'static, Id<Card>, Self::RedVal> {
-        tables::CARD_CREATE_V0
-    }
-}
-
-impl StoreColumnar for CardCreate {
-    type RedValStore = ();
-
-    fn store_columnar(self, _: &redb::WriteTransaction) -> Result<()> {
-        Ok(())
+    fn store_into(self, txn: &WriteTransaction) -> OrmResult<Self::KOV> {
+        Card.store_into(txn)
     }
 }

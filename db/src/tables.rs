@@ -27,7 +27,5 @@ macro_rules! def_tables {
 def_tables!(
     // MultimapTableDefinition { LOG_V0 : Timestamp => Id<Modify> };
 
-    TableDefinition { CARD_CREATE_V0: Id<Card> => () };
     TableDefinition { CARD_MODIFY_V0 : Id<CardModify> => (Timestamp, EnumColumnar) };
-    TableDefinition { CARD_SET_SYNOPSIS_V0: Id<CardSetSynopsis> => (Id<Card>, String) };
 );

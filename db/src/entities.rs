@@ -1,5 +1,11 @@
-//! Marker types for database entities; referenced via `Id<EntityType>`
+//! [RowValue](exocortex_redborm::RowValue) types with [`Id`]`<Self>` keys
 
-/// A type-disambiguation placeholder for `Id<Card>`
-#[derive(Copy, Clone, Debug)]
-pub enum Card {}
+mod card;
+
+pub trait Entity: RowValue<Key = Id<Self>> {}
+
+use exocortex_redborm::RowValue;
+
+use crate::Id;
+
+pub use self::card::Card;

@@ -12,5 +12,5 @@ pub use self::error::{OrmError, OrmResult};
 pub use self::id::Id;
 pub use self::load::Load;
 pub use self::ownedvalue::{OwnedKey, OwnedValue};
-pub use self::rowvalue::RowValue;
+pub use self::rowvalue::{Entity, RowValue};
 pub use self::store::Store;
