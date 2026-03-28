@@ -7,6 +7,7 @@ mod ownedvalue;
 mod rowvalue;
 mod store;
 
+pub mod enumvalue;
 pub mod ext;
 pub use self::error::{OrmError, OrmResult};
 pub use self::id::Id;

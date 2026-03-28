@@ -27,8 +27,7 @@ impl<T: ?Sized + 'static> Id<T> {
     }
 
     /// Convert to a different [Id] type
-    #[allow(dead_code)]
-    pub(crate) fn transmute<U: ?Sized + 'static>(self) -> Id<U> {
+    pub fn transmute<U: ?Sized + 'static>(self) -> Id<U> {
         Id::new(self.n)
     }
 }
@@ -59,6 +58,12 @@ impl<T: ?Sized + 'static> Debug for Id<T> {
         let tname = std::any::type_name::<T>();
         let tnick = tname.rsplit_once("::").map(|(_, s)| s).unwrap_or(tname);
         write!(f, "Id:{tnick}({id})")
+    }
+}
+
+impl<T: ?Sized + 'static> From<u64> for Id<T> {
+    fn from(value: u64) -> Self {
+        Self::new(value)
     }
 }
 

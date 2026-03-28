@@ -1,14 +1,16 @@
 //! LogScan request type
-use crate::{Id, Timestamped};
+use exocortex_redborm::Id;
 
-use crate::messages::{CardModify, Request};
+use crate::Timestamped;
+use crate::entities::CardModificationV0;
+use crate::messages::{CardModified, Request};
 
 /// Scan the log
 #[derive(Copy, Clone, Debug)]
 pub struct LogScan;
 
 impl Request for LogScan {
-    type Reply = ScannedItems;
+    type Reply = LogScanItems;
 }
 
 /// All of the items scanned in the order scanned
@@ -16,7 +18,7 @@ impl Request for LogScan {
 /// # TODO
 ///
 /// Implement pagination, or in-progress stateful scanning
-pub type ScannedItems = Vec<ScanItem>;
+pub type LogScanItems = Vec<LogScanItem>;
 
 /// An individual item scanned
-pub type ScanItem = (Id<CardModify>, Timestamped<CardModify>);
+pub type LogScanItem = (Id<CardModificationV0>, Timestamped<CardModified>);

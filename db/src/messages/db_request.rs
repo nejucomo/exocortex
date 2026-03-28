@@ -1,12 +1,12 @@
 //! DbRequest request type
 use derive_more::{From, TryInto, TryIntoError};
 use derive_new::new;
+use exocortex_redborm::Id;
 
-use crate::Id;
-use crate::entities::Card;
-use crate::messages::{CardSetSynopsis, ScannedItems};
-
-use crate::messages::{CardCreate, CardModify, DbIsEmpty, LogScan, Queried, Query, Request};
+use crate::entities::{CardSetSynopsisV0, CardV0};
+use crate::messages::{
+    CardCreate, CardModify, CardModifyG, DbIsEmpty, LogScan, LogScanItems, Queried, Query, Request,
+};
 
 /// The top-level request sent by applications to the DB
 #[derive(Debug, From, TryInto, new)]
@@ -15,12 +15,28 @@ pub enum DbRequest {
     #[from(Query, DbIsEmpty, LogScan)]
     Query(Query),
     #[allow(missing_docs)]
-    #[from(CardModify, CardCreate, CardSetSynopsis)]
+    #[from(CardModify)]
     Modify(CardModify),
 }
 
 impl Request for DbRequest {
     type Reply = DbReply;
+}
+
+impl From<CardCreate> for DbRequest {
+    fn from(value: CardCreate) -> Self {
+        use CardModifyG::Create;
+
+        DbRequest::Modify(Create(value))
+    }
+}
+
+impl From<CardSetSynopsisV0> for DbRequest {
+    fn from(value: CardSetSynopsisV0) -> Self {
+        use CardModifyG::SetSynopsis;
+
+        DbRequest::Modify(SetSynopsis(value))
+    }
 }
 
 /// The top-level reply sent from the DB to applications
@@ -29,7 +45,7 @@ pub enum DbReply {
     #[allow(missing_docs)]
     Queried(Queried),
     #[allow(missing_docs)]
-    Modified(Id<Card>),
+    Modified(Id<CardV0>),
 }
 
 macro_rules! def_try_into_transitive {
@@ -50,7 +66,6 @@ macro_rules! def_try_into_transitive {
 
 def_try_into_transitive!(DbRequest => Query => DbIsEmpty);
 def_try_into_transitive!(DbRequest => Query => LogScan);
-def_try_into_transitive!(DbRequest => CardModify => CardCreate);
 
 def_try_into_transitive!(DbReply => Queried => bool);
-def_try_into_transitive!(DbReply => Queried => ScannedItems);
+def_try_into_transitive!(DbReply => Queried => LogScanItems);

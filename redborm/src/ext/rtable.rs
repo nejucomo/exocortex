@@ -1,6 +1,8 @@
+use std::ops::RangeBounds;
+
 use redb::ReadableTable;
 
-use crate::{OrmResult, RowValue};
+use crate::{OrmError, OrmResult, RowValue};
 
 /// A convenience extension of [ReadableTable] for [RowValue]s
 pub trait ReadableTableExt<Row: RowValue>: ReadableTable<Row::Key, Row> {
@@ -21,12 +23,23 @@ pub trait ReadableTableExt<Row: RowValue>: ReadableTable<Row::Key, Row> {
         optrow.ok_or_else(|| UnknownKey(format!("{key:?}")))
     }
 
-    /*
-    fn get_row_range(&self, range: impl RangeBounds<Row::Key>) -> OrmResult<RowRange<Row>> {
+    /// Iterate over a range of [Row]s
+    fn iter_row_range(
+        &self,
+        range: impl RangeBounds<Row::Key>,
+    ) -> OrmResult<impl DoubleEndedIterator<Item = OrmResult<(Row::Key, Row)>>> {
         let range = self.range(range)?;
-        Ok(RowRange::new(range))
+        Ok(range.map(|kvgres| {
+            kvgres
+                .map(|(kg, vg)| (kg.value(), vg.value()))
+                .map_err(OrmError::from)
+        }))
     }
-    */
+
+    /// Iterate over all [Row]s
+    fn iter_rows(&self) -> OrmResult<impl DoubleEndedIterator<Item = OrmResult<(Row::Key, Row)>>> {
+        self.iter_row_range(..)
+    }
 }
 
 impl<B, Row> ReadableTableExt<Row> for B

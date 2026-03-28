@@ -1,7 +1,6 @@
 use derive_more::{From, Into};
 use derive_new::new;
-use exocortex_redborm::{Load, OrmResult, Store};
-use redb::{ReadTransaction, Value, WriteTransaction};
+use redb::Value;
 
 use crate::Timestamp;
 
@@ -24,6 +23,7 @@ impl<T> Timestamped<T> {
     }
 }
 
+/*
 impl<T> Store for Timestamped<T>
 where
     T: Store,
@@ -52,6 +52,7 @@ where
         Ok(Timestamped { time, val })
     }
 }
+*/
 
 impl<T> std::fmt::Debug for Timestamped<T>
 where
@@ -75,7 +76,7 @@ where
         Self: 'a;
 
     type AsBytes<'a>
-        = <(Timestamp, T) as Value>::AsBytes<'a>
+        = Vec<u8>
     where
         Self: 'a;
 
@@ -94,7 +95,10 @@ where
     where
         Self: 'b,
     {
-        value.into().as_bytes()
+        let mut v = vec![];
+        v.copy_from_slice(&value.time.into_microseconds().to_be_bytes());
+        v.copy_from_slice(T::as_bytes(&value.val).as_ref());
+        v
     }
 
     fn type_name() -> redb::TypeName {

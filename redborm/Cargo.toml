@@ -8,4 +8,5 @@ derive-new.workspace = true
 derive_more = { workspace = true, features = ["from"] }
 extension-traits.workspace = true
 redb.workspace = true
+redb-derive.workspace = true
 thiserror.workspace = true

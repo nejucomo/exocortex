@@ -5,6 +5,8 @@ use jiff::tz::TimeZone;
 use jiff::{Timestamp as JTS, Zoned};
 use redb::{Key, Value};
 
+use crate::Timestamped;
+
 /// A UTC timestamp with microsecond precision
 #[derive(Copy, Clone, Debug)]
 pub struct Timestamp(JTS);
@@ -23,6 +25,11 @@ impl Timestamp {
     /// `self` as a number of microseconds since the unix epoch
     pub fn into_microseconds(self) -> i64 {
         self.0.as_microsecond()
+    }
+
+    /// Stamp a time onto `val`
+    pub fn stamp<T>(self, val: T) -> Timestamped<T> {
+        Timestamped::new(self, val)
     }
 
     fn zoned_local(self) -> Zoned {

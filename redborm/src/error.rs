@@ -39,3 +39,13 @@ pub enum OrmError {
         variant_code: u32,
     },
 }
+
+impl OrmError {
+    /// Construct a [LoadInvalidEnumVariant](OrmError::LoadInvalidEnumVariant)
+    pub fn load_invalid_enum_variant<T>(variant_code: u32) -> Self {
+        OrmError::LoadInvalidEnumVariant {
+            type_name: std::any::type_name::<T>(),
+            variant_code,
+        }
+    }
+}

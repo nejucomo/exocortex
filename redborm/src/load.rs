@@ -1,5 +1,6 @@
 use redb::{ReadTransaction, Value};
 
+use crate::ext::ReadableTableExt as _;
 use crate::{OrmResult, RowValue};
 
 /// A type which can be loaded (transitively) from a <u>k</u>ey <u>o</u>r <u>v</u>alue.
@@ -10,6 +11,11 @@ pub trait Load: Sized {
     /// Load a [Self] given `txn` and an `intermediate` to load from
     fn load_from(txn: &ReadTransaction, kov: <Self::KOV as Value>::SelfType<'_>)
     -> OrmResult<Self>;
+
+    /// Scan [Self] items given a `txn`
+    fn scan_from<F>(txn: &ReadTransaction, take_item: F) -> OrmResult<()>
+    where
+        F: FnMut(<Self::KOV as Value>::SelfType<'_>, Self) -> OrmResult<()>;
 }
 
 impl<B> Load for B
@@ -19,9 +25,19 @@ where
     type KOV = B::Key;
 
     fn load_from(txn: &ReadTransaction, key: B::Key) -> OrmResult<Self> {
-        use crate::ext::ReadableTableExt as _;
-
         let tab = txn.open_table(Self::table_definition())?;
         tab.get_row(key)
+    }
+
+    fn scan_from<F>(txn: &ReadTransaction, mut take_item: F) -> OrmResult<()>
+    where
+        F: FnMut(<Self::KOV as Value>::SelfType<'_>, Self) -> OrmResult<()>,
+    {
+        let tab = txn.open_table(Self::table_definition())?;
+        for kvres in tab.iter_rows()? {
+            let (k, v) = kvres?;
+            take_item(k, v)?;
+        }
+        Ok(())
     }
 }

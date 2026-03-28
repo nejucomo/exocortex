@@ -1,10 +1,10 @@
 use std::path::Path;
 
+use exocortex_redborm::{OrmError, OrmResult};
 use exocortex_tserv::ThreadService;
 
 use crate::handler::Handler as _;
 use crate::messages::{DbReply, DbRequest};
-use crate::{DbError, Result};
 
 /// The `exocorted` database
 #[derive(Debug)]
@@ -13,11 +13,11 @@ pub struct Database {
 }
 
 /// The [ThreadService] type for the database
-pub type DatabaseThreadService = ThreadService<DbRequest, DbReply, DbError>;
+pub type DatabaseThreadService = ThreadService<DbRequest, DbReply, OrmError>;
 
 impl Database {
     /// Open or create a new database at the given path
-    pub fn init<P>(dbpath: P) -> Result<Self>
+    pub fn init<P>(dbpath: P) -> OrmResult<Self>
     where
         P: AsRef<Path>,
     {
@@ -28,7 +28,7 @@ impl Database {
     }
 
     /// Handle a db Request
-    pub fn handle(&mut self, request: DbRequest) -> Result<DbReply> {
+    pub fn handle(&mut self, request: DbRequest) -> OrmResult<DbReply> {
         self.redb.handle(request)
     }
 

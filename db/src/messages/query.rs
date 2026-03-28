@@ -1,7 +1,7 @@
 //! Query request type
 use derive_more::{From, TryInto};
 
-use crate::messages::{DbIsEmpty, LogScan, Request, ScannedItems};
+use crate::messages::{DbIsEmpty, LogScan, Request, LogScanItems};
 
 /// A query of the db
 #[derive(Debug, From, TryInto)]
@@ -22,5 +22,5 @@ pub enum Queried {
     #[allow(missing_docs)]
     DbWasEmpty(bool),
     #[allow(missing_docs)]
-    LogScanned(ScannedItems),
+    LogScanned(LogScanItems),
 }
