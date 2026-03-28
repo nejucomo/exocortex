@@ -9,7 +9,7 @@ use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
 use exocortex_squeeze_frame::UiExt as _;
 
-use crate::aggregate::{CardAgg, aggregate_card_modifications};
+use crate::card::{Card, aggregate_card_modifications};
 use crate::cardview::CardView;
 use crate::command::Command;
 
@@ -22,7 +22,7 @@ pub(crate) struct App {
     #[new(default)]
     cmcache: CommonMarkCache,
     #[new(default)]
-    cards: Vec<CardAgg>,
+    cards: Vec<Card>,
 }
 
 impl App {

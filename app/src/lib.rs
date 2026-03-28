@@ -1,7 +1,7 @@
 #![deny(unsafe_code)]
 
-mod aggregate;
 mod app;
+mod card;
 mod cardview;
 mod command;
 mod dbgexpr;

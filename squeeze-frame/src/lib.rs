@@ -10,7 +10,7 @@ impl Ui {
     where
         F: FnOnce(&mut Ui) -> R,
     {
-        let visuals = self.style().visuals.clone();
+        let visuals = &self.style().visuals;
 
         Frame::NONE
             .stroke({
