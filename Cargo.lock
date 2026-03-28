@@ -1321,6 +1321,7 @@ dependencies = [
  "env_logger",
  "exocortex-db",
  "exocortex-keybinding",
+ "exocortex-squeeze-frame",
  "indoc",
  "log",
  "logging-options",
