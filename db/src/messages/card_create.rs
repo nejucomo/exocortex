@@ -1,6 +1,7 @@
-use exocortex_redborm::{Id, OrmResult, Store};
+use exocortex_redborm::{OrmResult, Store};
 use redb::WriteTransaction;
 
+use crate::CardId;
 use crate::entities::CardV0;
 
 /// A request to create a new card
@@ -8,7 +9,7 @@ use crate::entities::CardV0;
 pub struct CardCreate;
 
 impl Store for CardCreate {
-    type KOV = Id<CardV0>;
+    type KOV = CardId;
 
     fn store_into(self, txn: &WriteTransaction) -> OrmResult<Self::KOV> {
         CardV0.store_into(txn)

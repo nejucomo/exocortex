@@ -5,9 +5,9 @@ use exocortex_redborm::ext::{ReadTransactionExt as _, WriteTransactionExt as _};
 use exocortex_redborm::{Id, Load, OrmError, OrmResult, Store};
 use redb::{ReadTransaction, WriteTransaction};
 
-use crate::entities::{CardModificationV0, CardSetSynopsisV0, CardV0};
+use crate::entities::{CardModificationV0, CardSetSynopsisV0};
 use crate::messages::{CardCreate, Request};
-use crate::{Timestamp, Timestamped};
+use crate::{CardId, Timestamp, Timestamped};
 
 /// A request to modify a card
 pub type CardModify = CardModifyG<CardCreate, CardSetSynopsisV0>;
@@ -49,10 +49,24 @@ impl TryFrom<CardModify> for CardSetSynopsisV0 {
 }
 
 /// The result of modifying a card
-pub type CardModified = CardModifyG<Id<CardV0>, CardSetSynopsisV0>;
+pub type CardModified = CardModifyG<CardId, CardSetSynopsisV0>;
+
+/*
+impl CardModified {
+    /// Get the [CardId] of the modified card
+    pub fn card_id(&self) -> CardId {
+        use CardModifyG::*;
+
+        match self {
+            Create(card) => *card,
+            SetSynopsis(css) => css.card,
+        }
+    }
+}
+*/
 
 impl Request for CardModify {
-    type Reply = Id<CardV0>;
+    type Reply = CardId;
 }
 
 /// A card modification request or db [Store]/[Load]
@@ -65,7 +79,7 @@ pub enum CardModifyG<Create, SetSynopsis> {
 }
 
 impl Store for CardModify {
-    type KOV = Id<CardV0>;
+    type KOV = CardId;
 
     fn store_into(self, txn: &WriteTransaction) -> OrmResult<Self::KOV> {
         use CardModifyG::*;

@@ -1,19 +1,16 @@
 use derive_new::new;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2, Widget};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::LogScanItems;
+
+use crate::aggregate::CardAgg;
 
 #[derive(Debug, new)]
-#[allow(dead_code)]
-pub(crate) struct LogView<'a> {
-    #[allow(dead_code)]
-    db: &'a mut DatabaseThreadService,
+pub(crate) struct CardView<'a> {
     cmcache: &'a mut CommonMarkCache,
-    scanned: &'a LogScanItems,
+    cards: &'a Vec<CardAgg>,
 }
 
-impl<'a> Widget for LogView<'a> {
+impl<'a> Widget for CardView<'a> {
     fn ui(self, ui: &mut Ui) -> Response {
         let mut any = ui.allocate_response(Vec2::ZERO, Sense::hover());
         let mut overflowed = false;
@@ -23,9 +20,9 @@ impl<'a> Widget for LogView<'a> {
 
             let bottom = ui.clip_rect().bottom();
 
-            for (modid, modify) in self.scanned {
+            for card in self.cards {
                 let r = CommonMarkViewer::new()
-                    .show(ui, self.cmcache, &format!("```{modid:?} | {modify:?}```"))
+                    .show(ui, self.cmcache, &format!("```{card:?}```"))
                     .response;
 
                 any |= r.clone();

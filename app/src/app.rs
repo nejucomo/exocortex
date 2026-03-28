@@ -5,11 +5,12 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::{DbReply, LogScan, LogScanItems};
+use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
 
+use crate::aggregate::{CardAgg, aggregate_card_modifications};
+use crate::cardview::CardView;
 use crate::command::Command;
-use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
@@ -20,7 +21,7 @@ pub(crate) struct App {
     #[new(default)]
     cmcache: CommonMarkCache,
     #[new(default)]
-    scanned: LogScanItems,
+    cards: Vec<CardAgg>,
 }
 
 impl App {
@@ -43,7 +44,9 @@ impl App {
         use exocortex_db::messages::Queried::LogScanned;
 
         match reply {
-            Queried(LogScanned(items)) => self.scanned = items,
+            Queried(LogScanned(items)) => {
+                self.cards = aggregate_card_modifications(&items).collect();
+            }
             Modified(card) => log::debug!("modified: {card:?}"),
             other => panic!("unexpected db reply: {other:?}"),
         }
@@ -121,7 +124,7 @@ impl Widget for &mut App {
             })
             .response;
 
-        resp |= ui.add(LogView::new(&mut self.db, &mut self.cmcache, &self.scanned));
+        resp |= ui.add(CardView::new(&mut self.cmcache, &self.cards));
 
         self.handle_ui_events(ui);
 

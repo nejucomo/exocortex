@@ -1,6 +1,8 @@
 #![deny(unsafe_code)]
 
+mod aggregate;
 mod app;
+mod cardview;
 mod command;
 mod dbgexpr;
 mod logview;

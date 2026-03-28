@@ -46,9 +46,23 @@ impl<T: ?Sized + 'static> Default for Id<T> {
     }
 }
 
+impl<T: ?Sized + 'static> Eq for Id<T> {}
+
 impl<T: ?Sized + 'static> PartialEq for Id<T> {
     fn eq(&self, other: &Self) -> bool {
         self.n == other.n
+    }
+}
+
+impl<T: ?Sized + 'static> Ord for Id<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.n.cmp(&other.n)
+    }
+}
+
+impl<T: ?Sized + 'static> PartialOrd for Id<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 

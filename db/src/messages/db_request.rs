@@ -1,9 +1,9 @@
 //! DbRequest request type
 use derive_more::{From, TryInto, TryIntoError};
 use derive_new::new;
-use exocortex_redborm::Id;
 
-use crate::entities::{CardSetSynopsisV0, CardV0};
+use crate::CardId;
+use crate::entities::CardSetSynopsisV0;
 use crate::messages::{
     CardCreate, CardModify, CardModifyG, DbIsEmpty, LogScan, LogScanItems, Queried, Query, Request,
 };
@@ -37,7 +37,7 @@ pub enum DbReply {
     #[allow(missing_docs)]
     Queried(Queried),
     #[allow(missing_docs)]
-    Modified(Id<CardV0>),
+    Modified(CardId),
 }
 
 macro_rules! def_try_into_transitive {
