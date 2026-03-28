@@ -3,6 +3,7 @@
 mod app;
 mod card;
 mod cardview;
+mod cmwidget;
 mod command;
 mod dbgexpr;
 mod logview;

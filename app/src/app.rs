@@ -11,6 +11,7 @@ use exocortex_squeeze_frame::UiExt as _;
 
 use crate::card::{Card, aggregate_card_modifications};
 use crate::cardview::CardView;
+use crate::cmwidget::CommonMarkWidget as _;
 use crate::command::Command;
 
 #[derive(Debug, new)]
@@ -126,7 +127,9 @@ impl Widget for &mut App {
             .response;
 
         resp |= ui
-            .within_squeeze_frame(|ui| ui.add(CardView::new(&mut self.cmcache, &self.cards)))
+            .within_squeeze_frame(|ui| {
+                CardView::new(&self.cards).ui_with_cmcache(ui, &mut self.cmcache)
+            })
             .response;
 
         self.handle_ui_events(ui);

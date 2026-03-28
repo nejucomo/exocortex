@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use derive_new::new;
@@ -66,7 +65,13 @@ impl<T: ?Sized + 'static> PartialOrd for Id<T> {
     }
 }
 
-impl<T: ?Sized + 'static> Debug for Id<T> {
+impl<T: ?Sized + 'static> std::fmt::Display for Id<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.n, f)
+    }
+}
+
+impl<T: ?Sized + 'static> std::fmt::Debug for Id<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let id = self.n;
         let tname = std::any::type_name::<T>();

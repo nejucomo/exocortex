@@ -1,8 +1,11 @@
 use std::collections::BTreeMap;
 
-use eframe::egui::{Frame, Response, Ui, Widget};
+use eframe::egui::{Frame, Response, RichText, TextStyle, Ui};
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{CardId, Timestamp};
+
+use crate::cmwidget::CommonMarkWidget;
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -50,8 +53,8 @@ pub(crate) fn aggregate_card_modifications(
     bt.into_values()
 }
 
-impl Widget for &Card {
-    fn ui(self, ui: &mut Ui) -> Response {
+impl CommonMarkWidget for &Card {
+    fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
         let visuals = &ui.style().visuals;
 
         Frame::NONE
@@ -62,7 +65,19 @@ impl Widget for &Card {
             })
             .fill(visuals.panel_fill)
             .corner_radius(visuals.widgets.active.corner_radius * 2.0)
-            .show(ui, |ui: &mut Ui| ui.label(format!("{:?}", self.id)))
+            .show(ui, |ui: &mut Ui| {
+                let mut r = ui.label(
+                    RichText::new(format!(
+                        "[{}] Created: {} Modified: {}",
+                        self.id, self.ctime, self.mtime
+                    ))
+                    .text_style(TextStyle::Small),
+                );
+
+                r |= CommonMarkViewer::new()
+                    .show(ui, cmcache, &self.synopsis)
+                    .response;
+            })
             .response
     }
 }
