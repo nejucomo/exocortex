@@ -1,4 +1,5 @@
 //! Modify request type
+use derive_more::TryIntoError;
 use exocortex_redborm::enumvalue::EnumVariantCode;
 use exocortex_redborm::ext::{ReadTransactionExt as _, WriteTransactionExt as _};
 use exocortex_redborm::{Id, Load, OrmError, OrmResult, Store};
@@ -10,6 +11,42 @@ use crate::{Timestamp, Timestamped};
 
 /// A request to modify a card
 pub type CardModify = CardModifyG<CardCreate, CardSetSynopsisV0>;
+
+impl From<CardCreate> for CardModify {
+    fn from(cc: CardCreate) -> Self {
+        CardModifyG::Create(cc)
+    }
+}
+
+impl TryFrom<CardModify> for CardCreate {
+    type Error = TryIntoError<CardModify>;
+
+    fn try_from(cm: CardModify) -> Result<Self, Self::Error> {
+        if let CardModifyG::Create(cc) = cm {
+            Ok(cc)
+        } else {
+            Err(TryIntoError::new(cm, "FIXME", "FIXME"))
+        }
+    }
+}
+
+impl From<CardSetSynopsisV0> for CardModify {
+    fn from(css: CardSetSynopsisV0) -> Self {
+        CardModifyG::SetSynopsis(css)
+    }
+}
+
+impl TryFrom<CardModify> for CardSetSynopsisV0 {
+    type Error = TryIntoError<CardModify>;
+
+    fn try_from(cm: CardModify) -> Result<Self, Self::Error> {
+        if let CardModifyG::SetSynopsis(css) = cm {
+            Ok(css)
+        } else {
+            Err(TryIntoError::new(cm, "FIXME", "FIXME"))
+        }
+    }
+}
 
 /// The result of modifying a card
 pub type CardModified = CardModifyG<Id<CardV0>, CardSetSynopsisV0>;

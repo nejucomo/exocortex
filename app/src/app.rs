@@ -5,7 +5,7 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::{DbReply, LogScan, ScannedItems};
+use exocortex_db::messages::{DbReply, LogScan, LogScanItems};
 use exocortex_keybinding::ShortcutState;
 
 use crate::command::Command;
@@ -20,7 +20,7 @@ pub(crate) struct App {
     #[new(default)]
     cmcache: CommonMarkCache,
     #[new(default)]
-    scanned: ScannedItems,
+    scanned: LogScanItems,
 }
 
 impl App {

@@ -1,4 +1,4 @@
-//! [EnumValue] and supporting types for normalized enum [Store]/[Load]
+//! Support for normalized enum db storage
 use derive_more::{From, Into};
 use derive_new::new;
 use redb_derive::Value;

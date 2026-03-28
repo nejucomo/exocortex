@@ -2,14 +2,14 @@ use derive_new::new;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2, Widget};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::ScannedItems;
+use exocortex_db::messages::LogScanItems;
 
 #[derive(Debug, new)]
 pub(crate) struct LogView<'a> {
     #[allow(dead_code)]
     db: &'a mut DatabaseThreadService,
     cmcache: &'a mut CommonMarkCache,
-    scanned: &'a ScannedItems,
+    scanned: &'a LogScanItems,
 }
 
 impl<'a> Widget for LogView<'a> {

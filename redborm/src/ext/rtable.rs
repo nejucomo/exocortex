@@ -23,7 +23,7 @@ pub trait ReadableTableExt<Row: RowValue>: ReadableTable<Row::Key, Row> {
         optrow.ok_or_else(|| UnknownKey(format!("{key:?}")))
     }
 
-    /// Iterate over a range of [Row]s
+    /// Iterate over a range of `Row`s
     fn iter_row_range(
         &self,
         range: impl RangeBounds<Row::Key>,
@@ -36,7 +36,7 @@ pub trait ReadableTableExt<Row: RowValue>: ReadableTable<Row::Key, Row> {
         }))
     }
 
-    /// Iterate over all [Row]s
+    /// Iterate over all `Row`s
     fn iter_rows(&self) -> OrmResult<impl DoubleEndedIterator<Item = OrmResult<(Row::Key, Row)>>> {
         self.iter_row_range(..)
     }

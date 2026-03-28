@@ -15,20 +15,12 @@ pub enum DbRequest {
     #[from(Query, DbIsEmpty, LogScan)]
     Query(Query),
     #[allow(missing_docs)]
-    #[from(CardModify)]
+    #[from(CardModify, CardCreate)]
     Modify(CardModify),
 }
 
 impl Request for DbRequest {
     type Reply = DbReply;
-}
-
-impl From<CardCreate> for DbRequest {
-    fn from(value: CardCreate) -> Self {
-        use CardModifyG::Create;
-
-        DbRequest::Modify(Create(value))
-    }
 }
 
 impl From<CardSetSynopsisV0> for DbRequest {
@@ -66,6 +58,8 @@ macro_rules! def_try_into_transitive {
 
 def_try_into_transitive!(DbRequest => Query => DbIsEmpty);
 def_try_into_transitive!(DbRequest => Query => LogScan);
+def_try_into_transitive!(DbRequest => CardModify => CardCreate);
+def_try_into_transitive!(DbRequest => CardModify => CardSetSynopsisV0);
 
 def_try_into_transitive!(DbReply => Queried => bool);
 def_try_into_transitive!(DbReply => Queried => LogScanItems);

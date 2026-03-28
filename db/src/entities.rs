@@ -1,4 +1,4 @@
-//! [Entity](exocortex_redborm::Entity) types
+//! [Entity] types
 
 use derive_more::{From, Into};
 use derive_new::new;

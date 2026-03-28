@@ -1,5 +1,6 @@
-use exocortex_db::messages::{CardCreate, CardModify, CardSetSynopsis, DbIsEmpty};
-use exocortex_db::{DatabaseThreadService, Result};
+use exocortex_db::entities::CardSetSynopsisV0;
+use exocortex_db::messages::{CardCreate, DbIsEmpty};
+use exocortex_db::{DatabaseThreadService, DbResult};
 use indoc::indoc;
 
 const CANNED_CARDS: &[&str] = &[
@@ -27,11 +28,11 @@ const CANNED_CARDS: &[&str] = &[
     "# },
 ];
 
-pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> Result<()> {
+pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> DbResult<()> {
     if db.request(DbIsEmpty)? {
         for cardtxt in CANNED_CARDS.iter().rev() {
             let card = db.request(CardCreate)?;
-            let c2 = db.request(CardModify::new(card, CardSetSynopsis(cardtxt.to_string())))?;
+            let c2 = db.request(CardSetSynopsisV0::new(card, cardtxt.to_string()))?;
             assert_eq!(card, c2);
         }
     }
