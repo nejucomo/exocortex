@@ -4,15 +4,13 @@
 mod db;
 mod error;
 mod handler;
-mod id;
-mod storeload;
-mod tables;
 mod timestamp;
+mod timestamped;
 
 pub mod entities;
 pub mod messages;
 
 pub use self::db::{Database, DatabaseThreadService};
-pub use self::error::{DbError, Result};
-pub use self::id::Id;
+pub use self::error::{DbError, DbResult};
 pub use self::timestamp::Timestamp;
+pub use self::timestamped::Timestamped;

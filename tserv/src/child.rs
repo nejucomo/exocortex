@@ -34,13 +34,17 @@ where
     let to_from_child = Interface::new(request.sender, reply.receiver);
     let to_from_parent = Interface::new(reply.sender, request.receiver);
 
+    log::trace!("db thread spawn...");
     let jh = std::thread::spawn(|| {
+        log::trace!("db child sending Started...");
         to_from_parent.to.send(Started).unwrap();
         child_loop(f, to_from_parent)
     });
 
     // Block until child thread signals ready:
+    log::trace!("db parent blocking on Started...");
     assert!(matches!(to_from_child.from.recv().unwrap(), Started));
+    log::debug!("db service spawn complete");
 
     SvcInner::new(jh, to_from_child)
 }
