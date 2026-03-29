@@ -67,18 +67,21 @@ impl CommonMarkWidget for &Card {
             .corner_radius(visuals.widgets.active.corner_radius * 2.0)
             .show(ui, |ui: &mut Ui| {
                 ui.with_layout(Layout::top_down(Align::Max), |ui| {
-                    let mut r = ui
-                        .with_layout(Layout::left_to_right(Align::Min), |ui| {
-                            let mut r = ui.label(format!("{{{}}}", self.id));
-                            r |= ui.label(format!("Created: {}", self.ctime));
-                            r |= ui.label(format!("Modified: {}", self.mtime));
-                            r
-                        })
-                        .response;
+                    ui.columns_const(|[left, mid, right]| {
+                        left.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                            ui.label(format!("Created: {}", self.ctime))
+                        });
 
-                    r |= CommonMarkViewer::new()
+                        mid.vertical_centered_justified(|ui| ui.label(format!("{}", self.id)));
+
+                        right.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                            ui.label(format!("Modified: {}", self.mtime))
+                        });
+                    });
+
+                    CommonMarkViewer::new()
                         .show(ui, cmcache, self.synopsis.lines().next().unwrap())
-                        .response;
+                        .response
                 })
             })
             .response

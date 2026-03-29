@@ -6,6 +6,7 @@ mod cardview;
 mod cmwidget;
 mod command;
 mod dbgexpr;
+mod dbglayout;
 mod logview;
 mod modaleditor;
 mod prepop;
