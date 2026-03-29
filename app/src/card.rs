@@ -61,16 +61,18 @@ pub(crate) fn aggregate_card_modifications(
 
 impl CommonMarkWidget for &Card {
     fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
-        Frame::NONE
-            .stroke({
-                let mut stroke = ui.style().visuals.widgets.active.bg_stroke;
-                stroke.color = stroke.color.gamma_multiply(STROKE_GAMMA);
-                stroke.width = STROKE_WIDTH;
-                stroke
-            })
-            .corner_radius(CORNER_RADIUS)
-            .inner_margin(INNER_MARGIN)
-            .show(ui, |ui: &mut Ui| {
+        show_card_frame(
+            ui,
+            Frame::NONE
+                .stroke({
+                    let mut stroke = ui.style().visuals.widgets.active.bg_stroke;
+                    stroke.color = stroke.color.gamma_multiply(STROKE_GAMMA);
+                    stroke.width = STROKE_WIDTH;
+                    stroke
+                })
+                .corner_radius(CORNER_RADIUS)
+                .inner_margin(INNER_MARGIN),
+            |ui| {
                 ui.with_layout(Layout::top_down(Align::Max), |ui| {
                     ui.columns_const(|[left, mid, right]| {
                         use eframe::egui::{RichText, TextStyle::Small};
@@ -98,8 +100,50 @@ impl CommonMarkWidget for &Card {
                             .show(ui, cmcache, self.synopsis.lines().next().unwrap())
                             .response
                     })
-                })
-            })
-            .response
+                });
+            },
+        )
+    }
+}
+
+fn show_card_frame<F>(ui: &mut Ui, f: Frame, mkui: F) -> Response
+where
+    F: FnOnce(&mut Ui),
+{
+    let mut prep = f.begin(ui);
+
+    mkui(&mut prep.content_ui);
+
+    let resp = prep.allocate_space(ui);
+    let visuals = ui.style().visuals.widgets.style(&resp);
+
+    log_visuals_if_necessary(visuals);
+
+    prep.frame.fill = visuals.bg_fill;
+    prep.frame.stroke = visuals.bg_stroke;
+
+    /*
+    pub weak_bg_fill: Color32,
+    pub bg_stroke: Stroke,
+    pub corner_radius: CornerRadius,
+    pub fg_stroke: Stroke,
+    pub expansion: f32,
+    */
+
+    prep.end(ui)
+}
+
+fn log_visuals_if_necessary(v: &eframe::egui::style::WidgetVisuals) {
+    use std::sync::{Arc, LazyLock, Mutex};
+
+    static PREV_VISUALS: LazyLock<Arc<Mutex<Option<eframe::egui::style::WidgetVisuals>>>> =
+        LazyLock::new(|| Arc::new(Mutex::new(None)));
+
+    let mut optprev = PREV_VISUALS.lock().unwrap();
+
+    let stored = optprev.get_or_insert(*v);
+    if stored != v {
+        log::trace!("applying card visuals: {:#?}", (v.bg_fill, v.bg_stroke));
+        *stored = *v;
     }
 }

@@ -83,7 +83,7 @@ impl App {
                     }
                     Command(cmd) => self.handle_command(ui, cmd),
                     Unhandled(chord) => {
-                        dbg!("{chord:#?}");
+                        log::trace!("{chord:#?}");
                         let _ = chord;
                     }
                 },
