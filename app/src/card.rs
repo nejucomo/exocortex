@@ -73,14 +73,23 @@ impl CommonMarkWidget for &Card {
             .show(ui, |ui: &mut Ui| {
                 ui.with_layout(Layout::top_down(Align::Max), |ui| {
                     ui.columns_const(|[left, mid, right]| {
+                        use eframe::egui::{RichText, TextStyle::Small};
+
                         left.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                            ui.label(format!("Created: {}", self.ctime))
+                            ui.label(
+                                RichText::new(format!("Created: {}", self.ctime)).text_style(Small),
+                            )
                         });
 
-                        mid.vertical_centered_justified(|ui| ui.label(format!("{}", self.id)));
+                        mid.vertical_centered_justified(|ui| {
+                            ui.label(RichText::new(format!("{}", self.id)).text_style(Small))
+                        });
 
                         right.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                            ui.label(format!("Modified: {}", self.mtime))
+                            ui.label(
+                                RichText::new(format!("Modified: {}", self.mtime))
+                                    .text_style(Small),
+                            )
                         });
                     });
 

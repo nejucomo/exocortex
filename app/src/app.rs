@@ -37,8 +37,13 @@ impl App {
                 persist_window: false,
                 ..Default::default()
             },
-            Box::new(|_cc| Ok(Box::new(Self::new(db)))),
+            Box::new(|cc| Ok(Box::new(Self::init(cc, db)))),
         )
+    }
+
+    fn init(cc: &eframe::CreationContext<'_>, db: DatabaseThreadService) -> Self {
+        log::trace!("{:#?}", cc.egui_ctx.style());
+        Self::new(db)
     }
 
     fn handle_db_reply(&mut self, reply: DbReply) {

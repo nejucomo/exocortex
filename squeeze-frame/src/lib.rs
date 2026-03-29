@@ -6,9 +6,9 @@ use extension_traits::extension;
 
 const CORNER_RADIUS: f32 = 6.0;
 const INNER_MARGIN: MarginF32 = MarginF32::symmetric(6.0, 2.0);
-const STROKE_GAMMA: f32 = 0.15;
+const STROKE_GAMMA: f32 = 0.03;
 const FILL_BLEND: Color32 = Color32::LIGHT_BLUE;
-const FILL_GAMMA: f32 = 0.03;
+const FILL_GAMMA: f32 = 0.01;
 
 #[extension(pub trait UiExt)]
 impl Ui {
