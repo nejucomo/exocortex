@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use eframe::egui::{Frame, Response, RichText, TextStyle, Ui};
+use eframe::egui::{Align, Frame, Layout, Response, RichText, TextStyle, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{CardId, Timestamp};
@@ -66,17 +66,29 @@ impl CommonMarkWidget for &Card {
             .fill(visuals.panel_fill)
             .corner_radius(visuals.widgets.active.corner_radius * 2.0)
             .show(ui, |ui: &mut Ui| {
-                let mut r = ui.label(
-                    RichText::new(format!(
-                        "[{}] Created: {} Modified: {}",
-                        self.id, self.ctime, self.mtime
-                    ))
-                    .text_style(TextStyle::Small),
-                );
+                ui.with_layout(Layout::top_down(Align::Min), |ui| {
+                    let mut r = ui
+                        .with_layout(Layout::left_to_right(Align::Min), |ui| {
+                            let mut r = ui.label(
+                                RichText::new(format!("[{}]", self.id))
+                                    .text_style(TextStyle::Small),
+                            );
+                            r |= ui.label(
+                                RichText::new(format!("Created: {}", self.ctime))
+                                    .text_style(TextStyle::Small),
+                            );
+                            r |= ui.label(
+                                RichText::new(format!("Modified: {}", self.mtime))
+                                    .text_style(TextStyle::Small),
+                            );
+                            r
+                        })
+                        .response;
 
-                r |= CommonMarkViewer::new()
-                    .show(ui, cmcache, &self.synopsis)
-                    .response;
+                    r |= CommonMarkViewer::new()
+                        .show(ui, cmcache, self.synopsis.lines().next().unwrap())
+                        .response;
+                })
             })
             .response
     }
