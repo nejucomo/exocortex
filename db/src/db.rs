@@ -22,6 +22,7 @@ impl Database {
         P: AsRef<Path>,
     {
         let dbpath = dbpath.as_ref();
+        log::info!("Opening database: {:?}", dbpath.display());
         std::fs::create_dir_all(dbpath.parent().unwrap())?;
         let redb = redb::Database::create(dbpath)?;
         Ok(Database { redb })
