@@ -1,11 +1,16 @@
 use std::collections::BTreeMap;
 
-use eframe::egui::{Align, Frame, Layout, Response, Ui};
+use eframe::egui::{Align, Frame, Layout, Margin, Response, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{CardId, Timestamp};
 
 use crate::cmwidget::CommonMarkWidget;
+
+const EDGE_ROUNDING: f32 = 6.0;
+const INNER_MARGIN: Margin = Margin::symmetric(6, 2);
+const STROKE_GAMMA: f32 = 0.5;
+const STROKE_WIDTH: f32 = 1.0;
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -55,16 +60,15 @@ pub(crate) fn aggregate_card_modifications(
 
 impl CommonMarkWidget for &Card {
     fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
-        let visuals = &ui.style().visuals;
-
         Frame::NONE
             .stroke({
-                let mut stroke = visuals.widgets.active.bg_stroke;
-                stroke.color = stroke.color.gamma_multiply(0.5);
+                let mut stroke = ui.style().visuals.widgets.active.bg_stroke;
+                stroke.color = stroke.color.gamma_multiply(STROKE_GAMMA);
+                stroke.width = STROKE_WIDTH;
                 stroke
             })
-            .fill(visuals.panel_fill)
-            .corner_radius(visuals.widgets.active.corner_radius * 2.0)
+            .corner_radius(EDGE_ROUNDING)
+            .inner_margin(INNER_MARGIN)
             .show(ui, |ui: &mut Ui| {
                 ui.with_layout(Layout::top_down(Align::Max), |ui| {
                     ui.columns_const(|[left, mid, right]| {
@@ -79,9 +83,11 @@ impl CommonMarkWidget for &Card {
                         });
                     });
 
-                    CommonMarkViewer::new()
-                        .show(ui, cmcache, self.synopsis.lines().next().unwrap())
-                        .response
+                    Frame::NONE.show(ui, |ui: &mut Ui| {
+                        CommonMarkViewer::new()
+                            .show(ui, cmcache, self.synopsis.lines().next().unwrap())
+                            .response
+                    })
                 })
             })
             .response
