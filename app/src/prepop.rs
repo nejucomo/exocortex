@@ -21,11 +21,6 @@ const CANNED_CARDS: &[&str] = &[
 
         - <u>inline html for underline</u>
     "# },
-    indoc! { r#"
-        # This is the `log` `view`
-
-        Each update to a card is displayed in reverse chronological order.
-    "# },
 ];
 
 pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> DbResult<()> {

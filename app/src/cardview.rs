@@ -19,7 +19,7 @@ impl<'a> CommonMarkWidget for CardView<'a> {
 
             let bottom = ui.clip_rect().bottom();
 
-            for card in self.cards {
+            for card in self.cards.iter().rev() {
                 resp |= card.ui_with_cmcache(ui, cmcache);
 
                 if resp.rect.bottom() > bottom {

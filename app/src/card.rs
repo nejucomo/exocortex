@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use eframe::egui::{Align, Frame, Layout, Response, RichText, TextStyle, Ui};
+use eframe::egui::{Align, Frame, Layout, Response, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{CardId, Timestamp};
@@ -66,21 +66,12 @@ impl CommonMarkWidget for &Card {
             .fill(visuals.panel_fill)
             .corner_radius(visuals.widgets.active.corner_radius * 2.0)
             .show(ui, |ui: &mut Ui| {
-                ui.with_layout(Layout::top_down(Align::Min), |ui| {
+                ui.with_layout(Layout::top_down(Align::Max), |ui| {
                     let mut r = ui
                         .with_layout(Layout::left_to_right(Align::Min), |ui| {
-                            let mut r = ui.label(
-                                RichText::new(format!("[{}]", self.id))
-                                    .text_style(TextStyle::Small),
-                            );
-                            r |= ui.label(
-                                RichText::new(format!("Created: {}", self.ctime))
-                                    .text_style(TextStyle::Small),
-                            );
-                            r |= ui.label(
-                                RichText::new(format!("Modified: {}", self.mtime))
-                                    .text_style(TextStyle::Small),
-                            );
+                            let mut r = ui.label(format!("{{{}}}", self.id));
+                            r |= ui.label(format!("Created: {}", self.ctime));
+                            r |= ui.label(format!("Modified: {}", self.mtime));
                             r
                         })
                         .response;
