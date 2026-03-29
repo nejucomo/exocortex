@@ -1,14 +1,15 @@
 use std::collections::BTreeMap;
 
-use eframe::egui::{Align, Frame, Layout, Margin, Response, Ui};
+use eframe::egui::{Align, Frame, Layout, Response, Ui};
+use eframe::epaint::MarginF32;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{CardId, Timestamp};
 
 use crate::cmwidget::CommonMarkWidget;
 
-const EDGE_ROUNDING: f32 = 6.0;
-const INNER_MARGIN: Margin = Margin::symmetric(6, 2);
+const CORNER_RADIUS: f32 = 6.0;
+const INNER_MARGIN: MarginF32 = MarginF32::symmetric(6.0, 2.0);
 const STROKE_GAMMA: f32 = 0.5;
 const STROKE_WIDTH: f32 = 1.0;
 
@@ -67,7 +68,7 @@ impl CommonMarkWidget for &Card {
                 stroke.width = STROKE_WIDTH;
                 stroke
             })
-            .corner_radius(EDGE_ROUNDING)
+            .corner_radius(CORNER_RADIUS)
             .inner_margin(INNER_MARGIN)
             .show(ui, |ui: &mut Ui| {
                 ui.with_layout(Layout::top_down(Align::Max), |ui| {
