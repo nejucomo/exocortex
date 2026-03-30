@@ -12,7 +12,7 @@ const FILL_GAMMA: f32 = 0.01;
 
 #[extension(pub trait UiExt)]
 impl Ui {
-    fn within_squeeze_frame<F, R>(&mut self, f: F) -> InnerResponse<R>
+    fn within_widgets<F, R>(&mut self, f: F) -> InnerResponse<R>
     where
         F: FnOnce(&mut Ui) -> R,
     {

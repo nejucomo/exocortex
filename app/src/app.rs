@@ -7,7 +7,7 @@ use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
 use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
-use exocortex_squeeze_frame::UiExt as _;
+use exocortex_widgets::UiExt as _;
 
 use crate::card::{Card, aggregate_card_modifications};
 use crate::cardview::CardView;
@@ -132,7 +132,7 @@ impl Widget for &mut App {
             .response;
 
         resp |= ui
-            .within_squeeze_frame(|ui| {
+            .within_widgets(|ui| {
                 CardView::new(&self.cards).ui_with_cmcache(ui, &mut self.cmcache)
             })
             .response;
