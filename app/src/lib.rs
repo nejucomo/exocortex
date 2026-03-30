@@ -1,8 +1,8 @@
 #![deny(unsafe_code)]
 
 mod app;
-mod card;
-mod cardview;
+mod blurb;
+mod blurbview;
 mod cmwidget;
 mod command;
 mod dbgexpr;

@@ -9,8 +9,8 @@ use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
 use exocortex_widgets::squeeze_frame::UiExt as _;
 
-use crate::card::{Card, aggregate_card_modifications};
-use crate::cardview::CardView;
+use crate::blurb::{Blurb, aggregate_blurb_modifications};
+use crate::blurbview::BlurbView;
 use crate::cmwidget::CommonMarkWidget as _;
 use crate::command::Command;
 
@@ -23,7 +23,7 @@ pub(crate) struct App {
     #[new(default)]
     cmcache: CommonMarkCache,
     #[new(default)]
-    cards: Vec<Card>,
+    blurbs: Vec<Blurb>,
 }
 
 impl App {
@@ -52,9 +52,9 @@ impl App {
 
         match reply {
             Queried(LogScanned(items)) => {
-                self.cards = aggregate_card_modifications(&items).collect();
+                self.blurbs = aggregate_blurb_modifications(&items).collect();
             }
-            Modified(card) => log::debug!("modified: {card:?}"),
+            Modified(blurb) => log::debug!("modified: {blurb:?}"),
             other => panic!("unexpected db reply: {other:?}"),
         }
     }
@@ -106,7 +106,7 @@ impl App {
                 let fs = ui.input(|i| i.viewport().fullscreen.unwrap_or_default());
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
-            CreateNewCard => {
+            CreateNewBlurb => {
                 todo!("FIXME")
             }
         }
@@ -132,7 +132,7 @@ impl Widget for &mut App {
             .response;
 
         resp |= ui
-            .within_widgets(|ui| CardView::new(&self.cards).ui_with_cmcache(ui, &mut self.cmcache))
+            .within_widgets(|ui| BlurbView::new(&self.blurbs).ui_with_cmcache(ui, &mut self.cmcache))
             .response;
 
         self.handle_ui_events(ui);

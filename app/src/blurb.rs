@@ -3,36 +3,36 @@ use std::collections::BTreeMap;
 use eframe::egui::{Align, Frame, Layout, Response, Sense, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
-use exocortex_db::{CardId, Timestamp};
+use exocortex_db::{BlurbId, Timestamp};
 
 use crate::cmwidget::CommonMarkWidget;
 
 #[derive(Debug)]
 #[allow(dead_code)]
-pub(crate) struct Card {
-    id: CardId,
+pub(crate) struct Blurb {
+    id: BlurbId,
     ctime: Timestamp,
     mtime: Timestamp,
     synopsis: String,
 }
 
-pub(crate) fn aggregate_card_modifications(
+pub(crate) fn aggregate_blurb_modifications(
     modifications: &LogScanItems,
-) -> impl Iterator<Item = Card> {
-    use exocortex_db::messages::CardModifyG::*;
+) -> impl Iterator<Item = Blurb> {
+    use exocortex_db::messages::BlurbModifyG::*;
 
     let mut bt = BTreeMap::default();
 
-    for (_, cardmod) in modifications {
-        let mtime = cardmod.time;
+    for (_, blurbmod) in modifications {
+        let mtime = blurbmod.time;
 
-        match &cardmod.val {
+        match &blurbmod.val {
             Create(id) => {
                 let id = *id;
                 assert!(
                     bt.insert(
                         id,
-                        Card {
+                        Blurb {
                             id,
                             ctime: mtime,
                             mtime,
@@ -43,7 +43,7 @@ pub(crate) fn aggregate_card_modifications(
                 );
             }
             SetSynopsis(css) => {
-                let agg = bt.get_mut(&css.card).unwrap();
+                let agg = bt.get_mut(&css.blurb).unwrap();
                 agg.mtime = mtime;
                 agg.synopsis = css.synopsis.clone();
             }
@@ -53,7 +53,7 @@ pub(crate) fn aggregate_card_modifications(
     bt.into_values()
 }
 
-impl CommonMarkWidget for &Card {
+impl CommonMarkWidget for &Blurb {
     fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
         use eframe::egui::{RichText, Visuals};
 
@@ -65,7 +65,7 @@ impl CommonMarkWidget for &Card {
                 .color(vis.text_color())
         }
 
-        show_card_frame(ui, Frame::group(ui.style()), |ui| {
+        show_blurb_frame(ui, Frame::group(ui.style()), |ui| {
             ui.with_layout(Layout::top_down(Align::Max), |ui| {
                 ui.columns_const(|[left, mid, right]| {
                     left.with_layout(Layout::left_to_right(Align::Min), |ui| {
@@ -100,7 +100,7 @@ impl CommonMarkWidget for &Card {
     }
 }
 
-fn show_card_frame<F>(ui: &mut Ui, frame: Frame, mkui: F) -> Response
+fn show_blurb_frame<F>(ui: &mut Ui, frame: Frame, mkui: F) -> Response
 where
     F: FnOnce(&mut Ui),
 {
@@ -108,17 +108,17 @@ where
 
     mkui(&mut prep.content_ui);
 
-    let card_response = prep.allocate_space(ui).interact(Sense::click());
+    let blurb_response = prep.allocate_space(ui).interact(Sense::click());
 
-    let widget_visuals = ui.visuals().widgets.style(&card_response);
+    let widget_visuals = ui.visuals().widgets.style(&blurb_response);
     prep.frame.fill = widget_visuals.bg_fill;
     prep.frame.stroke = widget_visuals.bg_stroke;
 
     prep.paint(ui);
 
-    if card_response.clicked() {
-        todo!("handle card click")
+    if blurb_response.clicked() {
+        todo!("handle blurb click")
     }
 
-    card_response
+    blurb_response
 }
