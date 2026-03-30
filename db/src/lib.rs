@@ -7,8 +7,13 @@ mod handler;
 mod timestamp;
 mod timestamped;
 
+/// The identifier for cards
+pub type CardId = Id<entities::CardV0>;
+
 pub mod entities;
 pub mod messages;
+
+use exocortex_redborm::Id;
 
 pub use self::db::{Database, DatabaseThreadService};
 pub use self::error::{DbError, DbResult};

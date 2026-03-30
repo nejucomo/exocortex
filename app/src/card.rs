@@ -1,0 +1,124 @@
+use std::collections::BTreeMap;
+
+use eframe::egui::{Align, Frame, Layout, Response, Sense, Ui};
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use exocortex_db::messages::LogScanItems;
+use exocortex_db::{CardId, Timestamp};
+
+use crate::cmwidget::CommonMarkWidget;
+
+#[derive(Debug)]
+#[allow(dead_code)]
+pub(crate) struct Card {
+    id: CardId,
+    ctime: Timestamp,
+    mtime: Timestamp,
+    synopsis: String,
+}
+
+pub(crate) fn aggregate_card_modifications(
+    modifications: &LogScanItems,
+) -> impl Iterator<Item = Card> {
+    use exocortex_db::messages::CardModifyG::*;
+
+    let mut bt = BTreeMap::default();
+
+    for (_, cardmod) in modifications {
+        let mtime = cardmod.time;
+
+        match &cardmod.val {
+            Create(id) => {
+                let id = *id;
+                assert!(
+                    bt.insert(
+                        id,
+                        Card {
+                            id,
+                            ctime: mtime,
+                            mtime,
+                            synopsis: "".to_string()
+                        }
+                    )
+                    .is_none()
+                );
+            }
+            SetSynopsis(css) => {
+                let agg = bt.get_mut(&css.card).unwrap();
+                agg.mtime = mtime;
+                agg.synopsis = css.synopsis.clone();
+            }
+        }
+    }
+
+    bt.into_values()
+}
+
+impl CommonMarkWidget for &Card {
+    fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
+        use eframe::egui::{RichText, Visuals};
+
+        fn metadata_text<T: std::fmt::Display>(vis: &Visuals, val: T) -> RichText {
+            use eframe::egui::TextStyle::Small;
+
+            RichText::new(val.to_string())
+                .text_style(Small)
+                .color(vis.text_color())
+        }
+
+        show_card_frame(ui, Frame::group(ui.style()), |ui| {
+            ui.with_layout(Layout::top_down(Align::Max), |ui| {
+                ui.columns_const(|[left, mid, right]| {
+                    left.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                        ui.label(metadata_text(
+                            ui.visuals(),
+                            format!("Created: {}", self.ctime),
+                        ))
+                    });
+
+                    mid.vertical_centered_justified(|ui| {
+                        ui.label(metadata_text(ui.visuals(), self.id))
+                    });
+
+                    right.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                        ui.label(metadata_text(
+                            ui.visuals(),
+                            format!("Modified: {}", self.mtime),
+                        ))
+                    });
+                });
+
+                ui.scope(|ui: &mut Ui| {
+                    let v = ui.visuals_mut();
+                    v.override_text_color = Some(v.widgets.inactive.fg_stroke.color);
+
+                    CommonMarkViewer::new()
+                        .show(ui, cmcache, self.synopsis.lines().next().unwrap())
+                        .response
+                })
+            });
+        })
+    }
+}
+
+fn show_card_frame<F>(ui: &mut Ui, frame: Frame, mkui: F) -> Response
+where
+    F: FnOnce(&mut Ui),
+{
+    let mut prep = frame.begin(ui);
+
+    mkui(&mut prep.content_ui);
+
+    let card_response = prep.allocate_space(ui).interact(Sense::click());
+
+    let widget_visuals = ui.visuals().widgets.style(&card_response);
+    prep.frame.fill = widget_visuals.bg_fill;
+    prep.frame.stroke = widget_visuals.bg_stroke;
+
+    prep.paint(ui);
+
+    if card_response.clicked() {
+        todo!("handle card click")
+    }
+
+    card_response
+}

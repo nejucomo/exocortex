@@ -5,11 +5,14 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::{DbReply, LogScan, LogScanItems};
+use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
+use exocortex_squeeze_frame::UiExt as _;
 
+use crate::card::{Card, aggregate_card_modifications};
+use crate::cardview::CardView;
+use crate::cmwidget::CommonMarkWidget as _;
 use crate::command::Command;
-use crate::logview::LogView;
 
 #[derive(Debug, new)]
 pub(crate) struct App {
@@ -20,7 +23,7 @@ pub(crate) struct App {
     #[new(default)]
     cmcache: CommonMarkCache,
     #[new(default)]
-    scanned: LogScanItems,
+    cards: Vec<Card>,
 }
 
 impl App {
@@ -34,8 +37,13 @@ impl App {
                 persist_window: false,
                 ..Default::default()
             },
-            Box::new(|_cc| Ok(Box::new(Self::new(db)))),
+            Box::new(|cc| Ok(Box::new(Self::init(cc, db)))),
         )
+    }
+
+    fn init(cc: &eframe::CreationContext<'_>, db: DatabaseThreadService) -> Self {
+        log::trace!("{:#?}", cc.egui_ctx.style());
+        Self::new(db)
     }
 
     fn handle_db_reply(&mut self, reply: DbReply) {
@@ -43,7 +51,9 @@ impl App {
         use exocortex_db::messages::Queried::LogScanned;
 
         match reply {
-            Queried(LogScanned(items)) => self.scanned = items,
+            Queried(LogScanned(items)) => {
+                self.cards = aggregate_card_modifications(&items).collect();
+            }
             Modified(card) => log::debug!("modified: {card:?}"),
             other => panic!("unexpected db reply: {other:?}"),
         }
@@ -73,7 +83,7 @@ impl App {
                     }
                     Command(cmd) => self.handle_command(ui, cmd),
                     Unhandled(chord) => {
-                        dbg!("{chord:#?}");
+                        log::trace!("{chord:#?}");
                         let _ = chord;
                     }
                 },
@@ -121,7 +131,11 @@ impl Widget for &mut App {
             })
             .response;
 
-        resp |= ui.add(LogView::new(&mut self.db, &mut self.cmcache, &self.scanned));
+        resp |= ui
+            .within_squeeze_frame(|ui| {
+                CardView::new(&self.cards).ui_with_cmcache(ui, &mut self.cmcache)
+            })
+            .response;
 
         self.handle_ui_events(ui);
 

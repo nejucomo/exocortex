@@ -2,11 +2,11 @@
 
 use derive_more::{From, Into};
 use derive_new::new;
+use exocortex_redborm::Entity;
 use exocortex_redborm::enumvalue::EnumColumnar;
-use exocortex_redborm::{Entity, Id};
 use redb_derive::Value;
 
-use crate::Timestamp;
+use crate::{CardId, Timestamp};
 
 impl Entity for CardV0 {}
 impl Entity for CardSetSynopsisV0 {}
@@ -20,7 +20,7 @@ pub struct CardV0;
 #[derive(Clone, Debug, From, Into, new, Value)]
 pub struct CardSetSynopsisV0 {
     /// The card modified
-    pub card: Id<CardV0>,
+    pub card: CardId,
     /// The new synopsis
     pub synopsis: String,
 }
@@ -29,7 +29,7 @@ pub struct CardSetSynopsisV0 {
 #[derive(Copy, Clone, Debug, From, Into, new, Value)]
 pub struct CardModificationV0 {
     /// The card modified
-    pub card: Id<CardV0>,
+    pub card: CardId,
     /// A time shortly before the db transaction with this modification was committed
     pub time: Timestamp,
     /// The modification enum columnar

@@ -1,7 +1,8 @@
 use exocortex_redborm::ext::{ReadTransactionExt as _, WriteTransactionExt as _};
-use exocortex_redborm::{Id, OrmResult, RowValue as _};
+use exocortex_redborm::{OrmResult, RowValue as _};
 use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction};
 
+use crate::CardId;
 use crate::entities::CardV0;
 use crate::messages::{
     CardModify, DbIsEmpty, DbReply, DbRequest, LogScan, LogScanItems, Queried, Query, Request,
@@ -46,7 +47,7 @@ impl Handler<Query> for redb::Database {
 }
 
 impl Handler<CardModify> for redb::Database {
-    fn handle(&mut self, m: CardModify) -> OrmResult<Id<CardV0>> {
+    fn handle(&mut self, m: CardModify) -> OrmResult<CardId> {
         let mut txn = self.begin_write()?;
         let id = txn.handle(m)?;
         txn.commit()?;
@@ -93,7 +94,7 @@ impl Handler<LogScan> for ReadTransaction {
 }
 
 impl Handler<CardModify> for WriteTransaction {
-    fn handle(&mut self, m: CardModify) -> OrmResult<Id<CardV0>> {
+    fn handle(&mut self, m: CardModify) -> OrmResult<CardId> {
         log::trace!("recording: {:?}", &m);
         let id = self.store(m)?;
         log::trace!("recorded: {id:?}");

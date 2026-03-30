@@ -5,6 +5,7 @@ use exocortex_db::DatabaseThreadService;
 use exocortex_db::messages::LogScanItems;
 
 #[derive(Debug, new)]
+#[allow(dead_code)]
 pub(crate) struct LogView<'a> {
     #[allow(dead_code)]
     db: &'a mut DatabaseThreadService,

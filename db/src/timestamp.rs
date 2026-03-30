@@ -39,7 +39,8 @@ impl Timestamp {
 
 impl Display for Timestamp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.zoned_local().fmt(f)
+        let z = self.zoned_local().round(jiff::Unit::Second).unwrap();
+        write!(f, "{} {}", z.date(), z.time())
     }
 }
 

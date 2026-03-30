@@ -1,8 +1,14 @@
 #![deny(unsafe_code)]
 
 use egui::epaint::MarginF32;
-use egui::{Frame, InnerResponse, Sense, TextStyle, Ui, UiBuilder};
+use egui::{Color32, Frame, InnerResponse, Sense, Ui, UiBuilder};
 use extension_traits::extension;
+
+const CORNER_RADIUS: f32 = 6.0;
+const INNER_MARGIN: MarginF32 = MarginF32::symmetric(6.0, 2.0);
+const STROKE_GAMMA: f32 = 0.03;
+const FILL_BLEND: Color32 = Color32::LIGHT_BLUE;
+const FILL_GAMMA: f32 = 0.01;
 
 #[extension(pub trait UiExt)]
 impl Ui {
@@ -10,18 +16,23 @@ impl Ui {
     where
         F: FnOnce(&mut Ui) -> R,
     {
-        let visuals = self.style().visuals.clone();
+        let visuals = &self.style().visuals;
 
         Frame::NONE
             .stroke({
                 let mut stroke = visuals.widgets.active.bg_stroke;
-                stroke.color = stroke.color.gamma_multiply(0.05);
+                stroke.color = stroke.color.gamma_multiply(STROKE_GAMMA);
                 stroke
             })
-            .fill(visuals.panel_fill)
+            .corner_radius(CORNER_RADIUS)
+            .fill(
+                visuals
+                    .panel_fill
+                    .blend(FILL_BLEND.gamma_multiply(FILL_GAMMA)),
+            )
             .corner_radius(visuals.widgets.active.corner_radius)
             .squeezed_outer_margin(self)
-            .inner_margin(margin(self))
+            .inner_margin(INNER_MARGIN)
             .show(self, |ui| {
                 let avail = ui.available_size();
                 let (rect, _resp) = ui.allocate_exact_size(avail, Sense::hover());
@@ -40,11 +51,4 @@ impl Frame {
         let wextra = avail.x - avail.min_elem();
         self.outer_margin(MarginF32::symmetric(wextra, 0.0))
     }
-}
-
-fn margin(ui: &mut Ui) -> MarginF32 {
-    let style = TextStyle::Body;
-    let space_w = ui.fonts_mut(|f| f.glyph_width(&style.resolve(ui.style()), ' '));
-    let line_h = ui.text_style_height(&style);
-    MarginF32::symmetric(2. * space_w, 0. * line_h)
 }

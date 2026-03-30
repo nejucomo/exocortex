@@ -26,6 +26,7 @@ pub fn run() -> Result<()> {
         )
     })?;
 
+    log::debug!("Launching db thread service...");
     let mut db = db.launch_thread_service();
 
     // FIXME: figure out how to avoid `e.to_string`
