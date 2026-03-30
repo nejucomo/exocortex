@@ -7,7 +7,7 @@ use crate::cmwidget::CommonMarkWidget;
 
 #[derive(Debug, new)]
 pub(crate) struct BlurbView<'a> {
-    blurbs: &'a Vec<Blurb>,
+    blurbs: &'a [Blurb],
 }
 
 impl<'a> CommonMarkWidget for BlurbView<'a> {
