@@ -1,12 +1,13 @@
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
+use eframe::egui::mutex::Mutex;
 use eframe::egui::{Align, Layout, Response, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{BlurbId, Timestamp};
 use exocortex_widgets::card;
-
-use crate::cmwidget::CommonMarkWidget;
+use exocortex_widgets::with::WidgetWith;
 
 #[derive(Debug)]
 pub(crate) struct Blurb {
@@ -53,8 +54,8 @@ pub(crate) fn aggregate_blurb_modifications(
     bt.into_values()
 }
 
-impl CommonMarkWidget for &Blurb {
-    fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
+impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &Blurb {
+    fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
         let resp = ui.add(card(
             |ui| {
                 ui.columns_const(|[left, mid, right]| {
@@ -70,7 +71,11 @@ impl CommonMarkWidget for &Blurb {
                 });
             },
             |ui| {
-                CommonMarkViewer::new().show(ui, cmcache, self.synopsis.lines().next().unwrap());
+                CommonMarkViewer::new().show(
+                    ui,
+                    &mut cmcache.lock(),
+                    self.synopsis.lines().next().unwrap(),
+                );
             },
         ));
 

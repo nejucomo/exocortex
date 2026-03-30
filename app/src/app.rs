@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use derive_new::new;
+use eframe::egui::mutex::Mutex;
 use eframe::egui::{
     CentralPanel, Context, Event, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
@@ -8,20 +11,23 @@ use exocortex_db::DatabaseThreadService;
 use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
 use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
+use exocortex_widgets::with::WidgetWith;
+use exocortex_widgets::{Orientation, UiExt, many};
 
 use crate::blurb::{Blurb, aggregate_blurb_modifications};
-use crate::blurbview::BlurbView;
-use crate::cmwidget::CommonMarkWidget as _;
 use crate::command::Command;
 
-#[derive(Debug, new)]
+#[derive(new)]
 pub(crate) struct App {
     db: DatabaseThreadService,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
+
+    /// BUG: This is locked by every common mark widget per frame!
     #[new(default)]
-    cmcache: CommonMarkCache,
+    cmcache: Arc<Mutex<CommonMarkCache>>,
+
     #[new(default)]
     blurbs: Vec<Blurb>,
 }
@@ -125,6 +131,8 @@ impl eframe::App for App {
 
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
+        use Orientation::Vertical;
+
         let mut resp = ui
             .vertical_centered(|ui| {
                 ui.label(RichText::new("exocortex").italics());
@@ -133,7 +141,9 @@ impl Widget for &mut App {
 
         resp |= ui
             .within_widgets(|ui| {
-                BlurbView::new(&self.blurbs).ui_with_cmcache(ui, &mut self.cmcache)
+                ui.scroll_area(Vertical, |ui| {
+                    ui.add(many(self.blurbs.iter()).with(&self.cmcache))
+                })
             })
             .response;
 
