@@ -1,17 +1,11 @@
 use std::collections::BTreeMap;
 
-use eframe::egui::{Align, Frame, Layout, Response, Ui};
-use eframe::epaint::MarginF32;
+use eframe::egui::{Align, Frame, Layout, Response, Sense, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{CardId, Timestamp};
 
 use crate::cmwidget::CommonMarkWidget;
-
-const CORNER_RADIUS: f32 = 6.0;
-const INNER_MARGIN: MarginF32 = MarginF32::symmetric(6.0, 2.0);
-const STROKE_GAMMA: f32 = 0.5;
-const STROKE_WIDTH: f32 = 1.0;
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -61,82 +55,70 @@ pub(crate) fn aggregate_card_modifications(
 
 impl CommonMarkWidget for &Card {
     fn ui_with_cmcache(self, ui: &mut Ui, cmcache: &mut CommonMarkCache) -> Response {
-        show_card_frame(
-            ui,
-            Frame::NONE
-                .stroke({
-                    let mut stroke = ui.style().visuals.widgets.active.bg_stroke;
-                    stroke.color = stroke.color.gamma_multiply(STROKE_GAMMA);
-                    stroke.width = STROKE_WIDTH;
-                    stroke
-                })
-                .corner_radius(CORNER_RADIUS)
-                .inner_margin(INNER_MARGIN),
-            |ui| {
-                ui.with_layout(Layout::top_down(Align::Max), |ui| {
-                    ui.columns_const(|[left, mid, right]| {
-                        use eframe::egui::{RichText, TextStyle::Small};
+        use eframe::egui::{RichText, Visuals};
 
-                        left.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                            ui.label(
-                                RichText::new(format!("Created: {}", self.ctime)).text_style(Small),
-                            )
-                        });
+        fn metadata_text<T: std::fmt::Display>(vis: &Visuals, val: T) -> RichText {
+            use eframe::egui::TextStyle::Small;
 
-                        mid.vertical_centered_justified(|ui| {
-                            ui.label(RichText::new(format!("{}", self.id)).text_style(Small))
-                        });
+            RichText::new(val.to_string())
+                .text_style(Small)
+                .color(vis.text_color())
+        }
 
-                        right.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                            ui.label(
-                                RichText::new(format!("Modified: {}", self.mtime))
-                                    .text_style(Small),
-                            )
-                        });
+        show_card_frame(ui, Frame::group(ui.style()), |ui| {
+            ui.with_layout(Layout::top_down(Align::Max), |ui| {
+                ui.columns_const(|[left, mid, right]| {
+                    left.with_layout(Layout::left_to_right(Align::Min), |ui| {
+                        ui.label(metadata_text(
+                            ui.visuals(),
+                            format!("Created: {}", self.ctime),
+                        ))
                     });
 
-                    Frame::NONE.show(ui, |ui: &mut Ui| {
-                        CommonMarkViewer::new()
-                            .show(ui, cmcache, self.synopsis.lines().next().unwrap())
-                            .response
-                    })
+                    mid.vertical_centered_justified(|ui| {
+                        ui.label(metadata_text(ui.visuals(), self.id))
+                    });
+
+                    right.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                        ui.label(metadata_text(
+                            ui.visuals(),
+                            format!("Modified: {}", self.mtime),
+                        ))
+                    });
                 });
-            },
-        )
+
+                ui.scope(|ui: &mut Ui| {
+                    let v = ui.visuals_mut();
+                    v.override_text_color = Some(v.widgets.inactive.fg_stroke.color);
+
+                    CommonMarkViewer::new()
+                        .show(ui, cmcache, self.synopsis.lines().next().unwrap())
+                        .response
+                })
+            });
+        })
     }
 }
 
-fn show_card_frame<F>(ui: &mut Ui, f: Frame, mkui: F) -> Response
+fn show_card_frame<F>(ui: &mut Ui, frame: Frame, mkui: F) -> Response
 where
     F: FnOnce(&mut Ui),
 {
-    let mut prep = f.begin(ui);
+    let mut prep = frame.begin(ui);
 
     mkui(&mut prep.content_ui);
 
-    let resp = prep.allocate_space(ui);
+    let card_response = prep.allocate_space(ui).interact(Sense::click());
 
-    let visuals = if resp.hovered() {
-        use eframe::egui::Color32;
+    let widget_visuals = ui.visuals().widgets.style(&card_response);
+    prep.frame.fill = widget_visuals.bg_fill;
+    prep.frame.stroke = widget_visuals.bg_stroke;
 
-        let mut v = ui.style().visuals.widgets.active;
+    prep.paint(ui);
 
-        v.bg_fill = v.bg_fill.blend(Color32::WHITE.gamma_multiply(0.1));
-        v
-    } else {
-        ui.style().visuals.widgets.inactive
-    };
+    if card_response.clicked() {
+        todo!("handle card click")
+    }
 
-    prep.frame.fill = visuals.bg_fill;
-    prep.frame.stroke = visuals.bg_stroke;
-
-    /*
-    pub weak_bg_fill: Color32,
-    pub bg_stroke: Stroke,
-    pub corner_radius: CornerRadius,
-    pub fg_stroke: Stroke,
-    pub expansion: f32,
-    */
-
-    prep.end(ui)
+    card_response
 }
