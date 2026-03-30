@@ -2,10 +2,10 @@
 use derive_more::{From, TryInto, TryIntoError};
 use derive_new::new;
 
-use crate::CardId;
-use crate::entities::CardSetSynopsisV0;
+use crate::BlurbId;
+use crate::entities::BlurbSetSynopsisV0;
 use crate::messages::{
-    CardCreate, CardModify, CardModifyG, DbIsEmpty, LogScan, LogScanItems, Queried, Query, Request,
+    BlurbCreate, BlurbModify, BlurbModifyG, DbIsEmpty, LogScan, LogScanItems, Queried, Query, Request,
 };
 
 /// The top-level request sent by applications to the DB
@@ -15,17 +15,17 @@ pub enum DbRequest {
     #[from(Query, DbIsEmpty, LogScan)]
     Query(Query),
     #[allow(missing_docs)]
-    #[from(CardModify, CardCreate)]
-    Modify(CardModify),
+    #[from(BlurbModify, BlurbCreate)]
+    Modify(BlurbModify),
 }
 
 impl Request for DbRequest {
     type Reply = DbReply;
 }
 
-impl From<CardSetSynopsisV0> for DbRequest {
-    fn from(value: CardSetSynopsisV0) -> Self {
-        use CardModifyG::SetSynopsis;
+impl From<BlurbSetSynopsisV0> for DbRequest {
+    fn from(value: BlurbSetSynopsisV0) -> Self {
+        use BlurbModifyG::SetSynopsis;
 
         DbRequest::Modify(SetSynopsis(value))
     }
@@ -37,7 +37,7 @@ pub enum DbReply {
     #[allow(missing_docs)]
     Queried(Queried),
     #[allow(missing_docs)]
-    Modified(CardId),
+    Modified(BlurbId),
 }
 
 macro_rules! def_try_into_transitive {
@@ -58,8 +58,8 @@ macro_rules! def_try_into_transitive {
 
 def_try_into_transitive!(DbRequest => Query => DbIsEmpty);
 def_try_into_transitive!(DbRequest => Query => LogScan);
-def_try_into_transitive!(DbRequest => CardModify => CardCreate);
-def_try_into_transitive!(DbRequest => CardModify => CardSetSynopsisV0);
+def_try_into_transitive!(DbRequest => BlurbModify => BlurbCreate);
+def_try_into_transitive!(DbRequest => BlurbModify => BlurbSetSynopsisV0);
 
 def_try_into_transitive!(DbReply => Queried => bool);
 def_try_into_transitive!(DbReply => Queried => LogScanItems);

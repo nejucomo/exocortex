@@ -1,15 +1,15 @@
-use exocortex_db::entities::CardSetSynopsisV0;
-use exocortex_db::messages::{CardCreate, DbIsEmpty};
+use exocortex_db::entities::BlurbSetSynopsisV0;
+use exocortex_db::messages::{BlurbCreate, DbIsEmpty};
 use exocortex_db::{DatabaseThreadService, DbResult};
 use indoc::indoc;
 
-const CANNED_CARDS: &[&str] = &[
+const CANNED_BLURBS: &[&str] = &[
     "Welcome to exocortex!",
-    "The previous welcome line and this line are each separate _cards_.",
+    "The previous welcome line and this line are each separate _blurbs_.",
     indoc! { r#"
-        Cards can be longer. [TODO: implement: "Click this."]
+        Blurbs can be longer. [TODO: implement: "Click this."]
 
-        Each card is a markdown document, and can include markdown like:
+        Each blurb is a markdown document, and can include markdown like:
 
         - lists, like this one
         - _italics_, **bold**, `fixed width`
@@ -26,10 +26,10 @@ const CANNED_CARDS: &[&str] = &[
 pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> DbResult<()> {
     if db.request(DbIsEmpty)? {
         log::debug!("Prepopulating the database...");
-        for cardtxt in CANNED_CARDS.iter().rev() {
-            let card = db.request(CardCreate)?;
-            let c2 = db.request(CardSetSynopsisV0::new(card, cardtxt.to_string()))?;
-            assert_eq!(card, c2);
+        for blurbtxt in CANNED_BLURBS.iter().rev() {
+            let blurb = db.request(BlurbCreate)?;
+            let c2 = db.request(BlurbSetSynopsisV0::new(blurb, blurbtxt.to_string()))?;
+            assert_eq!(blurb, c2);
         }
     }
     Ok(())

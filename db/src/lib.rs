@@ -7,8 +7,8 @@ mod handler;
 mod timestamp;
 mod timestamped;
 
-/// The identifier for cards
-pub type CardId = Id<entities::CardV0>;
+/// The identifier for blurbs
+pub type BlurbId = Id<entities::BlurbV0>;
 
 pub mod entities;
 pub mod messages;

@@ -1,5 +1,5 @@
 [workspace]
-members = ["app", "squeeze-frame", "keybinding", "tserv", "db", "redborm"]
+members = ["app", "widgets", "keybinding", "tserv", "db", "redborm"]
 resolver = "3"
 
 [workspace.package]
@@ -18,8 +18,8 @@ env_logger = "0.11.8"
 exocortex-db = { version = "0.1.0", path = "db" }
 exocortex-keybinding = { version = "0.1.0", path = "keybinding" }
 exocortex-redborm = { version = "0.1.0", path = "redborm" }
-exocortex-squeeze-frame = { version = "0.1.0", path = "squeeze-frame" }
 exocortex-tserv = { version = "0.1.0", path = "tserv" }
+exocortex-widgets = { version = "0.1.0", path = "widgets" }
 extension-traits = "2.0.1"
 indoc = "2.0.7"
 jiff = "0.2.23"

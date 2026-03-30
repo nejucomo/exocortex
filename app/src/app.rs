@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use derive_new::new;
+use eframe::egui::mutex::Mutex;
 use eframe::egui::{
     CentralPanel, Context, Event, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
@@ -7,23 +10,26 @@ use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
 use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
-use exocortex_squeeze_frame::UiExt as _;
+use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
+use exocortex_widgets::with::WidgetWith;
+use exocortex_widgets::{Orientation, UiExt, many};
 
-use crate::card::{Card, aggregate_card_modifications};
-use crate::cardview::CardView;
-use crate::cmwidget::CommonMarkWidget as _;
+use crate::blurb::{Blurb, aggregate_blurb_modifications};
 use crate::command::Command;
 
-#[derive(Debug, new)]
+#[derive(new)]
 pub(crate) struct App {
     db: DatabaseThreadService,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
+
+    /// BUG: This is locked by every common mark widget per frame!
     #[new(default)]
-    cmcache: CommonMarkCache,
+    cmcache: Arc<Mutex<CommonMarkCache>>,
+
     #[new(default)]
-    cards: Vec<Card>,
+    blurbs: Vec<Blurb>,
 }
 
 impl App {
@@ -52,9 +58,9 @@ impl App {
 
         match reply {
             Queried(LogScanned(items)) => {
-                self.cards = aggregate_card_modifications(&items).collect();
+                self.blurbs = aggregate_blurb_modifications(&items).collect();
             }
-            Modified(card) => log::debug!("modified: {card:?}"),
+            Modified(blurb) => log::debug!("modified: {blurb:?}"),
             other => panic!("unexpected db reply: {other:?}"),
         }
     }
@@ -106,7 +112,7 @@ impl App {
                 let fs = ui.input(|i| i.viewport().fullscreen.unwrap_or_default());
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
-            CreateNewCard => {
+            CreateNewBlurb => {
                 todo!("FIXME")
             }
         }
@@ -125,6 +131,8 @@ impl eframe::App for App {
 
 impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
+        use Orientation::Vertical;
+
         let mut resp = ui
             .vertical_centered(|ui| {
                 ui.label(RichText::new("exocortex").italics());
@@ -132,8 +140,10 @@ impl Widget for &mut App {
             .response;
 
         resp |= ui
-            .within_squeeze_frame(|ui| {
-                CardView::new(&self.cards).ui_with_cmcache(ui, &mut self.cmcache)
+            .within_widgets(|ui| {
+                ui.scroll_area(Vertical, |ui| {
+                    ui.add(many(self.blurbs.iter()).with(&self.cmcache))
+                })
             })
             .response;
 
