@@ -7,7 +7,7 @@ use egui_commonmark::CommonMarkCache;
 use exocortex_db::DatabaseThreadService;
 use exocortex_db::messages::{DbReply, LogScan};
 use exocortex_keybinding::ShortcutState;
-use exocortex_widgets::squeeze_frame::UiExt as _;
+use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 
 use crate::blurb::{Blurb, aggregate_blurb_modifications};
 use crate::blurbview::BlurbView;
@@ -132,7 +132,9 @@ impl Widget for &mut App {
             .response;
 
         resp |= ui
-            .within_widgets(|ui| BlurbView::new(&self.blurbs).ui_with_cmcache(ui, &mut self.cmcache))
+            .within_widgets(|ui| {
+                BlurbView::new(&self.blurbs).ui_with_cmcache(ui, &mut self.cmcache)
+            })
             .response;
 
         self.handle_ui_events(ui);

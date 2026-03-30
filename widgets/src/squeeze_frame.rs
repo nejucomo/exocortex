@@ -8,7 +8,7 @@ const STROKE_GAMMA: f32 = 0.03;
 const FILL_BLEND: Color32 = Color32::LIGHT_BLUE;
 const FILL_GAMMA: f32 = 0.01;
 
-#[extension(pub trait UiExt)]
+#[extension(pub trait UiSqueezeExt)]
 impl Ui {
     fn within_widgets<F, R>(&mut self, f: F) -> InnerResponse<R>
     where
@@ -42,7 +42,7 @@ impl Ui {
     }
 }
 
-#[extension(pub trait FrameExt)]
+#[extension(pub trait FrameSqueezeExt)]
 impl Frame {
     fn squeezed_outer_margin(self, ui: &mut Ui) -> Self {
         let avail = ui.available_size();
