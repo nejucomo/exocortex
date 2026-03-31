@@ -6,7 +6,7 @@ use logging_options::Backend as _;
 
 use crate::app::App;
 use crate::cliopts::Options;
-use crate::prepop::prepopulate;
+use crate::tutorial;
 
 /// Run the app
 ///
@@ -30,7 +30,7 @@ pub fn run() -> Result<()> {
     let mut db = db.launch_thread_service();
 
     // FIXME: figure out how to avoid `e.to_string`
-    stringify_error("db prepopulation error", prepopulate(&mut db))?;
+    stringify_error("db prepopulation error", tutorial::prepopulate(&mut db))?;
     stringify_error("eframe error", App::run(db))?;
 
     Ok(())
