@@ -1,3 +1,4 @@
+use derive_builder::Builder;
 use egui::{Align, Frame, Layout, Response, Sense, TextStyle, Ui, Widget};
 
 use crate::uiext::UiExt as _;
@@ -5,72 +6,140 @@ use crate::uiext::UiExt as _;
 /// A frame with a "physical card" appearance
 ///
 /// A card has two sections for "metadata" and "content". Cards provide hover and click interaction as a whole.
-pub fn card<M, C>(render_metadata: M, render_content: C) -> impl Widget
+pub fn card<'a, S, M, C>() -> CardBuilder<'a, S, M, C>
 where
-    M: FnOnce(&mut Ui),
-    C: FnOnce(&mut Ui),
+    S: Widget,
+    M: Widget,
+    C: Widget,
 {
-    Card {
-        render_metadata,
-        render_content,
-    }
+    CardBuilder::default()
 }
 
-pub struct Card<M, C>
+/// A [Card] widget
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct Card<'a, S, M, C>
 where
-    M: FnOnce(&mut Ui),
-    C: FnOnce(&mut Ui),
+    S: Widget,
+    M: Widget,
+    C: Widget,
 {
-    render_metadata: M,
-    render_content: C,
+    /// The display mode of the [Card]
+    mode: &'a mut CardMode,
+    /// The summary widget, typically a single line
+    summary: S,
+    /// The metadata widget, typically a single line
+    metadata: M,
+    /// The full content widget, typically a superset of the summary
+    content: C,
 }
 
-impl<M, C> Widget for Card<M, C>
+/// The display mode for a [Card]
+#[derive(Copy, Clone, Debug)]
+pub enum CardMode {
+    /// Display only the summary in a streamlined fashion
+    Summary,
+    /// Display the summary with metadata
+    Metadata,
+    /// Display the full content
+    Content,
+}
+
+impl<'a, S, M, C> Widget for Card<'a, S, M, C>
 where
-    M: FnOnce(&mut Ui),
-    C: FnOnce(&mut Ui),
+    S: Widget,
+    M: Widget,
+    C: Widget,
 {
     fn ui(self, ui: &mut Ui) -> Response {
+        use CardMode::*;
+
         let Card {
-            render_metadata,
-            render_content,
+            mode,
+            summary,
+            metadata,
+            content,
         } = self;
 
         let mut prep = Frame::group(ui.style()).begin(ui);
 
         prep.content_ui
-            .with_layout(Layout::top_down(Align::Max), |ui| {
-                // Add metadata to the top:
-                ui.scoped_style(
-                    |style| {
-                        style.override_text_style = Some(TextStyle::Small);
-                    },
-                    |visuals| {
-                        visuals.override_text_color =
-                            Some(visuals.widgets.noninteractive.fg_stroke.color);
-                    },
-                    render_metadata,
-                );
-
-                // Now add content:
-                ui.scoped_style(
-                    |_style| {},
-                    |visuals| {
-                        visuals.override_text_color =
-                            Some(visuals.widgets.inactive.fg_stroke.color);
-                    },
-                    render_content,
-                );
+            .with_layout(Layout::top_down(Align::Max), |ui| match &mode {
+                Summary => {
+                    ui.scoped_style(
+                        |_style| {},
+                        |visuals| {
+                            visuals.override_text_color =
+                                Some(visuals.widgets.inactive.fg_stroke.color);
+                        },
+                        summary,
+                    );
+                }
+                Metadata => {
+                    ui.scoped_style(
+                        |style| {
+                            style.override_text_style = Some(TextStyle::Small);
+                        },
+                        |visuals| {
+                            visuals.override_text_color =
+                                Some(visuals.widgets.noninteractive.fg_stroke.color);
+                        },
+                        metadata,
+                    );
+                    ui.scoped_style(
+                        |_style| {},
+                        |visuals| {
+                            visuals.override_text_color =
+                                Some(visuals.widgets.inactive.fg_stroke.color);
+                        },
+                        summary,
+                    );
+                }
+                Content => {
+                    ui.scoped_style(
+                        |style| {
+                            style.override_text_style = Some(TextStyle::Small);
+                        },
+                        |visuals| {
+                            visuals.override_text_color =
+                                Some(visuals.widgets.noninteractive.fg_stroke.color);
+                        },
+                        metadata,
+                    );
+                    ui.scoped_style(
+                        |_style| {},
+                        |visuals| {
+                            visuals.override_text_color =
+                                Some(visuals.widgets.inactive.fg_stroke.color);
+                        },
+                        content,
+                    );
+                }
             });
 
         let resp = prep.allocate_space(ui).interact(Sense::click());
 
         {
-            let widget_visuals = ui.visuals().widgets.style(&resp);
+            let widgets = &ui.visuals().widgets;
+
+            let widget_visuals = if matches!(mode, Summary) && !resp.hovered() {
+                &widgets.noninteractive
+            } else {
+                widgets.style(&resp)
+            };
+
             prep.frame.fill = widget_visuals.bg_fill;
             prep.frame.stroke = widget_visuals.bg_stroke;
-            prep.paint(ui);
         }
+        prep.paint(ui);
+
+        *mode = if resp.clicked() || matches!(mode, Content) && resp.hovered() {
+            Content
+        } else if resp.hovered() {
+            Metadata
+        } else {
+            Summary
+        };
 
         resp
     }
