@@ -23,6 +23,8 @@ const CANNED_THOPS: &[&str] = &[
 
         - <u>inline html for underline</u>
     "# },
+    // TODO: Describe the shortcut based on the live system.
+    "Append your own thop with <cmd>-<enter>. Try it now.",
 ];
 
 pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> DbResult<()> {
