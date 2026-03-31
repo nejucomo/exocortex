@@ -5,36 +5,36 @@ use eframe::egui::mutex::Mutex;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
-use exocortex_db::{BlurbId, Timestamp};
+use exocortex_db::{ThopId, Timestamp};
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{CardMode, card};
 
 #[derive(Debug)]
-pub(crate) struct Blurb {
+pub(crate) struct Thop {
     mode: CardMode,
-    id: BlurbId,
+    id: ThopId,
     ctime: Timestamp,
     mtime: Timestamp,
     synopsis: String,
 }
 
-pub(crate) fn aggregate_blurb_modifications(
+pub(crate) fn aggregate_thop_modifications(
     modifications: &LogScanItems,
-) -> impl Iterator<Item = Blurb> {
-    use exocortex_db::messages::BlurbModifyG::*;
+) -> impl Iterator<Item = Thop> {
+    use exocortex_db::messages::ThopModifyG::*;
 
     let mut bt = BTreeMap::default();
 
-    for (_, blurbmod) in modifications {
-        let mtime = blurbmod.time;
+    for (_, thopmod) in modifications {
+        let mtime = thopmod.time;
 
-        match &blurbmod.val {
+        match &thopmod.val {
             Create(id) => {
                 let id = *id;
                 assert!(
                     bt.insert(
                         id,
-                        Blurb {
+                        Thop {
                             mode: CardMode::Streamlined,
                             id,
                             ctime: mtime,
@@ -46,7 +46,7 @@ pub(crate) fn aggregate_blurb_modifications(
                 );
             }
             SetSynopsis(css) => {
-                let agg = bt.get_mut(&css.blurb).unwrap();
+                let agg = bt.get_mut(&css.thop).unwrap();
                 agg.mtime = mtime;
                 agg.synopsis = css.synopsis.clone();
             }
@@ -56,7 +56,7 @@ pub(crate) fn aggregate_blurb_modifications(
     bt.into_values()
 }
 
-impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut Blurb {
+impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut Thop {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
         ui.add(
             card()

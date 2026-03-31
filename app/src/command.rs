@@ -9,7 +9,7 @@ pub(crate) enum Command {
     Viewport(ViewportCommand),
     ViewportToggleFullscreen,
     #[allow(dead_code)]
-    CreateNewBlurb,
+    CreateNewThop,
 }
 
 impl KeyCommand for Command {

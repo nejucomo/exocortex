@@ -2,10 +2,10 @@ use exocortex_redborm::ext::{ReadTransactionExt as _, WriteTransactionExt as _};
 use exocortex_redborm::{OrmResult, RowValue as _};
 use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, WriteTransaction};
 
-use crate::BlurbId;
-use crate::entities::BlurbV0;
+use crate::ThopId;
+use crate::entities::ThopV0;
 use crate::messages::{
-    BlurbModify, DbIsEmpty, DbReply, DbRequest, LogScan, LogScanItems, Queried, Query, Request,
+    ThopModify, DbIsEmpty, DbReply, DbRequest, LogScan, LogScanItems, Queried, Query, Request,
 };
 
 pub(crate) trait Handler<R: Request> {
@@ -46,8 +46,8 @@ impl Handler<Query> for redb::Database {
     }
 }
 
-impl Handler<BlurbModify> for redb::Database {
-    fn handle(&mut self, m: BlurbModify) -> OrmResult<BlurbId> {
+impl Handler<ThopModify> for redb::Database {
+    fn handle(&mut self, m: ThopModify) -> OrmResult<ThopId> {
         let mut txn = self.begin_write()?;
         let id = txn.handle(m)?;
         txn.commit()?;
@@ -71,7 +71,7 @@ impl Handler<DbIsEmpty> for ReadTransaction {
     fn handle(&mut self, _: DbIsEmpty) -> OrmResult<bool> {
         use redb::TableError::TableDoesNotExist;
 
-        match self.open_table(BlurbV0::table_definition()) {
+        match self.open_table(ThopV0::table_definition()) {
             Ok(tab) => {
                 let len = tab.len()?;
                 Ok(len == 0)
@@ -93,8 +93,8 @@ impl Handler<LogScan> for ReadTransaction {
     }
 }
 
-impl Handler<BlurbModify> for WriteTransaction {
-    fn handle(&mut self, m: BlurbModify) -> OrmResult<BlurbId> {
+impl Handler<ThopModify> for WriteTransaction {
+    fn handle(&mut self, m: ThopModify) -> OrmResult<ThopId> {
         log::trace!("recording: {:?}", &m);
         let id = self.store(m)?;
         log::trace!("recorded: {id:?}");

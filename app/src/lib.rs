@@ -1,7 +1,7 @@
 #![deny(unsafe_code)]
 
 mod app;
-mod blurb;
+mod thop;
 mod command;
 mod dbgexpr;
 mod dbglayout;

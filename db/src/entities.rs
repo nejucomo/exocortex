@@ -6,30 +6,30 @@ use exocortex_redborm::Entity;
 use exocortex_redborm::enumvalue::EnumColumnar;
 use redb_derive::Value;
 
-use crate::{BlurbId, Timestamp};
+use crate::{ThopId, Timestamp};
 
-impl Entity for BlurbV0 {}
-impl Entity for BlurbSetSynopsisV0 {}
-impl Entity for BlurbModificationV0 {}
+impl Entity for ThopV0 {}
+impl Entity for ThopSetSynopsisV0 {}
+impl Entity for ThopModificationV0 {}
 
-/// The [BlurbV0] entity
+/// The [ThopV0] entity
 #[derive(Copy, Clone, Debug, Value)]
-pub struct BlurbV0;
+pub struct ThopV0;
 
 /// An entity recording a change to synopsis
 #[derive(Clone, Debug, From, Into, new, Value)]
-pub struct BlurbSetSynopsisV0 {
-    /// The blurb modified
-    pub blurb: BlurbId,
+pub struct ThopSetSynopsisV0 {
+    /// The thop modified
+    pub thop: ThopId,
     /// The new synopsis
     pub synopsis: String,
 }
 
-/// An entity recording a blurb modification
+/// An entity recording a thop modification
 #[derive(Copy, Clone, Debug, From, Into, new, Value)]
-pub struct BlurbModificationV0 {
-    /// The blurb modified
-    pub blurb: BlurbId,
+pub struct ThopModificationV0 {
+    /// The thop modified
+    pub thop: ThopId,
     /// A time shortly before the db transaction with this modification was committed
     pub time: Timestamp,
     /// The modification enum columnar

@@ -7,8 +7,8 @@ mod handler;
 mod timestamp;
 mod timestamped;
 
-/// The identifier for blurbs
-pub type BlurbId = Id<entities::BlurbV0>;
+/// The identifier for thops
+pub type ThopId = Id<entities::ThopV0>;
 
 pub mod entities;
 pub mod messages;

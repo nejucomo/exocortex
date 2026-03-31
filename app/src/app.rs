@@ -14,7 +14,7 @@ use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
 
-use crate::blurb::{Blurb, aggregate_blurb_modifications};
+use crate::thop::{Thop, aggregate_thop_modifications};
 use crate::command::Command;
 
 #[derive(new)]
@@ -29,7 +29,7 @@ pub(crate) struct App {
     cmcache: Arc<Mutex<CommonMarkCache>>,
 
     #[new(default)]
-    blurbs: Vec<Blurb>,
+    thops: Vec<Thop>,
 }
 
 impl App {
@@ -58,9 +58,9 @@ impl App {
 
         match reply {
             Queried(LogScanned(items)) => {
-                self.blurbs = aggregate_blurb_modifications(&items).collect();
+                self.thops = aggregate_thop_modifications(&items).collect();
             }
-            Modified(blurb) => log::debug!("modified: {blurb:?}"),
+            Modified(thop) => log::debug!("modified: {thop:?}"),
             other => panic!("unexpected db reply: {other:?}"),
         }
     }
@@ -112,7 +112,7 @@ impl App {
                 let fs = ui.input(|i| i.viewport().fullscreen.unwrap_or_default());
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
-            CreateNewBlurb => {
+            CreateNewThop => {
                 todo!("FIXME")
             }
         }
@@ -136,7 +136,7 @@ impl Widget for &mut App {
         let resp = ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
-                    ui.add(many(self.blurbs.iter_mut().rev()).with(&self.cmcache))
+                    ui.add(many(self.thops.iter_mut().rev()).with(&self.cmcache))
                 })
             })
             .response;

@@ -1,15 +1,15 @@
-use exocortex_db::entities::BlurbSetSynopsisV0;
-use exocortex_db::messages::{BlurbCreate, DbIsEmpty};
+use exocortex_db::entities::ThopSetSynopsisV0;
+use exocortex_db::messages::{ThopCreate, DbIsEmpty};
 use exocortex_db::{DatabaseThreadService, DbResult};
 use indoc::indoc;
 
-const CANNED_BLURBS: &[&str] = &[
+const CANNED_THOPS: &[&str] = &[
     "Welcome to exocortex!",
-    "The previous welcome line and this line are each separate _blurbs_.",
+    "The previous welcome line and this line are each separate _thops_.",
     indoc! { r#"
-        Blurbs can be longer. [TODO: implement: "Click this."]
+        Thops can be longer. [TODO: implement: "Click this."]
 
-        Each blurb is a markdown document, and can include markdown like:
+        Each thop is a markdown document, and can include markdown like:
 
         - lists, like this one
         - _italics_, **bold**, `fixed width`
@@ -26,10 +26,10 @@ const CANNED_BLURBS: &[&str] = &[
 pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> DbResult<()> {
     if db.request(DbIsEmpty)? {
         log::debug!("Prepopulating the database...");
-        for blurbtxt in CANNED_BLURBS.iter().rev() {
-            let blurb = db.request(BlurbCreate)?;
-            let c2 = db.request(BlurbSetSynopsisV0::new(blurb, blurbtxt.to_string()))?;
-            assert_eq!(blurb, c2);
+        for thoptxt in CANNED_THOPS.iter().rev() {
+            let thop = db.request(ThopCreate)?;
+            let c2 = db.request(ThopSetSynopsisV0::new(thop, thoptxt.to_string()))?;
+            assert_eq!(thop, c2);
         }
     }
     Ok(())

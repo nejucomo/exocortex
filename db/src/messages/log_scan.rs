@@ -2,8 +2,8 @@
 use exocortex_redborm::Id;
 
 use crate::Timestamped;
-use crate::entities::BlurbModificationV0;
-use crate::messages::{BlurbModified, Request};
+use crate::entities::ThopModificationV0;
+use crate::messages::{ThopModified, Request};
 
 /// Scan the log
 #[derive(Copy, Clone, Debug)]
@@ -21,4 +21,4 @@ impl Request for LogScan {
 pub type LogScanItems = Vec<LogScanItem>;
 
 /// An individual item scanned
-pub type LogScanItem = (Id<BlurbModificationV0>, Timestamped<BlurbModified>);
+pub type LogScanItem = (Id<ThopModificationV0>, Timestamped<ThopModified>);
