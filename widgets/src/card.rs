@@ -6,7 +6,7 @@ use crate::uiext::UiExt as _;
 /// A frame with a "physical card" appearance
 ///
 /// A card has two sections for "metadata" and "content". Cards provide hover and click interaction as a whole.
-pub fn card<S, M, C>() -> CardBuilder<S, M, C>
+pub fn card<'a, S, M, C>() -> CardBuilder<'a, S, M, C>
 where
     S: Widget,
     M: Widget,
@@ -18,14 +18,14 @@ where
 /// A [Card] widget
 #[derive(Builder)]
 #[builder(pattern = "owned")]
-pub struct Card<S, M, C>
+pub struct Card<'a, S, M, C>
 where
     S: Widget,
     M: Widget,
     C: Widget,
 {
     /// The display mode of the [Card]
-    mode: CardMode,
+    mode: &'a mut CardMode,
     /// The summary widget, typically a single line
     summary: S,
     /// The metadata widget, typically a single line
@@ -45,7 +45,7 @@ pub enum CardMode {
     Content,
 }
 
-impl<S, M, C> Widget for Card<S, M, C>
+impl<'a, S, M, C> Widget for Card<'a, S, M, C>
 where
     S: Widget,
     M: Widget,
@@ -64,7 +64,7 @@ where
         let mut prep = Frame::group(ui.style()).begin(ui);
 
         prep.content_ui
-            .with_layout(Layout::top_down(Align::Max), |ui| match mode {
+            .with_layout(Layout::top_down(Align::Max), |ui| match &mode {
                 Summary => {
                     ui.scoped_style(
                         |_style| {},
@@ -120,11 +120,26 @@ where
         let resp = prep.allocate_space(ui).interact(Sense::click());
 
         {
-            let widget_visuals = ui.visuals().widgets.style(&resp);
+            let widgets = &ui.visuals().widgets;
+
+            let widget_visuals = if matches!(mode, Summary) && !resp.hovered() {
+                &widgets.noninteractive
+            } else {
+                widgets.style(&resp)
+            };
+
             prep.frame.fill = widget_visuals.bg_fill;
             prep.frame.stroke = widget_visuals.bg_stroke;
-            prep.paint(ui);
         }
+        prep.paint(ui);
+
+        *mode = if resp.clicked() || matches!(mode, Content) && resp.hovered() {
+            Content
+        } else if resp.hovered() {
+            Metadata
+        } else {
+            Summary
+        };
 
         resp
     }

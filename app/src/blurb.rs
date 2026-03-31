@@ -56,11 +56,11 @@ pub(crate) fn aggregate_blurb_modifications(
     bt.into_values()
 }
 
-impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &Blurb {
+impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut Blurb {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
-        let resp = ui.add(
+        ui.add(
             card()
-                .mode(self.mode)
+                .mode(&mut self.mode)
                 .metadata(|ui: &mut Ui| {
                     let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
                     ui.columns_const(|[left, mid, right]| {
@@ -99,11 +99,6 @@ impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &Blurb {
                 })
                 .build()
                 .unwrap(),
-        );
-
-        if resp.clicked() {
-            todo!("handle blurb click")
-        }
-        resp
+        )
     }
 }
