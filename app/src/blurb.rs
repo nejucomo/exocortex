@@ -11,6 +11,7 @@ use exocortex_widgets::{CardMode, card};
 
 #[derive(Debug)]
 pub(crate) struct Blurb {
+    mode: CardMode,
     id: BlurbId,
     ctime: Timestamp,
     mtime: Timestamp,
@@ -34,6 +35,7 @@ pub(crate) fn aggregate_blurb_modifications(
                     bt.insert(
                         id,
                         Blurb {
+                            mode: CardMode::Summary,
                             id,
                             ctime: mtime,
                             mtime,
@@ -58,7 +60,7 @@ impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &Blurb {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
         let resp = ui.add(
             card()
-                .mode(CardMode::Metadata)
+                .mode(self.mode)
                 .metadata(|ui: &mut Ui| {
                     let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
                     ui.columns_const(|[left, mid, right]| {

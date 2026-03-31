@@ -142,7 +142,7 @@ impl Widget for &mut App {
         resp |= ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
-                    ui.add(many(self.blurbs.iter()).with(&self.cmcache))
+                    ui.add(many(self.blurbs.iter().rev()).with(&self.cmcache))
                 })
             })
             .response;
