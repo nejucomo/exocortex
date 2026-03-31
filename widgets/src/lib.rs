@@ -12,7 +12,7 @@ pub mod squeeze_frame;
 
 pub mod with;
 
-pub use self::card::card;
+pub use self::card::{Card, CardBuilder, CardMode, card};
 pub use self::many::many;
 pub use self::orientation::Orientation;
 pub use self::uiext::UiExt;

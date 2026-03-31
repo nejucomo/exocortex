@@ -1,4 +1,4 @@
-use egui::{InnerResponse, Response, Style, Ui, Visuals};
+use egui::{Response, Style, Ui, Visuals, Widget};
 use extension_traits::extension;
 
 use crate::Orientation;
@@ -7,22 +7,18 @@ use crate::Orientation;
 #[extension(pub trait UiExt)]
 impl Ui {
     /// Add contents with scoped style/visuals
-    fn scoped_style<S, V, F, R>(
-        &mut self,
-        modify_style: S,
-        modify_visuals: V,
-        add_contents: F,
-    ) -> InnerResponse<R>
+    fn scoped_style<S, V, W>(&mut self, modify_style: S, modify_visuals: V, contents: W) -> Response
     where
         S: FnOnce(&mut Style),
         V: FnOnce(&mut Visuals),
-        F: FnOnce(&mut Ui) -> R,
+        W: Widget,
     {
         self.scope(|ui| {
             modify_style(ui.style_mut());
             modify_visuals(ui.visuals_mut());
-            add_contents(ui)
+            ui.add(contents)
         })
+        .response
     }
 
     /// Add a scroll area

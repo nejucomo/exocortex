@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use eframe::egui::mutex::Mutex;
-use eframe::egui::{Align, Layout, Response, Ui};
+use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_db::messages::LogScanItems;
 use exocortex_db::{BlurbId, Timestamp};
-use exocortex_widgets::card;
 use exocortex_widgets::with::WidgetWith;
+use exocortex_widgets::{CardMode, card};
 
 #[derive(Debug)]
 pub(crate) struct Blurb {
@@ -56,28 +56,48 @@ pub(crate) fn aggregate_blurb_modifications(
 
 impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &Blurb {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
-        let resp = ui.add(card(
-            |ui| {
-                ui.columns_const(|[left, mid, right]| {
-                    left.with_layout(Layout::left_to_right(Align::Min), |ui| {
-                        ui.label(format!("Created: {}", self.ctime))
-                    });
+        let resp = ui.add(
+            card()
+                .mode(CardMode::Metadata)
+                .metadata(|ui: &mut Ui| {
+                    let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
+                    ui.columns_const(|[left, mid, right]| {
+                        r |= left
+                            .with_layout(Layout::left_to_right(Align::Min), |ui| {
+                                ui.label(format!("Created: {}", self.ctime))
+                            })
+                            .response;
 
-                    mid.vertical_centered_justified(|ui| ui.label(self.id.to_string()));
+                        r |= mid
+                            .vertical_centered_justified(|ui| ui.label(self.id.to_string()))
+                            .response;
 
-                    right.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                        ui.label(format!("Modified: {}", self.mtime))
-                    });
-                });
-            },
-            |ui| {
-                CommonMarkViewer::new().show(
-                    ui,
-                    &mut cmcache.lock(),
-                    self.synopsis.lines().next().unwrap(),
-                );
-            },
-        ));
+                        r |= right
+                            .with_layout(Layout::right_to_left(Align::Min), |ui| {
+                                ui.label(format!("Modified: {}", self.mtime))
+                            })
+                            .response;
+
+                        r
+                    })
+                })
+                .summary(|ui: &mut Ui| {
+                    CommonMarkViewer::new()
+                        .show(
+                            ui,
+                            &mut cmcache.lock(),
+                            self.synopsis.lines().next().unwrap(),
+                        )
+                        .response
+                })
+                .content(|ui: &mut Ui| {
+                    CommonMarkViewer::new()
+                        .show(ui, &mut cmcache.lock(), &self.synopsis)
+                        .response
+                })
+                .build()
+                .unwrap(),
+        );
 
         if resp.clicked() {
             todo!("handle blurb click")
