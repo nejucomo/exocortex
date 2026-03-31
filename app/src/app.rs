@@ -3,7 +3,7 @@ use std::sync::Arc;
 use derive_new::new;
 use eframe::egui::mutex::Mutex;
 use eframe::egui::{
-    CentralPanel, Context, Event, Response, RichText, Ui, ViewportBuilder, ViewportCommand, Widget,
+    CentralPanel, Context, Event, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
@@ -133,13 +133,7 @@ impl Widget for &mut App {
     fn ui(self, ui: &mut Ui) -> Response {
         use Orientation::Vertical;
 
-        let mut resp = ui
-            .vertical_centered(|ui| {
-                ui.label(RichText::new("exocortex").italics());
-            })
-            .response;
-
-        resp |= ui
+        let resp = ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
                     ui.add(many(self.blurbs.iter_mut().rev()).with(&self.cmcache))
