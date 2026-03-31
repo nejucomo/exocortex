@@ -3,7 +3,7 @@ use exocortex_redborm::Id;
 
 use crate::Timestamped;
 use crate::entities::ThopModificationV0;
-use crate::messages::{ThopModified, Request};
+use crate::messages::{Request, ThopModified};
 
 /// Scan the log
 #[derive(Copy, Clone, Debug)]

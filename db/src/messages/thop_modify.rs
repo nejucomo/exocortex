@@ -6,7 +6,7 @@ use exocortex_redborm::{Id, Load, OrmError, OrmResult, Store};
 use redb::{ReadTransaction, WriteTransaction};
 
 use crate::entities::{ThopModificationV0, ThopSetSynopsisV0};
-use crate::messages::{ThopCreate, Request};
+use crate::messages::{Request, ThopCreate};
 use crate::{ThopId, Timestamp, Timestamped};
 
 /// A request to modify a thop

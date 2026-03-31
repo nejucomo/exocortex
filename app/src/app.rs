@@ -14,8 +14,8 @@ use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
 
-use crate::thop::{Thop, aggregate_thop_modifications};
 use crate::command::Command;
+use crate::thop::{Thop, aggregate_thop_modifications};
 
 #[derive(new)]
 pub(crate) struct App {
@@ -136,7 +136,7 @@ impl Widget for &mut App {
         let resp = ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
-                    ui.add(many(self.thops.iter_mut().rev()).with(&self.cmcache))
+                    ui.add(many(self.thops.iter_mut()).with(&self.cmcache))
                 })
             })
             .response;

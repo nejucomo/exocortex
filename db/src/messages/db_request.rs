@@ -5,7 +5,7 @@ use derive_new::new;
 use crate::ThopId;
 use crate::entities::ThopSetSynopsisV0;
 use crate::messages::{
-    ThopCreate, ThopModify, ThopModifyG, DbIsEmpty, LogScan, LogScanItems, Queried, Query, Request,
+    DbIsEmpty, LogScan, LogScanItems, Queried, Query, Request, ThopCreate, ThopModify, ThopModifyG,
 };
 
 /// The top-level request sent by applications to the DB

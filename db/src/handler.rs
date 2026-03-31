@@ -5,7 +5,7 @@ use redb::{ReadTransaction, ReadableDatabase as _, ReadableTableMetadata as _, W
 use crate::ThopId;
 use crate::entities::ThopV0;
 use crate::messages::{
-    ThopModify, DbIsEmpty, DbReply, DbRequest, LogScan, LogScanItems, Queried, Query, Request,
+    DbIsEmpty, DbReply, DbRequest, LogScan, LogScanItems, Queried, Query, Request, ThopModify,
 };
 
 pub(crate) trait Handler<R: Request> {

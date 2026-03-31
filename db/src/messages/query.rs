@@ -1,7 +1,7 @@
 //! Query request type
 use derive_more::{From, TryInto};
 
-use crate::messages::{DbIsEmpty, LogScan, Request, LogScanItems};
+use crate::messages::{DbIsEmpty, LogScan, LogScanItems, Request};
 
 /// A query of the db
 #[derive(Debug, From, TryInto)]
