@@ -35,7 +35,7 @@ pub(crate) fn aggregate_blurb_modifications(
                     bt.insert(
                         id,
                         Blurb {
-                            mode: CardMode::Summary,
+                            mode: CardMode::Streamlined,
                             id,
                             ctime: mtime,
                             mtime,

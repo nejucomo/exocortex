@@ -38,11 +38,9 @@ where
 #[derive(Copy, Clone, Debug)]
 pub enum CardMode {
     /// Display only the summary in a streamlined fashion
-    Summary,
-    /// Display the summary with metadata
-    Metadata,
+    Streamlined,
     /// Display the full content
-    Content,
+    Expanded,
 }
 
 impl<'a, S, M, C> Widget for Card<'a, S, M, C>
@@ -65,7 +63,7 @@ where
 
         prep.content_ui
             .with_layout(Layout::top_down(Align::Max), |ui| match &mode {
-                Summary => {
+                Streamlined => {
                     ui.scoped_style(
                         |_style| {},
                         |visuals| {
@@ -75,27 +73,7 @@ where
                         summary,
                     );
                 }
-                Metadata => {
-                    ui.scoped_style(
-                        |style| {
-                            style.override_text_style = Some(TextStyle::Small);
-                        },
-                        |visuals| {
-                            visuals.override_text_color =
-                                Some(visuals.widgets.noninteractive.fg_stroke.color);
-                        },
-                        metadata,
-                    );
-                    ui.scoped_style(
-                        |_style| {},
-                        |visuals| {
-                            visuals.override_text_color =
-                                Some(visuals.widgets.inactive.fg_stroke.color);
-                        },
-                        summary,
-                    );
-                }
-                Content => {
+                Expanded => {
                     ui.scoped_style(
                         |style| {
                             style.override_text_style = Some(TextStyle::Small);
@@ -122,23 +100,25 @@ where
         {
             let widgets = &ui.visuals().widgets;
 
-            let widget_visuals = if matches!(mode, Summary) && !resp.hovered() {
-                &widgets.noninteractive
+            let (fill, stroke) = if matches!(mode, Streamlined) && !resp.hovered() {
+                let wv = widgets.noninteractive;
+                let mut stroke = wv.bg_stroke;
+                stroke.width = 0.1;
+                (wv.bg_fill, stroke)
             } else {
-                widgets.style(&resp)
+                let wv = widgets.style(&resp);
+                (wv.bg_fill, wv.bg_stroke)
             };
 
-            prep.frame.fill = widget_visuals.bg_fill;
-            prep.frame.stroke = widget_visuals.bg_stroke;
+            prep.frame.fill = fill;
+            prep.frame.stroke = stroke;
         }
         prep.paint(ui);
 
-        *mode = if resp.clicked() || matches!(mode, Content) && resp.hovered() {
-            Content
-        } else if resp.hovered() {
-            Metadata
+        *mode = if resp.clicked() || matches!(mode, Expanded) && resp.hovered() {
+            Expanded
         } else {
-            Summary
+            Streamlined
         };
 
         resp
