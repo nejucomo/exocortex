@@ -1,5 +1,6 @@
 [workspace]
-members = ["app", "widgets", "keybinding", "tserv", "db", "redborm"]
+members = ["app", "db", "keybinding", "memory", "redborm", "tserv", "widgets"]
+
 resolver = "3"
 
 [workspace.package]
@@ -18,6 +19,7 @@ egui_commonmark = "0.22"
 env_logger = "0.11.8"
 exocortex-db = { version = "0.1.0", path = "db" }
 exocortex-keybinding = { version = "0.1.0", path = "keybinding" }
+# exocortex-memory = { version = "0.1.0", path = "memory" }
 exocortex-redborm = { version = "0.1.0", path = "redborm" }
 exocortex-tserv = { version = "0.1.0", path = "tserv" }
 exocortex-widgets = { version = "0.1.0", path = "widgets" }

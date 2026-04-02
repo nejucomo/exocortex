@@ -1417,6 +1417,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exocortex-memory"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-redborm"
 version = "0.1.0"
 dependencies = [
