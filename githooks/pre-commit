@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 set -efuo pipefail
 
 function main
@@ -13,7 +14,11 @@ function main
   v cargo shear --frozen
   auto-fmt-tomls
 
-  gauntlet
+  # Check each crate individually to catch "ambient workspace" misconfigurations like feature flags:
+  for cratedir in $(parse-member-crate-dirs)
+  do
+    gauntlet --manifest-path "$cratedir/Cargo.toml"
+  done
 }
 
 function fail
@@ -40,6 +45,11 @@ function gauntlet
   v cargo doc "$@"
   v cargo clippy "$@"
   v cargo test "$@"
+}
+
+function parse-member-crate-dirs
+{
+  rg -U '(?s)^members = \[[^\]]+\]' Cargo.toml | sd '^members = |\[|\]|[",]' ''
 }
 
 function v
