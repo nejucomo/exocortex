@@ -1,23 +1,44 @@
 #!/bin/bash
-set -x
 set -efuo pipefail
 
 function main
 {
+  cmd="${1:-check-everything}"
+
+  eval "$cmd"
+}
+
+function check-everything
+{
   [ -n "${IN_NIX_SHELL:-}" ] || fail 'must be in `nix develop` shell'
   unstaged_is_dirty && fail 'refusing to proceed with unstaged changes'
 
-  v cargo check "$@"
+  auto-fmt-tomls
+  v cargo check
   v git add Cargo.lock
 
-  # Do this prior to auto-fmt-tomls to roll in both changes:
-  v cargo shear --frozen
-  auto-fmt-tomls
+  shear-happy
+  check-each-crate
+  gauntlet
+}
 
+function shear-happy
+{
+  if [ "$(cargo shear --frozen --format=json | jq '.summary | all(.[]; . == 0)')" = 'true' ]
+  then
+    echo 'cargo shear happy'
+  else
+    v cargo shear --frozen
+    return -1
+  fi
+}
+
+function check-each-crate
+{
   # Check each crate individually to catch "ambient workspace" misconfigurations like feature flags:
   for cratedir in $(parse-member-crate-dirs)
   do
-    gauntlet --manifest-path "$cratedir/Cargo.toml"
+    v cargo check --manifest-path "$cratedir/Cargo.toml"
   done
 }
 

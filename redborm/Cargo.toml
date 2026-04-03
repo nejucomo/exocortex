@@ -5,7 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 derive-new.workspace = true
-derive_more = { workspace = true, features = ["from"] }
+derive_more = { workspace = true, features = ["from", "into"] }
 extension-traits.workspace = true
 redb.workspace = true
 redb-derive.workspace = true

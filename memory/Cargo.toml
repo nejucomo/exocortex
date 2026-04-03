@@ -6,4 +6,3 @@ version = "0.1.0"
 [dependencies]
 derive-new.workspace = true
 derive_more = { workspace = true, features = ["from", "into", "try_into"] }
-log.workspace = true
