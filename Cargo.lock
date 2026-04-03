@@ -202,6 +202,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c4fbe202b6578d3d56428fa185cdf114a05e49da05f477b3c7f0fbb221f1862"
 
 [[package]]
+name = "exocortex-handler"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-keybinding"
 version = "0.1.0"
 dependencies = [
@@ -223,12 +227,9 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "exocortex-handler",
  "exocortex-lid",
 ]
-
-[[package]]
-name = "exocortex-memory-redb"
-version = "0.1.0"
 
 [[package]]
 name = "exocortex-redborm"
@@ -249,6 +250,7 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "exocortex-handler",
  "log",
  "moveslot",
 ]

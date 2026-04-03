@@ -31,12 +31,12 @@ where
         child::spawn(f)
     }
 
-    pub(crate) fn post_request(self, request: Req) -> Result<(Self, Option<Req>), Error> {
+    pub(crate) fn post_request(self, request: Req) -> Result<Self, Error> {
         use TrySendError::*;
 
         match self.iface.to.try_send(request) {
-            Ok(()) => Ok((self, None)),
-            Err(Full(req)) => Ok((self, Some(req))),
+            Ok(()) => Ok(self),
+            Err(Full(_)) => panic!("channel full"),
             Err(Disconnected(_)) => self.join_unwind(),
         }
     }

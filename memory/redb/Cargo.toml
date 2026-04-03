@@ -4,3 +4,10 @@ name = "exocortex-memory-redb"
 version = "0.1.0"
 
 [dependencies]
+derive_more = { workspace = true, features = ["from", "try_into"] }
+exocortex-memory.workspace = true
+exocortex-redborm.workspace = true
+log.workspace = true
+redb.workspace = true
+redb-derive.workspace = true
+thiserror.workspace = true
