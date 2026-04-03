@@ -1,7 +1,16 @@
 [workspace]
 # members = ["app", "db", "keybinding", "memory", "redborm", "tserv", "widgets"]
 # Disable some borked crates as an expedient
-members = ["keybinding", "lid", "memory", "redborm", "tserv", "widgets"]
+members = [
+  "keybinding",
+  "lid",
+  "memory",
+  "memory/redb",
+  "redborm",
+  "tserv",
+  "widgets",
+]
+
 resolver = "3"
 
 [workspace.package]
