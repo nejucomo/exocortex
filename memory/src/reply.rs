@@ -1,9 +1,10 @@
 use derive_more::{From, TryInto};
+use exocortex_lid::Id;
 
 use crate::def_transitive_conversion::def_transitive_conversion;
 use crate::modifications::ThopModify;
 use crate::queries::{Queried, Scan, ScanQueried, ScanReleased, ThopCounted};
-use crate::{Id, Request, Thop};
+use crate::{Request, Thop};
 
 pub struct Reply {
     pub request: Request,

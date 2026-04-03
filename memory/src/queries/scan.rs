@@ -1,7 +1,7 @@
 use derive_more::{From, TryInto};
 use derive_new::new;
+use exocortex_lid::Id;
 
-use crate::Id;
 use crate::modifications::ThopModify;
 
 #[derive(Copy, Clone, Debug)]

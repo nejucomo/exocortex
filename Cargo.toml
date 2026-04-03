@@ -8,9 +8,12 @@ resolver = "3"
 edition = "2024"
 
 [workspace.dependencies]
+exocortex-lid = { path = "lid" }
+
 derive-new = "0.7.0"
 derive_builder = "0.20.2"
 derive_more = "2.1.1"
+disqualified = "1.0.0"
 egui = "0.33"
 extension-traits = "2.0.1"
 log = "0.4.29"

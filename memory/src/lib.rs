@@ -4,7 +4,6 @@
 
 mod def_transitive_conversion;
 
-mod id;
 mod reply;
 mod request;
 mod thop;
@@ -13,7 +12,6 @@ pub mod modifications;
 pub mod provider;
 pub mod queries;
 
-pub use self::id::Id;
 pub use self::provider::Provider;
 pub use self::reply::{Reply, ReplyInfo};
 pub use self::request::{Request, RequestInfo};

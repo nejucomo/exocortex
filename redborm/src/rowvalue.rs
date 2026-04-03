@@ -1,6 +1,7 @@
+use exocortex_lid::Id;
 use redb::TableDefinition;
 
-use crate::{Id, OwnedKey, OwnedValue};
+use crate::{OwnedKey, OwnedValue};
 
 /// A table key & row type for a specific table
 ///

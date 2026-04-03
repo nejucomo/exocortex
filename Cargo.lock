@@ -141,6 +141,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "disqualified"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9c272297e804878a2a4b707cfcfc6d2328b5bb936944613b4fdf2b9269afdfd"
+
+[[package]]
 name = "ecolor"
 version = "0.33.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -206,6 +212,10 @@ dependencies = [
 [[package]]
 name = "exocortex-lid"
 version = "0.1.0"
+dependencies = [
+ "disqualified",
+ "redb",
+]
 
 [[package]]
 name = "exocortex-memory"
@@ -213,6 +223,7 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "exocortex-lid",
 ]
 
 [[package]]
@@ -221,6 +232,7 @@ version = "0.1.0"
 dependencies = [
  "derive-new",
  "derive_more",
+ "exocortex-lid",
  "extension-traits",
  "redb",
  "redb-derive",

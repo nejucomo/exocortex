@@ -4,8 +4,8 @@ mod scan;
 
 use derive_more::{From, TryInto};
 use derive_new::new;
+use exocortex_lid::Id;
 
-use crate::Id;
 use crate::modifications::ThopModify;
 
 pub use self::scan::{Scan, ScanNext, ScanQueried, ScanQuery, ScanRelease, ScanReleased};

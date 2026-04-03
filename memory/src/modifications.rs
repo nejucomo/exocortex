@@ -2,8 +2,9 @@
 
 use derive_more::{From, TryInto};
 use derive_new::new;
+use exocortex_lid::Id;
 
-use crate::{Id, Thop};
+use crate::Thop;
 
 #[derive(Clone, Debug, From, TryInto)]
 pub enum ThopModify {
