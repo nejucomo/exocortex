@@ -1,14 +1,20 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! Message types sent to/from the DB
+#![deny(missing_docs, unsafe_code)]
+#![allow(missing_docs)] // Expedient
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+mod def_transitive_conversion;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+mod id;
+mod reply;
+mod request;
+mod thop;
+
+pub mod modifications;
+pub mod provider;
+pub mod queries;
+
+pub use self::id::Id;
+pub use self::provider::Provider;
+pub use self::reply::{Reply, ReplyInfo};
+pub use self::request::{Request, RequestInfo};
+pub use self::thop::Thop;
