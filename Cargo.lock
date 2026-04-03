@@ -204,6 +204,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exocortex-lid"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-memory"
 version = "0.1.0"
 dependencies = [
