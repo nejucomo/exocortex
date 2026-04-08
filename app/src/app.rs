@@ -15,7 +15,7 @@ use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
 
 use crate::command::Command;
-use crate::thop::{Thop, aggregate_thop_modifications};
+use crate::thop::{ThopAggregate, aggregate_thop_modifications};
 
 #[derive(new)]
 pub(crate) struct App {
@@ -29,7 +29,7 @@ pub(crate) struct App {
     cmcache: Arc<Mutex<CommonMarkCache>>,
 
     #[new(default)]
-    thops: Vec<Thop>,
+    thops: Vec<ThopAggregate>,
 }
 
 impl App {

@@ -10,7 +10,7 @@ use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{CardMode, card};
 
 #[derive(Debug)]
-pub(crate) struct Thop {
+pub(crate) struct ThopAggregate {
     mode: CardMode,
     id: ThopId,
     ctime: Timestamp,
@@ -20,7 +20,7 @@ pub(crate) struct Thop {
 
 pub(crate) fn aggregate_thop_modifications(
     modifications: &LogScanItems,
-) -> impl Iterator<Item = Thop> {
+) -> impl Iterator<Item = ThopAggregate> {
     use exocortex_db::messages::ThopModifyG::*;
 
     let mut bt = BTreeMap::default();
@@ -34,7 +34,7 @@ pub(crate) fn aggregate_thop_modifications(
                 assert!(
                     bt.insert(
                         id,
-                        Thop {
+                        ThopAggregate {
                             mode: CardMode::Streamlined,
                             id,
                             ctime: mtime,
@@ -56,7 +56,7 @@ pub(crate) fn aggregate_thop_modifications(
     bt.into_values()
 }
 
-impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut Thop {
+impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopAggregate {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
         ui.add(
             card()

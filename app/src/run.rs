@@ -1,7 +1,6 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_db::Database;
 use logging_options::Backend as _;
 
 use crate::app::App;

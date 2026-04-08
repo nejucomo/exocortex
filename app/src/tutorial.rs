@@ -1,6 +1,8 @@
-use exocortex_db::entities::ThopSetSynopsisV0;
-use exocortex_db::messages::{DbIsEmpty, ThopCreate};
-use exocortex_db::{DatabaseThreadService, DbResult};
+use exocortex_handler::SyncHandler;
+use exocortex_lid::WithId;
+use exocortex_memory::modifications::ThopSetSynopsis;
+use exocortex_memory::queries::{ThopCount, ThopCounted};
+use exocortex_memory::{Provider, Reply, Request, Thop};
 use indoc::indoc;
 
 const CANNED_THOPS: &[&str] = &[
@@ -27,12 +29,20 @@ const CANNED_THOPS: &[&str] = &[
     "Append your own thop with <cmd>-<enter>. Try it now.",
 ];
 
-pub(crate) fn prepopulate(db: &mut DatabaseThreadService) -> DbResult<()> {
-    if db.request(DbIsEmpty)? {
+pub(crate) fn prepopulate<P>(db: &mut P) -> Result<(), <P as SyncHandler<Request>>::SyncError>
+where
+    P: Provider + SyncHandler<Request, Reply = Reply>,
+{
+    if let ThopCounted(0) = db.handle_subrequest::<_, ThopCounted>(ThopCount)? {
         log::debug!("Prepopulating the database...");
         for thoptxt in CANNED_THOPS.iter() {
-            let thop = db.request(ThopCreate)?;
-            let c2 = db.request(ThopSetSynopsisV0::new(thop, thoptxt.to_string()))?;
+            let WithId {
+                id: _,
+                value: thopmod,
+            } = db.handle_subrequest(Thop)?;
+
+            let thop = thopmod.thop;
+            let c2 = db.handle_subrequest(ThopSetSynopsis::new(thop, thoptxt.to_string()))?;
             assert_eq!(thop, c2);
         }
     }

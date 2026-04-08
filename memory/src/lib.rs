@@ -4,12 +4,12 @@
 
 mod def_transitive_conversion;
 
+mod provider;
 mod reply;
 mod request;
 mod thop;
 
 pub mod modifications;
-pub mod provider;
 pub mod queries;
 
 pub use self::provider::Provider;

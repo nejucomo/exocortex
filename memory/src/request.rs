@@ -8,7 +8,7 @@ use crate::def_transitive_conversion::def_transitive_conversion;
 use crate::modifications::{ThopModify, ThopSetSynopsis};
 use crate::queries::{Query, Scan, ScanNext, ScanQuery, ScanRelease, ThopCount};
 
-#[derive(Debug, From, Into)]
+#[derive(Clone, Debug, From, Into)]
 #[from(Arc<RequestInfo>, RequestInfo)]
 pub struct Request(Arc<RequestInfo>);
 

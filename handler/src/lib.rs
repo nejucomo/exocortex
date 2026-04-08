@@ -32,6 +32,17 @@ pub trait SyncHandler<Request> {
     type SyncError: std::error::Error;
 
     fn handle(&mut self, request: Request) -> Result<Self::Reply, Self::SyncError>;
+
+    fn handle_subrequest<Req, Rep>(&mut self, request: Req) -> Result<Rep, Self::SyncError>
+    where
+        Req: Into<Request>,
+        Rep: TryFrom<Self::Reply>,
+        Self::SyncError: From<Rep::Error>,
+    {
+        let reply = self.handle(request.into())?;
+        let rep = Rep::try_from(reply)?;
+        Ok(rep)
+    }
 }
 
 impl<B, R> SyncHandler<R> for B
