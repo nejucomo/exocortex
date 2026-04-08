@@ -14,12 +14,17 @@ use crate::{RamError, RamResult};
 /// An in-memory (non-persistent) [`Provider`]
 #[derive(Debug, Default)]
 pub struct RamMem {
+    // next ID to assign to a new thop
     thop_count: u64,
+    // next ID to assign to a new modification record
     mod_count: u64,
-    /// Modifications stored as `(id_num, ThopModified)` pairs to avoid Clone on WithId
+    // all modifications in insertion order, stored as (id_num, ThopModified)
     modifications: Vec<(u64, ThopModified)>,
+    // active scan sessions indexed by scan id number
     scans: HashMap<u64, VecDeque<WithId<ThopModified>>>,
+    // next ID to assign to a new scan session
     next_scan_id: u64,
+    // the reply from the most recent request, waiting to be polled
     pending_reply: Option<Reply>,
 }
 
