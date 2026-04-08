@@ -7,9 +7,14 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
-use exocortex_db::DatabaseThreadService;
-use exocortex_db::messages::{DbReply, LogScan};
+use exocortex_handler::PollHandler as _;
 use exocortex_keybinding::ShortcutState;
+use exocortex_lid::Id;
+use exocortex_lid::WithId;
+use exocortex_memory::modifications::ThopModified;
+use exocortex_memory::queries::{Scan, ScanNext, ScanQueried, ScanReleased};
+use exocortex_memory::{Reply, ReplyInfo};
+use exocortex_memory_redb::RedMem;
 use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
@@ -17,9 +22,14 @@ use exocortex_widgets::{Orientation, UiExt, many};
 use crate::command::Command;
 use crate::thop::{ThopAggregate, aggregate_thop_modifications};
 
+struct ScanInProgress {
+    scan_id: Id<Scan>,
+    collected: Vec<WithId<ThopModified>>,
+}
+
 #[derive(new)]
 pub(crate) struct App {
-    db: DatabaseThreadService,
+    db: RedMem,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
@@ -30,11 +40,14 @@ pub(crate) struct App {
 
     #[new(default)]
     thops: Vec<ThopAggregate>,
+
+    #[new(default)]
+    scan: Option<ScanInProgress>,
 }
 
 impl App {
-    pub(crate) fn run(mut db: DatabaseThreadService) -> eframe::Result<()> {
-        db.post_request(LogScan).unwrap();
+    pub(crate) fn run(mut db: RedMem) -> eframe::Result<()> {
+        db.post_subrequest(Scan).unwrap();
 
         run_native(
             env!("CARGO_PKG_NAME"),
@@ -47,21 +60,47 @@ impl App {
         )
     }
 
-    fn init(cc: &eframe::CreationContext<'_>, db: DatabaseThreadService) -> Self {
+    fn init(cc: &eframe::CreationContext<'_>, db: RedMem) -> Self {
         log::trace!("{:#?}", cc.egui_ctx.style());
         Self::new(db)
     }
 
-    fn handle_db_reply(&mut self, reply: DbReply) {
-        use DbReply::*;
-        use exocortex_db::messages::Queried::LogScanned;
-
-        match reply {
-            Queried(LogScanned(items)) => {
-                self.thops = aggregate_thop_modifications(&items).collect();
+    fn handle_db_reply(&mut self, reply: Reply) {
+        match reply.reply_info {
+            ReplyInfo::Queried(queried) => {
+                use exocortex_memory::queries::Queried::*;
+                match queried {
+                    ThopCounted(_) => {
+                        log::debug!("thop count reply (unexpected in app)");
+                    }
+                    Scanned(scan_queried) => self.handle_scan_queried(scan_queried),
+                }
             }
-            Modified(thop) => log::debug!("modified: {thop:?}"),
-            other => panic!("unexpected db reply: {other:?}"),
+            ReplyInfo::Modified(thop) => log::debug!("modified: {thop:?}"),
+        }
+    }
+
+    fn handle_scan_queried(&mut self, sq: ScanQueried) {
+        match sq {
+            ScanQueried::Started(scan_id) => {
+                self.scan = Some(ScanInProgress {
+                    scan_id,
+                    collected: Vec::new(),
+                });
+                self.db.post_subrequest(ScanNext(scan_id)).unwrap();
+            }
+            ScanQueried::Advanced(item) => {
+                if let Some(scan) = self.scan.as_mut() {
+                    let scan_id = scan.scan_id;
+                    scan.collected.push(item);
+                    self.db.post_subrequest(ScanNext(scan_id)).unwrap();
+                }
+            }
+            ScanQueried::Released(ScanReleased) => {
+                if let Some(scan) = self.scan.take() {
+                    self.thops = aggregate_thop_modifications(&scan.collected).collect();
+                }
+            }
         }
     }
 
@@ -123,6 +162,9 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         if let Some(reply) = self.db.poll_reply().unwrap() {
             self.handle_db_reply(reply);
+            // egui only repaints when there is user interaction; request an
+            // explicit repaint so incremental scan replies update the display.
+            ctx.request_repaint();
         }
 
         CentralPanel::default().show(ctx, |ui| ui.add(self));
