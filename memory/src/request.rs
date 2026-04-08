@@ -12,6 +12,12 @@ use crate::queries::{Query, Scan, ScanNext, ScanQuery, ScanRelease, ThopCount};
 #[from(Arc<RequestInfo>, RequestInfo)]
 pub struct Request(Arc<RequestInfo>);
 
+impl Request {
+    pub fn info(&self) -> &RequestInfo {
+        self.0.as_ref()
+    }
+}
+
 /// The top-level request sent by applications to the DB
 #[derive(Debug, From, TryInto)]
 pub enum RequestInfo {

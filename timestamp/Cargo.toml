@@ -1,0 +1,8 @@
+[package]
+edition.workspace = true
+name = "exocortex-timestamp"
+version = "0.1.0"
+
+[dependencies]
+jiff.workspace = true
+redb = { workspace = true, optional = true }

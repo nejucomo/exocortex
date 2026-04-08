@@ -46,3 +46,15 @@ where
         self.wait_reply()
     }
 }
+
+pub trait SendSyncHandler<R: Send + 'static>:
+    Send + SyncHandler<R, Reply: Send + 'static, SyncError: Send + 'static> + 'static
+{
+}
+
+impl<B, R> SendSyncHandler<R> for B
+where
+    R: Send + 'static,
+    B: Send + SyncHandler<R, Reply: Send + 'static, SyncError: Send + 'static> + 'static,
+{
+}

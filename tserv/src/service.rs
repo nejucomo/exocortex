@@ -1,4 +1,4 @@
-use exocortex_handler::PollHandler;
+use exocortex_handler::{PollHandler, SendSyncHandler};
 use moveslot::{MapInPlace as _, MoveSlot};
 
 use crate::svcinner::SvcInner;
@@ -6,38 +6,32 @@ use crate::svcinner::SvcInner;
 /// Run a request -> reply child thread
 ///
 /// This service does not accept any new request until the child has sent any pending reply. Any panic in the child propagates to the parent.
-#[derive(Debug)]
-pub struct ThreadService<Request, Reply, Error>(MoveSlot<SvcInner<Request, Reply, Error>>)
+#[derive(derive_more::Debug)]
+pub struct ThreadService<H, R>(MoveSlot<SvcInner<H, R>>)
 where
-    Request: Send + 'static,
-    Reply: Send + 'static,
-    Error: std::error::Error + Send + 'static;
+    H: SendSyncHandler<R>,
+    R: Send + 'static;
 
-impl<Request, Reply, Error> ThreadService<Request, Reply, Error>
+impl<H, R> ThreadService<H, R>
 where
-    Request: Send + 'static,
-    Reply: Send + 'static,
-    Error: std::error::Error + Send + 'static,
+    H: SendSyncHandler<R>,
+    R: Send + 'static,
 {
     /// Launch the service, serving requests with the given handler
-    pub fn launch<F>(f: F) -> Self
-    where
-        F: FnMut(Request) -> Result<Reply, Error> + Send + 'static,
-    {
-        Self(MoveSlot::from(SvcInner::launch(f)))
+    pub fn launch(handler: H) -> Self {
+        Self(MoveSlot::from(SvcInner::launch(handler)))
     }
 }
 
-impl<Request, Reply, Error> PollHandler<Request> for ThreadService<Request, Reply, Error>
+impl<H, R> PollHandler<R> for ThreadService<H, R>
 where
-    Request: Send + 'static,
-    Reply: Send + 'static,
-    Error: std::error::Error + Send + 'static,
+    H: SendSyncHandler<R>,
+    R: Send + 'static,
 {
-    type Reply = Reply;
-    type PollError = Error;
+    type Reply = H::Reply;
+    type PollError = H::SyncError;
 
-    fn post_request(&mut self, request: Request) -> Result<(), Self::PollError> {
+    fn post_request(&mut self, request: R) -> Result<(), Self::PollError> {
         self.0
             .mip_out_res(|inner| inner.post_request(request).map(|inner| (inner, ())))
     }

@@ -1,6 +1,7 @@
 use std::sync::mpsc::{self, Receiver, SyncSender};
 
 use derive_more::From;
+use exocortex_handler::SendSyncHandler;
 
 use crate::interface::Interface;
 use crate::svcinner::SvcInner;
@@ -21,12 +22,10 @@ impl<Rep> InnerReply<Rep> {
     }
 }
 
-pub(crate) fn spawn<F, Req, Rep, E>(f: F) -> SvcInner<Req, Rep, E>
+pub(crate) fn spawn<H, R>(handler: H) -> SvcInner<H, R>
 where
-    F: FnMut(Req) -> Result<Rep, E> + Send + 'static,
-    Req: Send + 'static,
-    Rep: Send + 'static,
-    E: std::error::Error + Send + 'static,
+    H: SendSyncHandler<R>,
+    R: Send + 'static,
 {
     let request = Channel::alloc(0);
     let reply = Channel::alloc(1);
@@ -38,7 +37,7 @@ where
     let jh = std::thread::spawn(|| {
         log::trace!("db child sending Started...");
         to_from_parent.to.send(Started).unwrap();
-        child_loop(f, to_from_parent)
+        child_loop(handler, to_from_parent)
     });
 
     // Block until child thread signals ready:
@@ -49,16 +48,17 @@ where
     SvcInner::new(jh, to_from_child)
 }
 
-fn child_loop<F, Req, Rep, Error>(
-    mut f: F,
-    tfp: Interface<InnerReply<Rep>, Req>,
-) -> Result<(), Error>
+fn child_loop<H, R>(
+    mut handler: H,
+    tfp: Interface<InnerReply<H::Reply>, R>,
+) -> Result<(), H::SyncError>
 where
-    F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
+    H: SendSyncHandler<R>,
+    R: Send + 'static,
 {
     // It's ok to drop `RecvError` which indicates the parent hung up:
     while let Ok(request) = tfp.from.recv() {
-        let rep = f(request)?;
+        let rep = handler.handle(request)?;
         if tfp.to.send(AppReply(rep)).is_err() {
             // The parent hung up, so we silently swallow the reply.
             break;

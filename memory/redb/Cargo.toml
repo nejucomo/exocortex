@@ -4,9 +4,14 @@ name = "exocortex-memory-redb"
 version = "0.1.0"
 
 [dependencies]
+derive-new.workspace = true
 derive_more = { workspace = true, features = ["from", "try_into"] }
+exocortex-handler.workspace = true
+exocortex-lid.workspace = true
 exocortex-memory.workspace = true
 exocortex-redborm.workspace = true
+exocortex-timestamp = { workspace = true, features = ["redb"] }
+exocortex-tserv.workspace = true
 log.workspace = true
 redb.workspace = true
 redb-derive.workspace = true

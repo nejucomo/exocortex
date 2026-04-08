@@ -9,16 +9,6 @@ pub type RedResult<T> = Result<T, RedError>;
 pub enum RedError {
     /// An underlying [exocortex_redborm::OrmError]
     #[error(transparent)]
-    #[from(exocortex_redborm::OrmError, std::io::Error, redb::DatabaseError)]
+    #[from(forward)]
     Orm(exocortex_redborm::OrmError),
-    // /// An incoherent reply from the db
-    // #[error(transparent)]
-    // #[from(TryIntoError<RedReply>)]
-    // TryFromReply(TryIntoError<RedReply>),
 }
-
-// impl From<std::convert::Infallible> for RedError {
-//     fn from(_: std::convert::Infallible) -> Self {
-//         unreachable!("<RedError as From<Infallible>::from(...)");
-//     }
-// }
