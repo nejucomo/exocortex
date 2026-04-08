@@ -3,9 +3,12 @@ use exocortex_handler::{PollHandler, SyncHandler};
 
 use crate::{Reply, ReplyInfo, Request};
 
+/// A memory provider: the primary interface for storing and retrieving thops
 pub trait Provider: PollHandler<Request, Reply = Reply, PollError = Self::Error> {
+    /// The error type returned by all provider operations
     type Error: std::error::Error + From<TryIntoError<ReplyInfo>>;
 
+    /// Send a request and synchronously wait for the matching reply, returning the extracted reply value
     fn sync_request<Req, Rep>(&mut self, request: Req) -> Result<Rep, Self::Error>
     where
         Self: Sized,

@@ -5,6 +5,7 @@ members = [
   "keybinding",
   "lid",
   "memory",
+  "memory/ram",
   "memory/redb",
   "redborm",
   "timestamp",
@@ -22,6 +23,7 @@ exocortex-handler = { path = "handler" }
 exocortex-keybinding = { path = "keybinding" }
 exocortex-lid = { path = "lid" }
 exocortex-memory = { path = "memory" }
+exocortex-memory-ram = { path = "memory/ram" }
 exocortex-memory-redb = { path = "memory/redb" }
 exocortex-redborm = { path = "redborm" }
 exocortex-timestamp = { path = "timestamp" }

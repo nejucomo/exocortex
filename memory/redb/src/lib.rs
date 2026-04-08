@@ -1,5 +1,5 @@
+//! The `exocortex-memory-redb` crate: a [`redb`]-backed [`Provider`](exocortex_memory::Provider) implementation.
 #![deny(unsafe_code, missing_docs)]
-#![allow(missing_docs)] // FIXME: expedient
 
 mod entities;
 mod error;

@@ -7,14 +7,13 @@ use eframe::egui::{
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
-use exocortex_handler::PollHandler as _;
 use exocortex_keybinding::ShortcutState;
 use exocortex_lid::Id;
 use exocortex_lid::WithId;
+use exocortex_memory::Provider;
 use exocortex_memory::modifications::ThopModified;
 use exocortex_memory::queries::{Scan, ScanNext, ScanQueried, ScanReleased};
 use exocortex_memory::{Reply, ReplyInfo};
-use exocortex_memory_redb::RedMem;
 use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
@@ -28,8 +27,8 @@ struct ScanInProgress {
 }
 
 #[derive(new)]
-pub(crate) struct App {
-    db: RedMem,
+pub(crate) struct App<P: Provider> {
+    db: P,
 
     #[new(default)]
     kbshortcuts: ShortcutState<Command>,
@@ -45,8 +44,12 @@ pub(crate) struct App {
     scan: Option<ScanInProgress>,
 }
 
-impl App {
-    pub(crate) fn run(mut db: RedMem) -> eframe::Result<()> {
+impl<P: Provider> App<P> {
+    pub(crate) fn run(mut db: P) -> eframe::Result<()>
+    where
+        P: Send + 'static,
+        P::Error: std::fmt::Debug,
+    {
         db.post_subrequest(Scan).unwrap();
 
         run_native(
@@ -60,7 +63,7 @@ impl App {
         )
     }
 
-    fn init(cc: &eframe::CreationContext<'_>, db: RedMem) -> Self {
+    fn init(cc: &eframe::CreationContext<'_>, db: P) -> Self {
         log::trace!("{:#?}", cc.egui_ctx.style());
         Self::new(db)
     }
@@ -158,7 +161,10 @@ impl App {
     }
 }
 
-impl eframe::App for App {
+impl<P: Provider> eframe::App for App<P>
+where
+    P::Error: std::fmt::Debug,
+{
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         if let Some(reply) = self.db.poll_reply().unwrap() {
             self.handle_db_reply(reply);
@@ -171,7 +177,10 @@ impl eframe::App for App {
     }
 }
 
-impl Widget for &mut App {
+impl<P: Provider> Widget for &mut App<P>
+where
+    P::Error: std::fmt::Debug,
+{
     fn ui(self, ui: &mut Ui) -> Response {
         use Orientation::Vertical;
 

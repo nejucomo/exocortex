@@ -1,3 +1,4 @@
+use derive_more::From;
 use thiserror::Error;
 
 use exocortex_memory::ReplyInfo;
@@ -6,49 +7,28 @@ use exocortex_memory::ReplyInfo;
 pub type RedResult<T> = Result<T, RedError>;
 
 /// An error in the db layer
-#[derive(Debug, Error)]
+#[derive(Debug, Error, From)]
 pub enum RedError {
     /// An underlying [exocortex_redborm::OrmError]
     #[error(transparent)]
-    Orm(#[from] exocortex_redborm::OrmError),
+    #[from(
+        exocortex_redborm::OrmError,
+        redb::CommitError,
+        redb::DatabaseError,
+        redb::StorageError,
+        redb::TableError,
+        redb::TransactionError,
+        std::io::Error
+    )]
+    Orm(exocortex_redborm::OrmError),
 
     /// The reply type did not match the expected type for the request
     #[error("unexpected reply type")]
-    UnexpectedReply(#[from] derive_more::TryIntoError<ReplyInfo>),
+    UnexpectedReply(derive_more::TryIntoError<ReplyInfo>),
 }
 
-impl From<redb::CommitError> for RedError {
-    fn from(e: redb::CommitError) -> Self {
-        RedError::Orm(e.into())
-    }
-}
-
-impl From<redb::DatabaseError> for RedError {
-    fn from(e: redb::DatabaseError) -> Self {
-        RedError::Orm(e.into())
-    }
-}
-
-impl From<redb::StorageError> for RedError {
-    fn from(e: redb::StorageError) -> Self {
-        RedError::Orm(e.into())
-    }
-}
-
-impl From<redb::TableError> for RedError {
-    fn from(e: redb::TableError) -> Self {
-        RedError::Orm(e.into())
-    }
-}
-
-impl From<redb::TransactionError> for RedError {
-    fn from(e: redb::TransactionError) -> Self {
-        RedError::Orm(e.into())
-    }
-}
-
-impl From<std::io::Error> for RedError {
-    fn from(e: std::io::Error) -> Self {
-        RedError::Orm(e.into())
+impl From<derive_more::TryIntoError<ReplyInfo>> for RedError {
+    fn from(e: derive_more::TryIntoError<ReplyInfo>) -> Self {
+        RedError::UnexpectedReply(e)
     }
 }

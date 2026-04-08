@@ -8,6 +8,7 @@ use redb::Database;
 use crate::redhandler::MemImpl;
 use crate::{RedError, RedResult};
 
+/// A [`redb`]-backed persistent memory [`Provider`](exocortex_memory::Provider)
 #[derive(derive_more::Debug)]
 pub struct RedMem {
     svc: ThreadService<MemImpl, Request>,

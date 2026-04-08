@@ -21,6 +21,7 @@ exocortex-handler.workspace = true
 exocortex-lid.workspace = true
 exocortex-keybinding.workspace = true
 exocortex-memory.workspace = true
+exocortex-memory-ram.workspace = true
 exocortex-memory-redb.workspace = true
 exocortex-timestamp.workspace = true
 exocortex-widgets.workspace = true

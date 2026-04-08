@@ -1,6 +1,5 @@
-//! Message types sent to/from the DB
+//! Message types sent to/from memory providers
 #![deny(missing_docs, unsafe_code)]
-#![allow(missing_docs)] // Expedient
 
 mod def_transitive_conversion;
 
