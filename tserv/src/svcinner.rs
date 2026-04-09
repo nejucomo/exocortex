@@ -2,46 +2,42 @@ use std::sync::mpsc::{TryRecvError, TrySendError};
 use std::thread::JoinHandle;
 
 use derive_new::new;
+use exocortex_handler::SendSyncHandler;
 
 use crate::child;
 use crate::interface::Interface;
 
-#[derive(Debug, new)]
+#[derive(derive_more::Debug, new)]
 #[new(visbility = "pub(crate)")]
-pub(crate) struct SvcInner<Req, Rep, Error>
+pub(crate) struct SvcInner<H, R>
 where
-    Req: Send + 'static,
-    Rep: Send + 'static,
-    Error: std::error::Error + Send + 'static,
+    H: SendSyncHandler<R>,
+    R: Send + 'static,
 {
-    jh: JoinHandle<Result<(), Error>>,
-    iface: Interface<Req, child::InnerReply<Rep>>,
+    jh: JoinHandle<Result<(), H::SyncError>>,
+    iface: Interface<R, child::InnerReply<H::Reply>>,
 }
 
-impl<Req, Rep, Error> SvcInner<Req, Rep, Error>
+impl<H, R> SvcInner<H, R>
 where
-    Req: Send + 'static,
-    Rep: Send + 'static,
-    Error: std::error::Error + Send + 'static,
+    H: SendSyncHandler<R>,
+    R: Send + 'static,
 {
-    pub(crate) fn launch<F>(f: F) -> Self
-    where
-        F: FnMut(Req) -> Result<Rep, Error> + Send + 'static,
-    {
-        child::spawn(f)
+    pub(crate) fn launch(handler: H) -> Self {
+        child::spawn(handler)
     }
 
-    pub(crate) fn post_request(self, request: Req) -> Result<(Self, Option<Req>), Error> {
+    pub(crate) fn post_request(self, request: R) -> Result<Self, H::SyncError> {
         use TrySendError::*;
 
         match self.iface.to.try_send(request) {
-            Ok(()) => Ok((self, None)),
-            Err(Full(req)) => Ok((self, Some(req))),
+            Ok(()) => Ok(self),
+            Err(Full(_)) => panic!("channel full"),
             Err(Disconnected(_)) => self.join_unwind(),
         }
     }
 
-    pub fn poll_reply(self) -> Result<(Self, Option<Rep>), Error> {
+    pub fn poll_reply(self) -> Result<(Self, Option<H::Reply>), H::SyncError> {
         use TryRecvError::*;
 
         match self.iface.from.try_recv() {
@@ -51,14 +47,14 @@ where
         }
     }
 
-    pub fn wait_reply(self) -> Result<(Self, Rep), Error> {
+    pub fn wait_reply(self) -> Result<(Self, H::Reply), H::SyncError> {
         match self.iface.from.recv() {
             Ok(rep) => Ok((self, rep.unwrap())),
             Err(_) => self.join_unwind(),
         }
     }
 
-    fn join_unwind<T>(self) -> Result<T, Error> {
+    fn join_unwind<T>(self) -> Result<T, H::SyncError> {
         match self.jh.join() {
             Ok(Ok(())) => panic!("expected child error"),
             Ok(Err(e)) => Err(e),

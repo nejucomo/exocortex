@@ -1,0 +1,8 @@
+[package]
+edition.workspace = true
+name = "exocortex-lid"
+version = "0.1.0"
+
+[dependencies]
+disqualified.workspace = true
+redb = { workspace = true, optional = true }

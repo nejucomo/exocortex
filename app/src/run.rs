@@ -1,12 +1,13 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
-use exocortex_db::Database;
+use exocortex_memory_ram::RamMem;
+use exocortex_memory_redb::RedMem;
 use logging_options::Backend as _;
 
 use crate::app::App;
-use crate::cliopts::Options;
-use crate::prepop::prepopulate;
+use crate::cliopts::{DbOption, Options};
+use crate::tutorial;
 
 /// Run the app
 ///
@@ -19,19 +20,20 @@ pub fn run() -> Result<()> {
     let opts = Options::parse();
     init_log(&opts.logopts);
 
-    let db = Database::init(&opts.db_path).wrap_err_with(|| {
-        format!(
-            "Failed to initialize database in {:?}",
-            opts.db_path.to_string()
-        )
-    })?;
-
-    log::debug!("Launching db thread service...");
-    let mut db = db.launch_thread_service();
-
-    // FIXME: figure out how to avoid `e.to_string`
-    stringify_error("db prepopulation error", prepopulate(&mut db))?;
-    stringify_error("eframe error", App::run(db))?;
+    match opts.db {
+        DbOption::Ram => {
+            let mut db = RamMem::new();
+            stringify_error("db prepopulation error", tutorial::prepopulate(&mut db))?;
+            stringify_error("eframe error", App::run(db))?;
+        }
+        DbOption::Path(path) => {
+            let mut db = RedMem::init(&path).wrap_err_with(|| {
+                format!("Failed to initialize database in {:?}", path.display())
+            })?;
+            stringify_error("db prepopulation error", tutorial::prepopulate(&mut db))?;
+            stringify_error("eframe error", App::run(db))?;
+        }
+    }
 
     Ok(())
 }

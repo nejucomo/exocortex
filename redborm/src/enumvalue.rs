@@ -1,9 +1,8 @@
 //! Support for normalized enum db storage
 use derive_more::{From, Into};
 use derive_new::new;
+use exocortex_lid::Id;
 use redb_derive::Value;
-
-use crate::Id;
 
 /// A "columnar" [Value](redb::Value) representing an normalized enum
 #[derive(Copy, Clone, Debug, From, Into, new, Value)]

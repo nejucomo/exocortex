@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 derive-new.workspace = true
-derive_more = { workspace = true, features = ["from", "into"] }
+derive_more = { workspace = true, features = ["debug", "from", "into"] }
+exocortex-handler.workspace = true
 log.workspace = true
 moveslot.workspace = true

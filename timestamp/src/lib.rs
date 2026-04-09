@@ -1,11 +1,7 @@
-use std::cmp::Ordering;
 use std::fmt::Display;
 
 use jiff::tz::TimeZone;
 use jiff::{Timestamp as JTS, Zoned};
-use redb::{Key, Value};
-
-use crate::Timestamped;
 
 /// A UTC timestamp with microsecond precision
 #[derive(Copy, Clone, Debug)]
@@ -27,11 +23,6 @@ impl Timestamp {
         self.0.as_microsecond()
     }
 
-    /// Stamp a time onto `val`
-    pub fn stamp<T>(self, val: T) -> Timestamped<T> {
-        Timestamped::new(self, val)
-    }
-
     fn zoned_local(self) -> Zoned {
         self.0.to_zoned(TimeZone::system())
     }
@@ -44,7 +35,8 @@ impl Display for Timestamp {
     }
 }
 
-impl Value for Timestamp {
+#[cfg(feature = "redb")]
+impl redb::Value for Timestamp {
     type SelfType<'a>
         = Timestamp
     where
@@ -78,8 +70,9 @@ impl Value for Timestamp {
     }
 }
 
-impl Key for Timestamp {
-    fn compare(a: &[u8], b: &[u8]) -> Ordering {
+#[cfg(feature = "redb")]
+impl redb::Key for Timestamp {
+    fn compare(a: &[u8], b: &[u8]) -> std::cmp::Ordering {
         a.cmp(b)
     }
 }

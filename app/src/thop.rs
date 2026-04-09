@@ -4,51 +4,52 @@ use std::sync::Arc;
 use eframe::egui::mutex::Mutex;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_db::messages::LogScanItems;
-use exocortex_db::{BlurbId, Timestamp};
+use exocortex_lid::{Id, WithId};
+use exocortex_memory::Thop;
+use exocortex_memory::modifications::{ThopModified, ThopMutation};
+use exocortex_timestamp::Timestamp;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{CardMode, card};
 
 #[derive(Debug)]
-pub(crate) struct Blurb {
+pub(crate) struct ThopAggregate {
     mode: CardMode,
-    id: BlurbId,
+    id: Id<Thop>,
     ctime: Timestamp,
     mtime: Timestamp,
     synopsis: String,
 }
 
-pub(crate) fn aggregate_blurb_modifications(
-    modifications: &LogScanItems,
-) -> impl Iterator<Item = Blurb> {
-    use exocortex_db::messages::BlurbModifyG::*;
-
+pub(crate) fn aggregate_thop_modifications(
+    modifications: &[WithId<ThopModified>],
+) -> impl Iterator<Item = ThopAggregate> {
     let mut bt = BTreeMap::default();
 
-    for (_, blurbmod) in modifications {
-        let mtime = blurbmod.time;
+    for item in modifications {
+        let thopmod = &item.value;
+        let mtime = thopmod.time;
 
-        match &blurbmod.val {
-            Create(id) => {
-                let id = *id;
+        match &thopmod.info {
+            ThopMutation::Created => {
+                let id = thopmod.thop;
                 assert!(
                     bt.insert(
                         id,
-                        Blurb {
-                            mode: CardMode::Summary,
+                        ThopAggregate {
+                            mode: CardMode::Streamlined,
                             id,
                             ctime: mtime,
                             mtime,
-                            synopsis: "".to_string()
+                            synopsis: "".to_string(),
                         }
                     )
                     .is_none()
                 );
             }
-            SetSynopsis(css) => {
-                let agg = bt.get_mut(&css.blurb).unwrap();
+            ThopMutation::SetSynopsis(synopsis) => {
+                let agg = bt.get_mut(&thopmod.thop).unwrap();
                 agg.mtime = mtime;
-                agg.synopsis = css.synopsis.clone();
+                agg.synopsis = synopsis.clone();
             }
         }
     }
@@ -56,7 +57,7 @@ pub(crate) fn aggregate_blurb_modifications(
     bt.into_values()
 }
 
-impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut Blurb {
+impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopAggregate {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
         ui.add(
             card()
