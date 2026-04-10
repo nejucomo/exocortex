@@ -1392,7 +1392,6 @@ dependencies = [
  "eframe",
  "egui_commonmark",
  "env_logger",
- "exocortex-handler",
  "exocortex-keybinding",
  "exocortex-lid",
  "exocortex-memory",
