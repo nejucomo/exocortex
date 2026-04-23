@@ -1479,6 +1479,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exocortex-thop"
+version = "0.1.0"
+
+[[package]]
 name = "exocortex-timestamp"
 version = "0.1.0"
 dependencies = [

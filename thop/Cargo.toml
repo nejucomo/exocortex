@@ -1,0 +1,6 @@
+[package]
+edition.workspace = true
+name = "exocortex-thop"
+version = "0.1.0"
+
+[dependencies]

@@ -8,6 +8,7 @@ members = [
   "memory/ram",
   "memory/redb",
   "redborm",
+  "thop",
   "timestamp",
   "tserv",
   "widgets",
