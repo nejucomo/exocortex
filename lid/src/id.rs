@@ -23,7 +23,7 @@ impl<T: ?Sized> Id<T> {
     }
 
     /// Convert this `Id` to another type with identical value representation
-    pub fn transmute<U>(self) -> Id<U> {
+    pub fn transmute<U: ?Sized>(self) -> Id<U> {
         Id::<U>::from(self.unwrap())
     }
 }
