@@ -8,4 +8,5 @@ derive-new.workspace = true
 derive_more = { workspace = true, features = ["from", "into", "try_into"] }
 exocortex-handler.workspace = true
 exocortex-lid.workspace = true
+exocortex-thop.workspace = true
 exocortex-timestamp.workspace = true

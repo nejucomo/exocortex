@@ -27,6 +27,7 @@ exocortex-memory = { path = "memory" }
 exocortex-memory-ram = { path = "memory/ram" }
 exocortex-memory-redb = { path = "memory/redb" }
 exocortex-redborm = { path = "redborm" }
+exocortex-thop = { path = "thop" }
 exocortex-timestamp = { path = "timestamp" }
 exocortex-tserv = { path = "tserv" }
 exocortex-widgets = { path = "widgets" }

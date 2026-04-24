@@ -19,7 +19,7 @@ use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
 
 use crate::command::Command;
-use crate::thop::{ThopAggregate, aggregate_thop_modifications};
+use crate::thopcard::{ThopCard, aggregate_thop_modifications};
 
 struct ScanInProgress {
     scan_id: Id<Scan>,
@@ -38,7 +38,7 @@ pub(crate) struct App<P: Provider> {
     cmcache: Arc<Mutex<CommonMarkCache>>,
 
     #[new(default)]
-    thops: Vec<ThopAggregate>,
+    thops: Vec<ThopCard>,
 
     #[new(default)]
     scan: Option<ScanInProgress>,

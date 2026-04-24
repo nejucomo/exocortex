@@ -1,16 +1,19 @@
 use std::collections::{HashMap, VecDeque};
 
 use exocortex_lid::{Id, ValueWithId as _, WithId};
-use exocortex_memory::modifications::{ThopModified, ThopModify, ThopMutation, ThopSetSynopsis};
+use exocortex_memory::modifications::{
+    ThopCreate, ThopModified, ThopModify, ThopMutation, ThopSetSynopsis,
+};
 use exocortex_memory::queries::{
     Queried, Query, Scan, ScanNext, ScanQueried, ScanQuery, ScanRelease, ScanReleased, ThopCounted,
 };
-use exocortex_memory::{Reply, ReplyInfo, Request, RequestInfo, Thop};
+use exocortex_memory::{Reply, ReplyInfo, Request, RequestInfo};
 use exocortex_redborm::Load as _;
 use exocortex_redborm::OrmResult;
 use exocortex_redborm::RowValue as _;
 use exocortex_redborm::enumvalue::EnumColumnar;
 use exocortex_redborm::ext::{ReadTransactionExt as _, WriteTransactionExt as _};
+use exocortex_thop::Thop;
 use exocortex_timestamp::Timestamp;
 use redb::{Database, ReadableDatabase as _, WriteTransaction};
 
@@ -216,10 +219,10 @@ impl RedHandler<ThopModify> for &WriteTransaction {
     }
 }
 
-impl RedHandler<Thop> for &WriteTransaction {
+impl RedHandler<ThopCreate> for &WriteTransaction {
     type Reply = Id<Thop>;
 
-    fn handle(self, _: &Thop) -> OrmResult<Self::Reply> {
+    fn handle(self, _: &ThopCreate) -> OrmResult<Self::Reply> {
         self.store(ThopV0).map(Id::transmute::<Thop>)
     }
 }

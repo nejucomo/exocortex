@@ -3,18 +3,21 @@
 use derive_more::{From, TryInto};
 use derive_new::new;
 use exocortex_lid::Id;
+use exocortex_thop::Thop;
 use exocortex_timestamp::Timestamp;
-
-use crate::Thop;
 
 /// A request to modify a thop
 #[derive(Clone, Debug, From, TryInto)]
 pub enum ThopModify {
     /// Create a new thop
-    Create(Thop),
+    Create(ThopCreate),
     /// Update a thop's synopsis
     SetSynopsis(ThopSetSynopsis),
 }
+
+/// A request to create a new [Thop]
+#[derive(Copy, Clone, Debug)]
+pub struct ThopCreate;
 
 /// Parameters for setting a thop's synopsis
 #[derive(Clone, Debug, From, new)]

@@ -1397,7 +1397,7 @@ dependencies = [
  "exocortex-memory",
  "exocortex-memory-ram",
  "exocortex-memory-redb",
- "exocortex-timestamp",
+ "exocortex-thop",
  "exocortex-widgets",
  "indoc",
  "log",
@@ -1432,6 +1432,7 @@ dependencies = [
  "derive_more",
  "exocortex-handler",
  "exocortex-lid",
+ "exocortex-thop",
  "exocortex-timestamp",
 ]
 
@@ -1443,6 +1444,7 @@ dependencies = [
  "exocortex-handler",
  "exocortex-lid",
  "exocortex-memory",
+ "exocortex-thop",
  "exocortex-timestamp",
  "thiserror 2.0.18",
 ]
@@ -1457,6 +1459,7 @@ dependencies = [
  "exocortex-lid",
  "exocortex-memory",
  "exocortex-redborm",
+ "exocortex-thop",
  "exocortex-timestamp",
  "exocortex-tserv",
  "log",
@@ -1481,6 +1484,11 @@ dependencies = [
 [[package]]
 name = "exocortex-thop"
 version = "0.1.0"
+dependencies = [
+ "derive-new",
+ "exocortex-lid",
+ "exocortex-timestamp",
+]
 
 [[package]]
 name = "exocortex-timestamp"

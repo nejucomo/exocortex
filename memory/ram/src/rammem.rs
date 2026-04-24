@@ -6,7 +6,8 @@ use exocortex_memory::modifications::{ThopModified, ThopModify, ThopMutation, Th
 use exocortex_memory::queries::{
     Queried, Query, Scan, ScanNext, ScanQueried, ScanQuery, ScanRelease, ScanReleased, ThopCounted,
 };
-use exocortex_memory::{Provider, Reply, ReplyInfo, Request, RequestInfo, Thop};
+use exocortex_memory::{Provider, Reply, ReplyInfo, Request, RequestInfo};
+use exocortex_thop::Thop;
 use exocortex_timestamp::Timestamp;
 
 use crate::{RamError, RamResult};

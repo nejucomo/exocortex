@@ -1,32 +1,28 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
+use derive_new::new;
 use eframe::egui::mutex::Mutex;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
-use exocortex_lid::{Id, WithId};
-use exocortex_memory::Thop;
+use exocortex_lid::WithId;
 use exocortex_memory::modifications::{ThopModified, ThopMutation};
-use exocortex_timestamp::Timestamp;
+use exocortex_thop::Thop;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{CardMode, card};
 
-#[derive(Debug)]
-pub(crate) struct ThopAggregate {
+#[derive(Debug, new)]
+pub(crate) struct ThopCard {
     mode: CardMode,
-    id: Id<Thop>,
-    ctime: Timestamp,
-    mtime: Timestamp,
-    synopsis: String,
+    thop: Thop,
 }
 
 pub(crate) fn aggregate_thop_modifications(
     modifications: &[WithId<ThopModified>],
-) -> impl Iterator<Item = ThopAggregate> {
+) -> impl Iterator<Item = ThopCard> {
     let mut bt = BTreeMap::default();
 
-    for item in modifications {
-        let thopmod = &item.value;
+    for thopmod in modifications.iter().map(|wid| &wid.value) {
         let mtime = thopmod.time;
 
         match &thopmod.info {
@@ -35,21 +31,15 @@ pub(crate) fn aggregate_thop_modifications(
                 assert!(
                     bt.insert(
                         id,
-                        ThopAggregate {
-                            mode: CardMode::Streamlined,
-                            id,
-                            ctime: mtime,
-                            mtime,
-                            synopsis: "".to_string(),
-                        }
+                        ThopCard::new(CardMode::Streamlined, Thop::new(id, mtime, mtime, ""))
                     )
                     .is_none()
                 );
             }
             ThopMutation::SetSynopsis(synopsis) => {
-                let agg = bt.get_mut(&thopmod.thop).unwrap();
-                agg.mtime = mtime;
-                agg.synopsis = synopsis.clone();
+                let card = bt.get_mut(&thopmod.thop).unwrap();
+                card.thop.mtime = mtime;
+                card.thop.synopsis = synopsis.clone();
             }
         }
     }
@@ -57,27 +47,29 @@ pub(crate) fn aggregate_thop_modifications(
     bt.into_values()
 }
 
-impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopAggregate {
+impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopCard {
     fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
+        let mode = &mut self.mode;
+        let thop = &self.thop;
         ui.add(
             card()
-                .mode(&mut self.mode)
+                .mode(mode)
                 .metadata(|ui: &mut Ui| {
                     let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
                     ui.columns_const(|[left, mid, right]| {
                         r |= left
                             .with_layout(Layout::left_to_right(Align::Min), |ui| {
-                                ui.label(format!("Created: {}", self.ctime))
+                                ui.label(format!("Created: {}", thop.ctime))
                             })
                             .response;
 
                         r |= mid
-                            .vertical_centered_justified(|ui| ui.label(self.id.to_string()))
+                            .vertical_centered_justified(|ui| ui.label(thop.id.to_string()))
                             .response;
 
                         r |= right
                             .with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                ui.label(format!("Modified: {}", self.mtime))
+                                ui.label(format!("Modified: {}", thop.mtime))
                             })
                             .response;
 
@@ -89,13 +81,13 @@ impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopAggregate {
                         .show(
                             ui,
                             &mut cmcache.lock(),
-                            self.synopsis.lines().next().unwrap(),
+                            thop.synopsis.lines().next().unwrap(),
                         )
                         .response
                 })
                 .content(|ui: &mut Ui| {
                     CommonMarkViewer::new()
-                        .show(ui, &mut cmcache.lock(), &self.synopsis)
+                        .show(ui, &mut cmcache.lock(), &thop.synopsis)
                         .response
                 })
                 .build()

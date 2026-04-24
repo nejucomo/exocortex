@@ -1,14 +1,20 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! [Thop] is the fundamental cognitive unit in `exocortex`
+#![deny(unsafe_code, missing_docs)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use derive_new::new;
+use exocortex_lid::Id;
+use exocortex_timestamp::Timestamp;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+/// A "thought on paper" is the fundamental cognitive unit in `exocortex`
+#[derive(Debug, new)]
+pub struct Thop {
+    /// The [Id] of this [Thop]
+    pub id: Id<Thop>,
+    /// The creation time
+    pub ctime: Timestamp,
+    /// The most recent modification time
+    pub mtime: Timestamp,
+    /// A text of this [Thop]
+    #[new(into)]
+    pub synopsis: String,
 }
