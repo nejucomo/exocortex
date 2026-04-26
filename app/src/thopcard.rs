@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use derive_new::new;
 use eframe::egui::mutex::Mutex;
-use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
+use eframe::egui::{Response, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
 use exocortex_thop::Thop;
@@ -23,40 +23,21 @@ impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopCard {
         ui.add(
             card()
                 .mode(mode)
-                .metadata(|ui: &mut Ui| {
-                    let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
-                    ui.columns_const(|[left, mid, right]| {
-                        r |= left
-                            .with_layout(Layout::left_to_right(Align::Min), |ui| {
-                                ui.label(format!("Created: {}", thop.ctime))
-                            })
-                            .response;
-
-                        r |= mid
-                            .vertical_centered_justified(|ui| ui.label(thop.id.to_string()))
-                            .response;
-
-                        r |= right
-                            .with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                ui.label(format!("Modified: {}", thop.mtime))
-                            })
-                            .response;
-
-                        r
-                    })
+                .metadata(|ui: &mut Ui, _mode: CardMode| {
+                    ui.label(format!("Created: {}", thop.ctime))
                 })
-                .summary(|ui: &mut Ui| {
+                .content(|ui: &mut Ui, mode: CardMode| {
+                    use CardMode::*;
+
                     CommonMarkViewer::new()
                         .show(
                             ui,
                             &mut cmcache.lock(),
-                            thop.synopsis.lines().next().unwrap(),
+                            match mode {
+                                Streamlined => thop.synopsis.lines().next().unwrap(),
+                                Expanded => thop.synopsis.as_str(),
+                            },
                         )
-                        .response
-                })
-                .content(|ui: &mut Ui| {
-                    CommonMarkViewer::new()
-                        .show(ui, &mut cmcache.lock(), &thop.synopsis)
                         .response
                 })
                 .build()

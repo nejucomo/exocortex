@@ -29,6 +29,15 @@ pub trait WidgetWith<P>: Sized {
     fn ui_with(self, ui: &mut Ui, param: P) -> Response;
 }
 
+impl<F, P> WidgetWith<P> for F
+where
+    F: FnOnce(&mut Ui, P) -> Response,
+{
+    fn ui_with(self, ui: &mut Ui, param: P) -> Response {
+        self(ui, param)
+    }
+}
+
 /// A [WidgetWith] along with its param `P`
 #[derive(Copy, Clone, Debug)]
 pub struct WidgetWithParam<W, P> {
