@@ -52,7 +52,7 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
             ui.label(ctime.date().to_string());
         }
         if show_hm {
-            ui.label(ctime.time().to_string());
+            ui.label(ctime.strftime("%H:%M").to_string());
         }
 
         ui.add(
