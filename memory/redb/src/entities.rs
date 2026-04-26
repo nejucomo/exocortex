@@ -6,6 +6,7 @@ use exocortex_lid::Id;
 use exocortex_memory as mem;
 use exocortex_redborm::Entity;
 use exocortex_redborm::enumvalue::EnumColumnar;
+use exocortex_thop::Thop;
 use exocortex_timestamp::Timestamp;
 use redb_derive::Value;
 
@@ -21,7 +22,7 @@ pub struct ThopV0;
 #[derive(Clone, Debug, From, Into, new, Value)]
 pub struct ThopSetSynopsisV0 {
     /// The thop modified
-    pub thop: Id<mem::Thop>,
+    pub thop: Id<Thop>,
     /// The new synopsis
     ///
     /// # TODO
@@ -34,7 +35,7 @@ pub struct ThopSetSynopsisV0 {
 #[derive(Copy, Clone, Debug, From, Into, new, Value)]
 pub struct ThopModificationV0 {
     /// The thop modified
-    pub thop: Id<mem::Thop>,
+    pub thop: Id<Thop>,
     /// A time shortly before the db transaction with this modification was committed
     pub time: Timestamp,
     /// The modification enum columnar

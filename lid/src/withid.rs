@@ -1,11 +1,16 @@
+use derive_more::{AsRef, Deref, DerefMut};
+
 use crate::Id;
 
 /// A value with its [Id]
-#[derive(Debug)]
+#[derive(AsRef, Debug, Deref, DerefMut)]
 pub struct WithId<T> {
     /// The [Id]
     pub id: Id<T>,
     /// The identified `value`
+    #[as_ref]
+    #[deref]
+    #[deref_mut]
     pub value: T,
 }
 

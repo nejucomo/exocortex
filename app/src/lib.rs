@@ -5,7 +5,7 @@ mod command;
 mod dbgexpr;
 mod dbglayout;
 mod run;
-mod thop;
+mod thopcard;
 mod tutorial;
 
 pub mod cliopts;

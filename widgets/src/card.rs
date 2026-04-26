@@ -35,9 +35,10 @@ where
 }
 
 /// The display mode for a [Card]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum CardMode {
     /// Display only the summary in a streamlined fashion
+    #[default]
     Streamlined,
     /// Display the full content
     Expanded,

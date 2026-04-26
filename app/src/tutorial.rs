@@ -1,7 +1,7 @@
 use exocortex_lid::WithId;
-use exocortex_memory::modifications::{ThopModified, ThopSetSynopsis};
+use exocortex_memory::Provider;
+use exocortex_memory::modifications::{ThopCreate, ThopModified, ThopSetSynopsis};
 use exocortex_memory::queries::{ThopCount, ThopCounted};
-use exocortex_memory::{Provider, Thop};
 use indoc::indoc;
 
 const CANNED_THOPS: &[&str] = &[
@@ -38,7 +38,7 @@ where
             let WithId {
                 id: _,
                 value: thopmod,
-            } = db.sync_request::<_, WithId<ThopModified>>(Thop)?;
+            } = db.sync_request::<_, WithId<ThopModified>>(ThopCreate)?;
 
             let thop = thopmod.thop;
             let modified: WithId<ThopModified> =

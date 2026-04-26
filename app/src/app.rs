@@ -8,18 +8,19 @@ use eframe::egui::{
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
 use exocortex_keybinding::ShortcutState;
-use exocortex_lid::Id;
 use exocortex_lid::WithId;
+use exocortex_lid::{Id, IdMap};
 use exocortex_memory::Provider;
 use exocortex_memory::modifications::ThopModified;
 use exocortex_memory::queries::{Scan, ScanNext, ScanQueried, ScanReleased};
 use exocortex_memory::{Reply, ReplyInfo};
+use exocortex_thop::Thop;
 use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{Orientation, UiExt, many};
 
 use crate::command::Command;
-use crate::thop::{ThopAggregate, aggregate_thop_modifications};
+use crate::thopcard::ThopCard;
 
 struct ScanInProgress {
     scan_id: Id<Scan>,
@@ -38,7 +39,7 @@ pub(crate) struct App<P: Provider> {
     cmcache: Arc<Mutex<CommonMarkCache>>,
 
     #[new(default)]
-    thops: Vec<ThopAggregate>,
+    thops: Vec<ThopCard>,
 
     #[new(default)]
     scan: Option<ScanInProgress>,
@@ -101,7 +102,16 @@ impl<P: Provider> App<P> {
             }
             ScanQueried::Released(ScanReleased) => {
                 if let Some(scan) = self.scan.take() {
-                    self.thops = aggregate_thop_modifications(&scan.collected).collect();
+                    // self.thops = aggregate_thop_modifications(&scan.collected).collect();
+                    let tmap: IdMap<Thop> = scan
+                        .collected
+                        .iter()
+                        .try_fold(IdMap::default(), |mut tmap, wid| {
+                            wid.value.modify_thop_map(&mut tmap).map(|()| tmap)
+                        })
+                        .unwrap();
+
+                    self.thops = tmap.into_iter().map(ThopCard::new).collect();
                 }
             }
         }

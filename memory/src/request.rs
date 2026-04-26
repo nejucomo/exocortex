@@ -3,9 +3,8 @@ use std::sync::Arc;
 
 use derive_more::{From, Into, TryInto};
 
-use crate::Thop;
 use crate::def_transitive_conversion::def_transitive_conversion;
-use crate::modifications::{ThopModify, ThopSetSynopsis};
+use crate::modifications::{ThopCreate, ThopModify, ThopSetSynopsis};
 use crate::queries::{Query, Scan, ScanNext, ScanQuery, ScanRelease, ThopCount};
 
 /// A request to a [`Provider`](crate::Provider), wrapping a shared [`RequestInfo`]
@@ -27,7 +26,7 @@ pub enum RequestInfo {
     #[from(Query, ScanQuery)]
     Query(Query),
     /// A write mutation
-    #[from(ThopModify, Thop, ThopSetSynopsis)]
+    #[from(ThopModify, ThopCreate, ThopSetSynopsis)]
     Modify(ThopModify),
 }
 
@@ -39,5 +38,5 @@ def_transitive_conversion!(From: ScanNext => ScanQuery => Request);
 def_transitive_conversion!(From: ScanRelease => ScanQuery => Request);
 
 def_transitive_conversion!(From: ThopModify => RequestInfo => Request);
-def_transitive_conversion!(From: Thop => ThopModify => Request);
+def_transitive_conversion!(From: ThopCreate => ThopModify => Request);
 def_transitive_conversion!(From: ThopSetSynopsis => ThopModify => Request);
