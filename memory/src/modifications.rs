@@ -41,7 +41,7 @@ pub struct ThopModified {
 
 impl ThopModified {
     /// Apply this modification to an in-memory view of [Thop]s
-    pub fn update_thop_map(&self, thopmap: &mut IdMap<Thop>) -> IdMapResult<(), Thop> {
+    pub fn modify_thop_map(&self, thopmap: &mut IdMap<Thop>) -> IdMapResult<(), Thop> {
         use ThopMutation::*;
 
         match &self.info {

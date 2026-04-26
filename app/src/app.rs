@@ -107,7 +107,7 @@ impl<P: Provider> App<P> {
                         .collected
                         .iter()
                         .try_fold(IdMap::default(), |mut tmap, wid| {
-                            wid.value.update_thop_map(&mut tmap).map(|()| tmap)
+                            wid.value.modify_thop_map(&mut tmap).map(|()| tmap)
                         })
                         .unwrap();
 
