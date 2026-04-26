@@ -9,5 +9,5 @@ mod withid;
 mod redbimpls;
 
 pub use self::id::Id;
-pub use self::idmap::IdMap;
+pub use self::idmap::{IdMap, IdMapError, IdMapResult};
 pub use self::withid::{ValueWithId, WithId};

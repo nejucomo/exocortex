@@ -2,7 +2,7 @@
 
 use derive_more::{From, TryInto};
 use derive_new::new;
-use exocortex_lid::Id;
+use exocortex_lid::{Id, IdMap, IdMapResult};
 use exocortex_thop::Thop;
 use exocortex_timestamp::Timestamp;
 
@@ -37,6 +37,21 @@ pub struct ThopModified {
     pub time: Timestamp,
     /// What kind of modification occurred
     pub info: ThopMutation,
+}
+
+impl ThopModified {
+    /// Apply this modification to an in-memory view of [Thop]s
+    pub fn update_thop_map(&self, thopmap: &mut IdMap<Thop>) -> IdMapResult<(), Thop> {
+        use ThopMutation::*;
+
+        match &self.info {
+            Created => thopmap.insert_new(self.thop, Thop::new(self.time, self.time, "")),
+            SetSynopsis(syn) => thopmap.get_mut(self.thop).map(|thop| {
+                thop.mtime = self.time;
+                thop.synopsis = syn.clone();
+            }),
+        }
+    }
 }
 
 /// The kind of mutation applied to a thop

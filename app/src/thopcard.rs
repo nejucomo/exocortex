@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use derive_new::new;
@@ -6,45 +5,15 @@ use eframe::egui::mutex::Mutex;
 use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
-use exocortex_memory::modifications::{ThopModified, ThopMutation};
 use exocortex_thop::Thop;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{CardMode, card};
 
 #[derive(Debug, new)]
 pub(crate) struct ThopCard {
+    #[new(default)]
     mode: CardMode,
-    thop: Thop,
-}
-
-pub(crate) fn aggregate_thop_modifications(
-    modifications: &[WithId<ThopModified>],
-) -> impl Iterator<Item = ThopCard> {
-    let mut bt = BTreeMap::default();
-
-    for thopmod in modifications.iter().map(|wid| &wid.value) {
-        let mtime = thopmod.time;
-
-        match &thopmod.info {
-            ThopMutation::Created => {
-                let id = thopmod.thop;
-                assert!(
-                    bt.insert(
-                        id,
-                        ThopCard::new(CardMode::Streamlined, Thop::new(id, mtime, mtime, ""))
-                    )
-                    .is_none()
-                );
-            }
-            ThopMutation::SetSynopsis(synopsis) => {
-                let card = bt.get_mut(&thopmod.thop).unwrap();
-                card.thop.mtime = mtime;
-                card.thop.synopsis = synopsis.clone();
-            }
-        }
-    }
-
-    bt.into_values()
+    thop: WithId<Thop>,
 }
 
 impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopCard {
