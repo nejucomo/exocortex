@@ -1,5 +1,5 @@
 use derive_builder::Builder;
-use egui::{Frame, Response, Sense, Ui, Widget};
+use egui::{Align, Frame, Layout, Response, Sense, Ui, Widget};
 
 use crate::with::WidgetWith;
 
@@ -46,7 +46,10 @@ where
         let Card { mode, content } = self;
 
         let mut prep = Frame::group(ui.style()).begin(ui);
-        prep.content_ui.add(content.with(*mode));
+        prep.content_ui
+            .with_layout(Layout::top_down(Align::Max), |ui| {
+                ui.add(content.with(*mode))
+            });
         let resp = prep.allocate_space(ui).interact(Sense::click());
 
         {
