@@ -3,7 +3,7 @@ use std::sync::Arc;
 use derive_more::Deref;
 use derive_new::new;
 use eframe::egui::mutex::Mutex;
-use eframe::egui::{Response, Ui};
+use eframe::egui::{Response, RichText, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
 use exocortex_thop::Thop;
@@ -42,17 +42,17 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
                 .get_minutes();
 
             let show_date = pt.date() != ctime.date();
-            let show_hm = show_date || delta_m > 0;
+            let show_hm = delta_m > 0;
             (show_date, show_hm)
         } else {
             (true, true)
         };
 
         if show_date {
-            ui.label(ctime.date().to_string());
+            ui.label(RichText::new(ctime.date().to_string()).small().strong());
         }
-        if show_hm {
-            ui.label(ctime.strftime("%H:%M").to_string());
+        if show_date || show_hm {
+            ui.label(RichText::new(ctime.strftime("%H:%M").to_string()).small());
         }
 
         ui.add(
