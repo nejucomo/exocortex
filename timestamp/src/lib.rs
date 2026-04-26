@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
+use derive_more::Deref;
 use jiff::Zoned;
 use jiff::tz::TimeZone;
 
 /// A localized timestamp
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Deref, Eq, PartialEq)]
 pub struct Timestamp(Zoned);
 
 impl Timestamp {
@@ -25,6 +26,10 @@ impl Timestamp {
     /// `self` as a number of microseconds since the unix epoch
     pub fn microseconds(&self) -> i64 {
         self.0.timestamp().as_microsecond()
+    }
+
+    pub fn as_zoned(&self) -> &Zoned {
+        &self.0
     }
 }
 

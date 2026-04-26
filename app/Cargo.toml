@@ -26,5 +26,6 @@ exocortex-thop.workspace = true
 exocortex-timestamp.workspace = true
 exocortex-widgets.workspace = true
 indoc.workspace = true
+jiff.workspace = true
 log.workspace = true
 logging-options.workspace = true

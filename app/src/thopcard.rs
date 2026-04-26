@@ -27,9 +27,32 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
     ) -> Response {
         let mode = &mut self.mode;
         let thop = &self.thop;
+        let ctime = &thop.ctime;
 
-        if Some(&thop.ctime) != prevtime.as_ref() {
-            ui.label(thop.ctime.to_string());
+        let (show_date, show_hm) = if let Some(pt) = prevtime {
+            use jiff::{Unit::Minute, ZonedDifference};
+
+            let delta_m = pt
+                .until(
+                    ZonedDifference::from(ctime.as_zoned())
+                        .smallest(Minute)
+                        .largest(Minute),
+                )
+                .unwrap()
+                .get_minutes();
+
+            let show_date = pt.date() != ctime.date();
+            let show_hm = show_date || delta_m > 0;
+            (show_date, show_hm)
+        } else {
+            (true, true)
+        };
+
+        if show_date {
+            ui.label(ctime.date().to_string());
+        }
+        if show_hm {
+            ui.label(ctime.time().to_string());
         }
 
         ui.add(
