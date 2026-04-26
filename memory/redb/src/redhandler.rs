@@ -180,7 +180,7 @@ impl RedHandler<ThopModify> for &WriteTransaction {
 
                 let idmod = self.store(ThopModificationV0 {
                     thop,
-                    time,
+                    time: time.clone(),
                     enumcol: EnumColumnar {
                         variant: 0,
                         referent: thop.transmute(),
@@ -201,7 +201,7 @@ impl RedHandler<ThopModify> for &WriteTransaction {
 
                 let idmod = self.store(ThopModificationV0 {
                     thop,
-                    time,
+                    time: time.clone(),
                     enumcol: EnumColumnar {
                         variant: 1,
                         referent: idtss.transmute(),

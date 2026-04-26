@@ -1398,6 +1398,7 @@ dependencies = [
  "exocortex-memory-ram",
  "exocortex-memory-redb",
  "exocortex-thop",
+ "exocortex-timestamp",
  "exocortex-widgets",
  "indoc",
  "log",

@@ -1,37 +1,36 @@
 use std::fmt::Display;
 
+use jiff::Zoned;
 use jiff::tz::TimeZone;
-use jiff::{Timestamp as JTS, Zoned};
 
-/// A UTC timestamp with microsecond precision
-#[derive(Copy, Clone, Debug)]
-pub struct Timestamp(JTS);
+/// A localized timestamp
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Timestamp(Zoned);
 
 impl Timestamp {
     /// The time now
     pub fn now() -> Self {
-        Self(JTS::now())
+        Self(Zoned::now())
     }
 
     /// The given a number of microseconds since the unix epoch as a [Timestamp]
     pub fn from_microseconds(t: i64) -> Self {
-        Self(JTS::from_microsecond(t).unwrap())
+        Self(
+            jiff::Timestamp::from_microsecond(t)
+                .unwrap()
+                .to_zoned(TimeZone::system()),
+        )
     }
 
     /// `self` as a number of microseconds since the unix epoch
-    pub fn into_microseconds(self) -> i64 {
-        self.0.as_microsecond()
-    }
-
-    fn zoned_local(self) -> Zoned {
-        self.0.to_zoned(TimeZone::system())
+    pub fn microseconds(&self) -> i64 {
+        self.0.timestamp().as_microsecond()
     }
 }
 
 impl Display for Timestamp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let z = self.zoned_local().round(jiff::Unit::Second).unwrap();
-        write!(f, "{} {}", z.date(), z.time())
+        self.0.fmt(f)
     }
 }
 
@@ -41,28 +40,29 @@ impl redb::Value for Timestamp {
         = Timestamp
     where
         Self: 'a;
+
     type AsBytes<'a>
-        = [u8; 8]
+        = String
     where
         Self: 'a;
 
     fn fixed_width() -> Option<usize> {
-        Some(8)
+        None
     }
 
     fn from_bytes<'a>(data: &'a [u8]) -> Self::SelfType<'a>
     where
         Self: 'a,
     {
-        let bytes: [u8; 8] = data.try_into().expect("Timestamp must be 8 bytes");
-        Timestamp::from_microseconds(i64::from_be_bytes(bytes))
+        let text: &str = str::from_utf8(data).expect("non-utf8 `Timestamp` deserialization");
+        Timestamp(text.parse().unwrap())
     }
 
     fn as_bytes<'a, 'b: 'a>(value: &'a Self::SelfType<'b>) -> Self::AsBytes<'a>
     where
         Self: 'b,
     {
-        value.into_microseconds().to_be_bytes()
+        value.0.to_string()
     }
 
     fn type_name() -> redb::TypeName {

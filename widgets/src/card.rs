@@ -1,14 +1,13 @@
 use derive_builder::Builder;
-use egui::{Align, Frame, Layout, Response, Sense, Ui, Widget};
+use egui::{Frame, Response, Sense, Ui, Widget};
 
 use crate::with::WidgetWith;
 
 /// A frame with a "physical card" appearance
 ///
 /// A card has two sections for "metadata" and "content". Cards provide hover and click interaction as a whole.
-pub fn card<'a, M, C>() -> CardBuilder<'a, M, C>
+pub fn card<'a, C>() -> CardBuilder<'a, C>
 where
-    M: WidgetWith<CardMode>,
     C: WidgetWith<CardMode>,
 {
     CardBuilder::default()
@@ -17,15 +16,12 @@ where
 /// A [Card] widget
 #[derive(Builder)]
 #[builder(pattern = "owned")]
-pub struct Card<'a, M, C>
+pub struct Card<'a, C>
 where
-    M: WidgetWith<CardMode>,
     C: WidgetWith<CardMode>,
 {
     /// The display mode of the [Card]
     mode: &'a mut CardMode,
-    /// The metadata widget
-    metadata: M,
     /// The full content widget
     content: C,
 }
@@ -40,28 +36,17 @@ pub enum CardMode {
     Expanded,
 }
 
-impl<'a, M, C> Widget for Card<'a, M, C>
+impl<'a, C> Widget for Card<'a, C>
 where
-    M: WidgetWith<CardMode>,
     C: WidgetWith<CardMode>,
 {
     fn ui(self, ui: &mut Ui) -> Response {
         use CardMode::*;
 
-        let Card {
-            mode,
-            metadata,
-            content,
-        } = self;
+        let Card { mode, content } = self;
 
         let mut prep = Frame::group(ui.style()).begin(ui);
-
-        prep.content_ui
-            .with_layout(Layout::left_to_right(Align::Min), |ui| {
-                ui.add(metadata.with(*mode));
-                ui.add(content.with(*mode))
-            });
-
+        prep.content_ui.add(content.with(*mode));
         let resp = prep.allocate_space(ui).interact(Sense::click());
 
         {

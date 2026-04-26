@@ -197,7 +197,15 @@ where
         let resp = ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
-                    ui.add(many(self.thops.iter_mut()).with(&self.cmcache))
+                    let mut prevtime = None;
+                    ui.add(
+                        many(self.thops.iter_mut().map(|tc| {
+                            let pt = prevtime.take();
+                            prevtime = Some(tc.ctime.clone());
+                            tc.with(pt)
+                        }))
+                        .with(&self.cmcache),
+                    )
                 })
             })
             .response;
