@@ -70,7 +70,11 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
                     match mode {
                         Streamlined => cmviewer(thop.synopsis.lines().next().unwrap()),
                         Expanded => cmviewer(thop.synopsis.as_str()),
-                        Editing => ui.add(TextEdit::singleline(&mut thop.synopsis)),
+                        Editing => {
+                            let resp = ui.add(TextEdit::singleline(&mut thop.synopsis));
+                            resp.request_focus();
+                            resp
+                        }
                     }
                 })
                 .build()
