@@ -72,7 +72,12 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
                         Expanded => cmviewer(thop.synopsis.as_str()),
                         Editing => {
                             let id = ("ThopCard TextEdit", thop.id);
-                            let resp = ui.add(TextEdit::singleline(&mut thop.synopsis).id_salt(id));
+                            let resp = ui.add(
+                                TextEdit::singleline(&mut thop.synopsis)
+                                    .id_salt(id)
+                                    .desired_width(ui.available_width()),
+                            );
+
                             resp.request_focus();
                             resp
                         }

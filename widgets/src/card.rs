@@ -49,7 +49,9 @@ where
 
         let mut prep = Frame::group(ui.style()).begin(ui);
         prep.content_ui
-            .with_layout(Layout::top_down(Align::Max), |ui| {
+            .with_layout(Layout::top_down(Align::Min), |ui| {
+                ui.set_width(ui.available_width());
+
                 ui.add(content.with(*mode))
             });
         let resp = prep.allocate_space(ui).interact(Sense::click());
