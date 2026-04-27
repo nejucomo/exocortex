@@ -3,7 +3,7 @@ use std::sync::Arc;
 use derive_more::Deref;
 use derive_new::new;
 use eframe::egui::mutex::Mutex;
-use eframe::egui::{Response, RichText, Ui};
+use eframe::egui::{Response, RichText, TextEdit, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
 use exocortex_thop::Thop;
@@ -14,7 +14,7 @@ use exocortex_widgets::{CardMode, card};
 #[derive(Debug, new, Deref)]
 pub(crate) struct ThopCard {
     #[new(default)]
-    mode: CardMode,
+    pub mode: CardMode,
     #[deref]
     thop: WithId<Thop>,
 }
@@ -26,7 +26,7 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
         (prevtime, cmcache): (Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>),
     ) -> Response {
         let mode = &mut self.mode;
-        let thop = &self.thop;
+        let thop = &mut self.thop;
         let ctime = &thop.ctime;
 
         let (show_date, show_hm) = if let Some(pt) = prevtime {
@@ -61,16 +61,17 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
                 .content(|ui: &mut Ui, mode: CardMode| {
                     use CardMode::*;
 
-                    CommonMarkViewer::new()
-                        .show(
-                            ui,
-                            &mut cmcache.lock(),
-                            match mode {
-                                Streamlined => thop.synopsis.lines().next().unwrap(),
-                                Expanded => thop.synopsis.as_str(),
-                            },
-                        )
-                        .response
+                    let mut cmviewer = |text| {
+                        CommonMarkViewer::new()
+                            .show(ui, &mut cmcache.lock(), text)
+                            .response
+                    };
+
+                    match mode {
+                        Streamlined => cmviewer(thop.synopsis.lines().next().unwrap()),
+                        Expanded => cmviewer(thop.synopsis.as_str()),
+                        Editing => ui.add(TextEdit::singleline(&mut thop.synopsis)),
+                    }
                 })
                 .build()
                 .unwrap(),

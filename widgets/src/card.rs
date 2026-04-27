@@ -34,6 +34,8 @@ pub enum CardMode {
     Streamlined,
     /// Display the full content
     Expanded,
+    /// Edit the contents
+    Editing,
 }
 
 impl<'a, C> Widget for Card<'a, C>
