@@ -1,8 +1,5 @@
-use std::sync::Arc;
-
 use derive_more::Deref;
 use derive_new::new;
-use eframe::egui::mutex::Mutex;
 use eframe::egui::{Response, RichText, TextEdit, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
@@ -19,13 +16,13 @@ pub(crate) struct ThopCard {
     thop: WithId<Thop>,
 }
 
-impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut ThopCard {
+impl WidgetWith<(Option<Timestamp>, &mut CommonMarkCache)> for &mut ThopCard {
     fn ui_with(
         self,
         ui: &mut Ui,
-        (prevtime, cmcache): (Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>),
+        (prevtime, cmcache): (Option<Timestamp>, &mut CommonMarkCache),
     ) -> Response {
-        let mode = &mut self.mode;
+        let modemut = &mut self.mode;
         let thop = &mut self.thop;
         let ctime = &thop.ctime;
 
@@ -57,28 +54,31 @@ impl WidgetWith<(Option<Timestamp>, &Arc<Mutex<CommonMarkCache>>)> for &mut Thop
 
         ui.add(
             card()
-                .mode(mode)
+                .mode(modemut)
                 .content(|ui: &mut Ui, mode: CardMode| {
                     use CardMode::*;
 
-                    let mut cmviewer = |text| {
-                        CommonMarkViewer::new()
-                            .show(ui, &mut cmcache.lock(), text)
-                            .response
-                    };
+                    let mut cmviewer =
+                        |text| CommonMarkViewer::new().show(ui, cmcache, text).response;
 
                     match mode {
                         Streamlined => cmviewer(thop.synopsis.lines().next().unwrap()),
                         Expanded => cmviewer(thop.synopsis.as_str()),
                         Editing => {
-                            let id = ("ThopCard TextEdit", thop.id);
+                            let thopid = thop.id;
                             let resp = ui.add(
                                 TextEdit::singleline(&mut thop.synopsis)
-                                    .id_salt(id)
+                                    .id_salt(("ThopCard TextEdit", thopid))
                                     .desired_width(ui.available_width()),
                             );
 
-                            resp.request_focus();
+                            // What a yuck API: `resp.lost_focus` implies the user pressed `<enter>` within the text edit box...
+                            if resp.lost_focus() {
+                                todo!("lost focus! {:?}", &thop.synopsis);
+                            } else if !resp.has_focus() {
+                                resp.request_focus();
+                            }
+
                             resp
                         }
                     }

@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use derive_new::new;
-use eframe::egui::mutex::Mutex;
 use eframe::egui::{
-    CentralPanel, Context, Event, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
+    CentralPanel, Context, Event, Response, Sense, Ui, Vec2, ViewportBuilder, ViewportCommand,
+    Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
@@ -17,7 +15,7 @@ use exocortex_memory::{Reply, ReplyInfo};
 use exocortex_thop::Thop;
 use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
-use exocortex_widgets::{Orientation, UiExt, many};
+use exocortex_widgets::{Orientation, UiExt};
 
 use crate::command::Command;
 use crate::thopcard::ThopCard;
@@ -36,7 +34,7 @@ pub(crate) struct App<P: Provider> {
 
     /// BUG: This is locked by every common mark widget per frame!
     #[new(default)]
-    cmcache: Arc<Mutex<CommonMarkCache>>,
+    cmcache: CommonMarkCache,
 
     #[new(default)]
     thop_editing: Option<Id<Thop>>,
@@ -210,25 +208,26 @@ where
         let resp = ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
+                    let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
                     let mut prevtime = None;
-                    ui.add(
-                        many(self.thops.iter_mut().map(|tc| {
-                            let pt = prevtime.take();
-                            prevtime = Some(tc.ctime.clone());
 
-                            // A hack for editing... suspicious smell
-                            use exocortex_widgets::CardMode::{Editing, Expanded};
+                    for tc in self.thops.iter_mut() {
+                        let pt = prevtime.take();
+                        prevtime = Some(tc.ctime.clone());
 
-                            if self.thop_editing.map(|id| id == tc.id).unwrap_or(false) {
-                                tc.mode = Editing;
-                            } else if matches!(tc.mode, Editing) {
-                                tc.mode = Expanded;
-                            }
+                        // A hack for editing... suspicious smell
+                        use exocortex_widgets::CardMode::{Editing, Expanded};
 
-                            tc.with(pt)
-                        }))
-                        .with(&self.cmcache),
-                    )
+                        if self.thop_editing.map(|id| id == tc.id).unwrap_or(false) {
+                            tc.mode = Editing;
+                        } else if matches!(tc.mode, Editing) {
+                            tc.mode = Expanded;
+                        }
+
+                        r |= ui.add(tc.with(pt).with(&mut self.cmcache));
+                    }
+
+                    r
                 })
             })
             .response;
