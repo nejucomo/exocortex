@@ -3,6 +3,8 @@ use derive_new::new;
 use eframe::egui::{Response, RichText, TextEdit, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
+use exocortex_memory::Provider;
+use exocortex_memory::modifications::ThopSetSynopsis;
 use exocortex_thop::Thop;
 use exocortex_timestamp::Timestamp;
 use exocortex_widgets::with::WidgetWith;
@@ -16,11 +18,14 @@ pub(crate) struct ThopCard {
     thop: WithId<Thop>,
 }
 
-impl WidgetWith<(Option<Timestamp>, &mut CommonMarkCache)> for &mut ThopCard {
+impl<P> WidgetWith<(Option<Timestamp>, &mut P, &mut CommonMarkCache)> for &mut ThopCard
+where
+    P: Provider,
+{
     fn ui_with(
         self,
         ui: &mut Ui,
-        (prevtime, cmcache): (Option<Timestamp>, &mut CommonMarkCache),
+        (prevtime, db, cmcache): (Option<Timestamp>, &mut P, &mut CommonMarkCache),
     ) -> Response {
         let modemut = &mut self.mode;
         let thop = &mut self.thop;
@@ -74,7 +79,11 @@ impl WidgetWith<(Option<Timestamp>, &mut CommonMarkCache)> for &mut ThopCard {
 
                             // What a yuck API: `resp.lost_focus` implies the user pressed `<enter>` within the text edit box...
                             if resp.lost_focus() {
-                                todo!("lost focus! {:?}", &thop.synopsis);
+                                db.post_subrequest(ThopSetSynopsis::new(
+                                    thopid,
+                                    thop.synopsis.clone(),
+                                ))
+                                .unwrap();
                             } else if !resp.has_focus() {
                                 resp.request_focus();
                             }

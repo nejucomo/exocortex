@@ -224,7 +224,7 @@ where
                             tc.mode = Expanded;
                         }
 
-                        r |= ui.add(tc.with(pt).with(&mut self.cmcache));
+                        r |= ui.add(tc.with((pt, &mut self.db, &mut self.cmcache)));
                     }
 
                     r
