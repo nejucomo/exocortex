@@ -89,7 +89,17 @@ impl<P: Provider> App<P> {
                         self.thop_editing = Some(widtmod.thop);
                         self.db.post_subrequest(Scan).unwrap();
                     }
-                    other => todo!("unhandled: {:#?}", other),
+                    SetSynopsis(syn) => {
+                        // Unset editing marker:
+                        let thop = self.thop_editing.take().unwrap();
+                        // TODO: Should we use an { id -> state } map instead?
+                        for tc in self.thops.iter_mut() {
+                            if tc.id == thop {
+                                assert_eq!(syn, &tc.synopsis);
+                                tc.mode = exocortex_widgets::CardMode::Expanded;
+                            }
+                        }
+                    }
                 }
             }
         }
