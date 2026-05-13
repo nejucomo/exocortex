@@ -1,6 +1,7 @@
 use clap::Parser as _;
 use color_eyre::eyre::{Result, WrapErr, eyre};
 use env_logger::Logger;
+use exocortex_memory::Provider;
 use exocortex_memory_ram::RamMem;
 use exocortex_memory_redb::RedMem;
 use logging_options::Backend as _;
@@ -21,21 +22,14 @@ pub fn run() -> Result<()> {
     init_log(&opts.logopts);
 
     match opts.db {
-        DbOption::Ram => {
-            let mut db = RamMem::new();
-            stringify_error("db prepopulation error", tutorial::prepopulate(&mut db))?;
-            stringify_error("eframe error", App::run(db))?;
-        }
+        DbOption::Ram => run_db(RamMem::new()),
         DbOption::Path(path) => {
-            let mut db = RedMem::init(&path).wrap_err_with(|| {
+            let db = RedMem::init(&path).wrap_err_with(|| {
                 format!("Failed to initialize database in {:?}", path.display())
             })?;
-            stringify_error("db prepopulation error", tutorial::prepopulate(&mut db))?;
-            stringify_error("eframe error", App::run(db))?;
+            run_db(db)
         }
     }
-
-    Ok(())
 }
 
 fn init_log(logopts: &logging_options::StandardConsole) {
@@ -52,9 +46,24 @@ fn init_log(logopts: &logging_options::StandardConsole) {
     log::debug!("Logging initialized.");
 }
 
-fn stringify_error<E>(tag: &'static str, r: Result<(), E>) -> Result<()>
+fn run_db<P>(mut db: P) -> Result<()>
+where
+    P: Provider + Send + 'static,
+{
+    tutorial::prepopulate(&mut db).tag_err("db prepopulation error")?;
+    App::run(db).tag_err("eframe error")?;
+    Ok(())
+}
+
+trait TagErr {
+    fn tag_err(self, tag: &'static str) -> Result<()>;
+}
+
+impl<E> TagErr for Result<(), E>
 where
     E: ToString,
 {
-    r.or_else(|e| Err(eyre!(tag)).wrap_err_with(|| e.to_string()))
+    fn tag_err(self, tag: &'static str) -> Result<()> {
+        self.or_else(|e| Err(eyre!(tag)).wrap_err_with(|| e.to_string()))
+    }
 }
