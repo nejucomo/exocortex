@@ -75,12 +75,20 @@ impl MemImpl {
         match q {
             Query::ThopCount(_) => {
                 let txn = self.redb.begin_read()?;
-                let count = {
-                    use redb::ReadableTableMetadata as _;
-                    let tab = txn.open_table(ThopV0::table_definition())?;
-                    tab.len()?
-                };
-                Ok(Queried::ThopCounted(ThopCounted(count)))
+
+                use redb::ReadableTableMetadata as _;
+                use redb::TableError::TableDoesNotExist;
+
+                match txn.open_table(ThopV0::table_definition()) {
+                    Ok(tab) => {
+                        let cnt = tab.len()?;
+                        Ok(cnt)
+                    }
+                    Err(TableDoesNotExist(_)) => Ok(0),
+                    Err(e) => Err(e.into()),
+                }
+                .map(ThopCounted)
+                .map(Queried::ThopCounted)
             }
             Query::Scan(sq) => self.handle_scan_query(sq).map(Queried::Scanned),
         }
