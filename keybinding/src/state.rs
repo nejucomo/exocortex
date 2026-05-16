@@ -1,14 +1,16 @@
+use egui::{Context, Id, Modal};
 use thiserror::Error;
 
 use crate::keymap::KeyMap;
 use crate::node::Node;
-use crate::{KeyChord, KeyCommand};
+use crate::{KeyChord, KeyCommand, ShortcutDisplay};
 
 /// Manage tracking keymap command input sequences
 #[derive(Debug)]
 pub struct ShortcutState<C: KeyCommand> {
     keymap: KeyMap<C>,
     current: Option<KeyMap<C>>,
+    help_dialog_enabled: bool,
 }
 
 /// The result of attempting to handle a key
@@ -35,6 +37,7 @@ where
         let mut scs = Self {
             keymap: KeyMap::default(),
             current: None,
+            help_dialog_enabled: false,
         };
 
         C::initialize_default_keymap(&mut scs);
@@ -84,6 +87,7 @@ where
         };
 
         let key = key.into();
+        log::debug!("key: {key:?}; current map: {current:?}");
         match current.match_key(key) {
             None if top_level => Ok(Unhandled(key)),
             None => Err(UnknownSequence),
@@ -92,6 +96,19 @@ where
                 self.current = Some(submap.clone());
                 Ok(Pending)
             }
+        }
+    }
+
+    /// Enable the help dialog
+    pub fn enable_help_dialog(&mut self) {
+        self.help_dialog_enabled = true;
+    }
+
+    /// Show the help dialog if it is enabled
+    pub fn show_help_dialog_if_enabled(&self, ctx: &Context) {
+        if self.help_dialog_enabled {
+            Modal::new(Id::new(concat!(env!("CARGO_PKG_NAME"), " :: help dialog")))
+                .show(ctx, |ui| ui.add(ShortcutDisplay::new(self)));
         }
     }
 }

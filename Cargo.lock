@@ -1414,7 +1414,9 @@ version = "0.1.0"
 name = "exocortex-keybinding"
 version = "0.1.0"
 dependencies = [
+ "derive-new",
  "egui",
+ "log",
  "thiserror 2.0.18",
 ]
 

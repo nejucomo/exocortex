@@ -180,6 +180,7 @@ impl<P: Provider> App<P> {
         use ViewportCommand::Fullscreen;
 
         match cmd {
+            ShortcutsHelp => self.kbshortcuts.enable_help_dialog(),
             Viewport(vpcmd) => ui.ctx().send_viewport_cmd(vpcmd),
             ViewportToggleFullscreen => {
                 let fs = ui.input(|i| i.viewport().fullscreen.unwrap_or_default());
@@ -241,6 +242,8 @@ where
                 })
             })
             .response;
+
+        self.kbshortcuts.show_help_dialog_if_enabled(ui.ctx());
 
         self.handle_ui_events(ui);
 

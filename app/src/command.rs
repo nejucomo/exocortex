@@ -6,6 +6,7 @@ use self::Command::*;
 
 #[derive(Clone, Debug, From)]
 pub(crate) enum Command {
+    ShortcutsHelp,
     Viewport(ViewportCommand),
     ViewportToggleFullscreen,
     CreateNewThop,
@@ -14,10 +15,12 @@ pub(crate) enum Command {
 impl KeyCommand for Command {
     fn initialize_default_keymap(scs: &mut ShortcutState<Self>) {
         use ViewportCommand::Close;
-        use eframe::egui::Key::{Enter, Escape, F};
+        use eframe::egui::Key::{Enter, Escape, F, Slash};
 
-        scs.define_command([(Escape, Modifiers::COMMAND)], Viewport(Close));
-        scs.define_command([(F, Modifiers::COMMAND)], ViewportToggleFullscreen);
-        scs.define_command([(Enter, Modifiers::COMMAND)], CreateNewThop);
+        let appmod = Modifiers::COMMAND;
+        scs.define_command([(Slash, appmod)], ShortcutsHelp);
+        scs.define_command([(Escape, appmod)], Viewport(Close));
+        scs.define_command([(F, appmod)], ViewportToggleFullscreen);
+        scs.define_command([(Enter, appmod)], CreateNewThop);
     }
 }
