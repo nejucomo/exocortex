@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use derive_new::new;
-use eframe::egui::mutex::Mutex;
 use eframe::egui::{
-    CentralPanel, Context, Event, Response, Ui, ViewportBuilder, ViewportCommand, Widget,
+    CentralPanel, Context, Event, Response, Sense, Ui, Vec2, ViewportBuilder, ViewportCommand,
+    Widget,
 };
 use eframe::{Frame, NativeOptions, run_native};
 use egui_commonmark::CommonMarkCache;
@@ -11,13 +9,13 @@ use exocortex_keybinding::ShortcutState;
 use exocortex_lid::WithId;
 use exocortex_lid::{Id, IdMap};
 use exocortex_memory::Provider;
-use exocortex_memory::modifications::ThopModified;
+use exocortex_memory::modifications::{ThopCreate, ThopModified};
 use exocortex_memory::queries::{Scan, ScanNext, ScanQueried, ScanReleased};
 use exocortex_memory::{Reply, ReplyInfo};
 use exocortex_thop::Thop;
 use exocortex_widgets::squeeze_frame::UiSqueezeExt as _;
 use exocortex_widgets::with::WidgetWith;
-use exocortex_widgets::{Orientation, UiExt, many};
+use exocortex_widgets::{Orientation, UiExt};
 
 use crate::command::Command;
 use crate::thopcard::ThopCard;
@@ -36,7 +34,10 @@ pub(crate) struct App<P: Provider> {
 
     /// BUG: This is locked by every common mark widget per frame!
     #[new(default)]
-    cmcache: Arc<Mutex<CommonMarkCache>>,
+    cmcache: CommonMarkCache,
+
+    #[new(default)]
+    thop_editing: Option<Id<Thop>>,
 
     #[new(default)]
     thops: Vec<ThopCard>,
@@ -80,7 +81,27 @@ impl<P: Provider> App<P> {
                     Scanned(scan_queried) => self.handle_scan_queried(scan_queried),
                 }
             }
-            ReplyInfo::Modified(thop) => log::debug!("modified: {thop:?}"),
+            ReplyInfo::Modified(widtmod) => {
+                use exocortex_memory::modifications::ThopMutation::*;
+
+                match &widtmod.info {
+                    Created => {
+                        self.thop_editing = Some(widtmod.thop);
+                        self.db.post_subrequest(Scan).unwrap();
+                    }
+                    SetSynopsis(syn) => {
+                        // Unset editing marker:
+                        let thop = self.thop_editing.take().unwrap();
+                        // TODO: Should we use an { id -> state } map instead?
+                        for tc in self.thops.iter_mut() {
+                            if tc.id == thop {
+                                assert_eq!(syn, &tc.synopsis);
+                                tc.mode = exocortex_widgets::CardMode::Expanded;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -165,7 +186,7 @@ impl<P: Provider> App<P> {
                 ui.ctx().send_viewport_cmd(Fullscreen(!fs));
             }
             CreateNewThop => {
-                todo!("FIXME")
+                self.db.post_subrequest(ThopCreate).unwrap();
             }
         }
     }
@@ -197,7 +218,26 @@ where
         let resp = ui
             .within_widgets(|ui| {
                 ui.scroll_area(Vertical, |ui| {
-                    ui.add(many(self.thops.iter_mut()).with(&self.cmcache))
+                    let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
+                    let mut prevtime = None;
+
+                    for tc in self.thops.iter_mut() {
+                        let pt = prevtime.take();
+                        prevtime = Some(tc.ctime.clone());
+
+                        // A hack for editing... suspicious smell
+                        use exocortex_widgets::CardMode::{Editing, Expanded};
+
+                        if self.thop_editing.map(|id| id == tc.id).unwrap_or(false) {
+                            tc.mode = Editing;
+                        } else if matches!(tc.mode, Editing) {
+                            tc.mode = Expanded;
+                        }
+
+                        r |= ui.add(tc.with((pt, &mut self.db, &mut self.cmcache)));
+                    }
+
+                    r
                 })
             })
             .response;

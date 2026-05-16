@@ -44,10 +44,12 @@ impl ThopModified {
     pub fn modify_thop_map(&self, thopmap: &mut IdMap<Thop>) -> IdMapResult<(), Thop> {
         use ThopMutation::*;
 
+        let time = self.time.clone();
+
         match &self.info {
-            Created => thopmap.insert_new(self.thop, Thop::new(self.time, self.time, "")),
+            Created => thopmap.insert_new(self.thop, Thop::new(time.clone(), time, "")),
             SetSynopsis(syn) => thopmap.get_mut(self.thop).map(|thop| {
-                thop.mtime = self.time;
+                thop.mtime = time;
                 thop.synopsis = syn.clone();
             }),
         }

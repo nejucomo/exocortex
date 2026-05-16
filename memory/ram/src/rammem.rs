@@ -76,7 +76,7 @@ impl RamMem {
                     .map(|(id_num, m)| {
                         ThopModified {
                             thop: m.thop,
-                            time: m.time,
+                            time: m.time.clone(),
                             info: m.info.clone(),
                         }
                         .with_id(Id::from(*id_num))

@@ -1,63 +1,96 @@
-use std::sync::Arc;
-
+use derive_more::Deref;
 use derive_new::new;
-use eframe::egui::mutex::Mutex;
-use eframe::egui::{Align, Layout, Response, Sense, Ui, Vec2};
+use eframe::egui::{Response, RichText, TextEdit, Ui};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use exocortex_lid::WithId;
+use exocortex_memory::Provider;
+use exocortex_memory::modifications::ThopSetSynopsis;
 use exocortex_thop::Thop;
+use exocortex_timestamp::Timestamp;
 use exocortex_widgets::with::WidgetWith;
 use exocortex_widgets::{CardMode, card};
 
-#[derive(Debug, new)]
+#[derive(Debug, new, Deref)]
 pub(crate) struct ThopCard {
     #[new(default)]
-    mode: CardMode,
+    pub mode: CardMode,
+    #[deref]
     thop: WithId<Thop>,
 }
 
-impl WidgetWith<&Arc<Mutex<CommonMarkCache>>> for &mut ThopCard {
-    fn ui_with(self, ui: &mut Ui, cmcache: &Arc<Mutex<CommonMarkCache>>) -> Response {
-        let mode = &mut self.mode;
-        let thop = &self.thop;
+impl<P> WidgetWith<(Option<Timestamp>, &mut P, &mut CommonMarkCache)> for &mut ThopCard
+where
+    P: Provider,
+{
+    fn ui_with(
+        self,
+        ui: &mut Ui,
+        (prevtime, db, cmcache): (Option<Timestamp>, &mut P, &mut CommonMarkCache),
+    ) -> Response {
+        let modemut = &mut self.mode;
+        let thop = &mut self.thop;
+        let ctime = &thop.ctime;
+
+        let (show_date, show_hm) = if let Some(pt) = prevtime {
+            use jiff::{Unit::Minute, ZonedDifference};
+
+            let delta_m = pt
+                .until(
+                    ZonedDifference::from(ctime.as_zoned())
+                        .smallest(Minute)
+                        .largest(Minute),
+                )
+                .unwrap()
+                .get_minutes();
+
+            let show_date = pt.date() != ctime.date();
+            let show_hm = delta_m > 0;
+            (show_date, show_hm)
+        } else {
+            (true, true)
+        };
+
+        if show_date {
+            ui.label(RichText::new(ctime.date().to_string()).small().strong());
+        }
+        if show_date || show_hm {
+            ui.label(RichText::new(ctime.strftime("%H:%M").to_string()).small());
+        }
+
         ui.add(
             card()
-                .mode(mode)
-                .metadata(|ui: &mut Ui| {
-                    let mut r = ui.allocate_response(Vec2::ZERO, Sense::hover());
-                    ui.columns_const(|[left, mid, right]| {
-                        r |= left
-                            .with_layout(Layout::left_to_right(Align::Min), |ui| {
-                                ui.label(format!("Created: {}", thop.ctime))
-                            })
-                            .response;
+                .mode(modemut)
+                .content(|ui: &mut Ui, mode: CardMode| {
+                    use CardMode::*;
 
-                        r |= mid
-                            .vertical_centered_justified(|ui| ui.label(thop.id.to_string()))
-                            .response;
+                    let mut cmviewer =
+                        |text| CommonMarkViewer::new().show(ui, cmcache, text).response;
 
-                        r |= right
-                            .with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                ui.label(format!("Modified: {}", thop.mtime))
-                            })
-                            .response;
+                    match mode {
+                        Streamlined => cmviewer(thop.synopsis.lines().next().unwrap()),
+                        Expanded => cmviewer(thop.synopsis.as_str()),
+                        Editing => {
+                            let thopid = thop.id;
+                            let resp = ui.add(
+                                TextEdit::singleline(&mut thop.synopsis)
+                                    .id_salt(("ThopCard TextEdit", thopid))
+                                    .desired_width(ui.available_width()),
+                            );
 
-                        r
-                    })
-                })
-                .summary(|ui: &mut Ui| {
-                    CommonMarkViewer::new()
-                        .show(
-                            ui,
-                            &mut cmcache.lock(),
-                            thop.synopsis.lines().next().unwrap(),
-                        )
-                        .response
-                })
-                .content(|ui: &mut Ui| {
-                    CommonMarkViewer::new()
-                        .show(ui, &mut cmcache.lock(), &thop.synopsis)
-                        .response
+                            // What a yuck API: `resp.lost_focus` implies the user pressed `<enter>` within the text edit box...
+                            if resp.lost_focus() {
+                                db.post_subrequest(ThopSetSynopsis::new(
+                                    thopid,
+                                    thop.synopsis.clone(),
+                                ))
+                                .unwrap();
+                            } else if !resp.has_focus() {
+                                resp.request_focus();
+                            }
+
+                            resp
+                        }
+                    }
                 })
                 .build()
                 .unwrap(),

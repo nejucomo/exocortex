@@ -1398,8 +1398,10 @@ dependencies = [
  "exocortex-memory-ram",
  "exocortex-memory-redb",
  "exocortex-thop",
+ "exocortex-timestamp",
  "exocortex-widgets",
  "indoc",
+ "jiff",
  "log",
  "logging-options",
 ]
@@ -1495,6 +1497,7 @@ dependencies = [
 name = "exocortex-timestamp"
 version = "0.1.0"
 dependencies = [
+ "derive_more",
  "jiff",
  "redb",
 ]

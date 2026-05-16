@@ -32,7 +32,7 @@ pub struct ThopSetSynopsisV0 {
 }
 
 /// An entity recording a thop modification
-#[derive(Copy, Clone, Debug, From, Into, new, Value)]
+#[derive(Clone, Debug, From, Into, new, Value)]
 pub struct ThopModificationV0 {
     /// The thop modified
     pub thop: Id<Thop>,

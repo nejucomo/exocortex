@@ -33,11 +33,19 @@ where
     where
         F: FnMut(<Self::KOV as Value>::SelfType<'_>, Self) -> OrmResult<()>,
     {
-        let tab = txn.open_table(Self::table_definition())?;
-        for kvres in tab.iter_rows()? {
-            let (k, v) = kvres?;
-            take_item(k, v)?;
+        use redb::TableError::TableDoesNotExist;
+
+        match txn.open_table(Self::table_definition()) {
+            Ok(tab) => {
+                for kvres in tab.iter_rows()? {
+                    let (k, v) = kvres?;
+                    take_item(k, v)?;
+                }
+                Ok(())
+            }
+            // Ok, just empty:
+            Err(TableDoesNotExist(_)) => Ok(()),
+            Err(e) => Err(e.into()),
         }
-        Ok(())
     }
 }

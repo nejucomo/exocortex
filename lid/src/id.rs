@@ -50,6 +50,13 @@ impl<T: ?Sized> PartialEq for Id<T> {
     }
 }
 
+impl<T: ?Sized> std::hash::Hash for Id<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.n.hash(state);
+        self.ph.hash(state);
+    }
+}
+
 impl<T: ?Sized> Ord for Id<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.n.cmp(&other.n)
