@@ -1,5 +1,5 @@
 use crate::keymap::KeyMap;
-use crate::{KeyChord, KeyCommand};
+use crate::{KeyChord, KeyCommand, KeyCommandHelp};
 
 #[derive(Clone, Debug)]
 pub(crate) enum Node<C: KeyCommand> {
@@ -58,5 +58,14 @@ where
             *self = newself;
         }
         overwritten
+    }
+
+    pub(crate) fn append_bindings_helpses(&self, v: &mut Vec<KeyCommandHelp>, path: Vec<KeyChord>) {
+        use Node::*;
+
+        match self {
+            Command(cmd) => v.push(KeyCommandHelp::new(path, cmd.help())),
+            Submap(m) => m.append_bindings_helpses(v, path),
+        }
     }
 }

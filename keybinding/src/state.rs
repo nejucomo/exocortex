@@ -3,7 +3,7 @@ use thiserror::Error;
 
 use crate::keymap::KeyMap;
 use crate::node::Node;
-use crate::{KeyChord, KeyCommand, ShortcutDisplay};
+use crate::{KeyChord, KeyCommand, KeyCommandHelp, ShortcutDisplay};
 
 /// Manage tracking keymap command input sequences
 #[derive(Debug)]
@@ -108,7 +108,12 @@ where
     pub fn show_help_dialog_if_enabled(&self, ctx: &Context) {
         if self.help_dialog_enabled {
             Modal::new(Id::new(concat!(env!("CARGO_PKG_NAME"), " :: help dialog")))
-                .show(ctx, |ui| ui.add(ShortcutDisplay::new(self)));
+                .show(ctx, |ui| ui.add(ShortcutDisplay::new(&self.help())));
         }
+    }
+
+    /// Get the [KeyCommandHelp] for each [KeyCommand]s
+    pub fn help(&self) -> Vec<KeyCommandHelp> {
+        self.keymap.bindings_help()
     }
 }

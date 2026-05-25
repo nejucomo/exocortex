@@ -6,4 +6,7 @@ use crate::ShortcutState;
 pub trait KeyCommand: Clone + Debug {
     /// Initialize new keybindings via [ShortcutState::define_command]]
     fn initialize_default_keymap(scs: &mut ShortcutState<Self>);
+
+    /// Return a short help synopsis for this command
+    fn help(&self) -> &'static str;
 }
