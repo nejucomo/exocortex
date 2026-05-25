@@ -1,5 +1,5 @@
 use derive_new::new;
-use egui::{Response, RichText, Ui, Widget};
+use egui::{Response, Ui, Widget};
 
 use crate::KeyChord;
 
@@ -16,8 +16,8 @@ impl Widget for &KeyCommandHelp {
     fn ui(self, ui: &mut Ui) -> Response {
         let r1 = ui
             .horizontal(|ui| {
-                for chord in self.chords.iter() {
-                    ui.label(RichText::new(format!("FIXME: {:?}", chord)).code());
+                for chord in self.chords.iter().copied() {
+                    ui.add(chord);
                 }
             })
             .response;
