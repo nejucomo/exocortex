@@ -16,6 +16,7 @@ function check-everything
   auto-fmt-tomls
   v cargo check
   v git add Cargo.lock
+  v cargo fetch --locked
 
   shear-happy
   check-each-crate
