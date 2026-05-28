@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::node::Node;
-use crate::{KeyChord, KeyCommand};
+use crate::{KeyChord, KeyCommand, KeyCommandHelp};
 
 /// A mapping from key sequences to app commands `C`
 #[derive(Clone, Debug)]
@@ -53,5 +53,23 @@ where
     /// Attempt to match `key`
     pub(crate) fn match_key(&self, key: KeyChord) -> Option<Node<C>> {
         self.0.borrow().get(&key).cloned()
+    }
+
+    pub(crate) fn bindings_help(&self) -> Vec<KeyCommandHelp> {
+        let mut v = vec![];
+        self.append_bindings_helpses(&mut v, vec![]);
+        v
+    }
+
+    pub(crate) fn append_bindings_helpses(
+        &self,
+        v: &mut Vec<KeyCommandHelp>,
+        prefix: Vec<KeyChord>,
+    ) {
+        for (chord, node) in self.0.borrow().iter() {
+            let mut path = prefix.clone();
+            path.push(*chord);
+            node.append_bindings_helpses(v, path);
+        }
     }
 }

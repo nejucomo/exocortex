@@ -4,5 +4,8 @@ name = "exocortex-keybinding"
 version = "0.1.0"
 
 [dependencies]
+derive-new.workspace = true
 egui.workspace = true
+log.workspace = true
+tap.workspace = true
 thiserror.workspace = true

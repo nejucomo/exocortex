@@ -67,7 +67,7 @@ where
                         |text| CommonMarkViewer::new().show(ui, cmcache, text).response;
 
                     match mode {
-                        Streamlined => cmviewer(thop.synopsis.lines().next().unwrap()),
+                        Streamlined => cmviewer(thop.synopsis.lines().next().unwrap_or(" ")),
                         Expanded => cmviewer(thop.synopsis.as_str()),
                         Editing => {
                             let thopid = thop.id;
