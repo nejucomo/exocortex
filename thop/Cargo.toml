@@ -1,8 +1,0 @@
-[package]
-edition.workspace = true
-name = "exocortex-thop"
-version = "0.1.0"
-
-[dependencies]
-derive-new.workspace = true
-exocortex-timestamp.workspace = true

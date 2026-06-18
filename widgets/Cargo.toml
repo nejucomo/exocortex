@@ -1,9 +1,0 @@
-[package]
-edition.workspace = true
-name = "exocortex-widgets"
-version = "0.1.0"
-
-[dependencies]
-derive_builder.workspace = true
-egui.workspace = true
-extension-traits.workspace = true

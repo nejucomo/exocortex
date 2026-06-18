@@ -1,6 +1,0 @@
-[package]
-edition.workspace = true
-name = "exocortex-handler"
-version = "0.1.0"
-
-[dependencies]
