@@ -441,9 +441,9 @@ impl eframe::App for App {
             self.quick_jot.activate(&view);
         }
 
-        // Keep repainting to poll hotkey events even when idle.
+        // Keep repainting at a modest rate to poll hotkey events when idle.
         if self.hotkey_id.is_some() {
-            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+            ctx.request_repaint_after(std::time::Duration::from_millis(500));
         }
     }
 

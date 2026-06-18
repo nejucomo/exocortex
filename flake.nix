@@ -50,6 +50,10 @@
             darwin.apple_sdk.frameworks.CoreServices
           ];
 
+        # LD_LIBRARY_PATH string used both in the dev shell and the package wrapper.
+        runtimeLibraryPath = pkgs.lib.optionalString pkgs.stdenv.isLinux
+          (pkgs.lib.makeLibraryPath buildInputs);
+
         commonArgs = {
           inherit src nativeBuildInputs buildInputs;
           strictDeps = true;
@@ -65,7 +69,7 @@
           # run-time; nix wraps the binary automatically via LD_LIBRARY_PATH).
           postInstall = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
             wrapProgram $out/bin/exocortex \
-              --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath buildInputs}
+              --prefix LD_LIBRARY_PATH : ${runtimeLibraryPath}
           '';
 
           nativeBuildInputs = nativeBuildInputs
@@ -85,8 +89,7 @@
             pkgs.cargo-watch
           ];
           # Make GPU/Wayland libraries available for interactive development.
-          LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.isLinux
-            (pkgs.lib.makeLibraryPath buildInputs);
+          LD_LIBRARY_PATH = runtimeLibraryPath;
         };
 
         checks.default = exocortex;
