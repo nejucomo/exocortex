@@ -86,6 +86,7 @@
             ++ pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.makeWrapper ];
           packages = [
             pkgs.rust-analyzer
+            pkgs.cargo-shear
             pkgs.cargo-watch
             pkgs.fd
             pkgs.jq
