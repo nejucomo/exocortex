@@ -87,6 +87,11 @@
           packages = [
             pkgs.rust-analyzer
             pkgs.cargo-watch
+            pkgs.fd
+            pkgs.jq
+            pkgs.ripgrep
+            pkgs.sd
+            pkgs.taplo
           ];
           # Make GPU/Wayland libraries available for interactive development.
           LD_LIBRARY_PATH = runtimeLibraryPath;
